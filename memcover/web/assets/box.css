@@ -1,0 +1,30 @@
+svg.box-svg {
+    shape-rendering: crispEdges;
+}
+
+.box {
+  font: 10px sans-serif;
+}
+
+.box line, .box rect, .box circle {
+  fill: #fff;
+  stroke: #000;
+  stroke-width: 1px;
+}
+
+.box.subset1 line, .box.subset1 rect  {
+  stroke: rgb(228,26,28);
+}
+
+.box.subset2 line, .box.subset2 rect {
+  stroke: rgb(55,126,184);
+}
+
+.box .center {
+  stroke-dasharray: 3,3;
+}
+
+.box .outlier {
+  fill: none;
+  stroke: #ccc;
+}

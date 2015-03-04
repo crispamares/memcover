@@ -1,0 +1,75 @@
+{
+ "index": "path", 
+ "attributes": {
+  "total population by optical fractionator": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "tint": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "patient": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "estimated volume (mm)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "cells/volume (\u00b5m3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "region": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "cells/volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "measured volume (\u00b5m3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "CE Schaeffer": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "path": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": true, 
+   "shape": [], 
+   "continuous": false
+  }
+ }
+}
