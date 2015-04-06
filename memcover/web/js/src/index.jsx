@@ -1,10 +1,11 @@
 'use strict'
 var React = require('react');
+var _ = require('lodash');
 var when = require('when'); 
 var d3 = require('d3'); 
-var FixedDataTable = require('fixed-data-table');
 
 var Hello = require('./hello');
+var DataTable = require('./dataTable');
 // ----------------------------------------------------------
 //  Setup indyva's conection 
 // ----------------------------------------------------------
@@ -46,12 +47,18 @@ rpc.call('init', [])
 	    return _(attrs).keys().sort().value();
 	}
 
+	return rpc.call("TableSrv.get_data", [table]);
+
     })
-    .then(function() {
+    .then(function(rows) {
 
-	var Table = FixedDataTable.Table;
-//	var Column = FixedDataTable.Column;
+	console.log("********", schema);
 
+	var tableWidth = 1200;
+
+	function rowGetter(i) {
+	    return rows[i];
+	}
 
 	React.render(
 	    <div>
@@ -65,7 +72,14 @@ rpc.call('init', [])
               </div>
               <div className="row">
                 <div className="col-sm-12 well">
-		  PDOPWED
+                  <DataTable 			  
+			  rowGetter={rowGetter}
+			  rowsCount={totalItems}
+			  tableWidth={tableWidth}
+			  tableHeight={600}
+			  columnNames={_.keys(schema.attributes)}
+			  >
+                  </DataTable>
                 </div>
               </div>
 	    </div>

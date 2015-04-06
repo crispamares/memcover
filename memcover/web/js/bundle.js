@@ -46,11 +46,12 @@
 
 	'use strict'
 	var React = __webpack_require__(1);
+	var _ = __webpack_require__(93);
 	var when = __webpack_require__(5); 
 	var d3 = __webpack_require__(2); 
-	var FixedDataTable = __webpack_require__(6);
 
 	var Hello = __webpack_require__(3);
+	var DataTable = __webpack_require__(94);
 	// ----------------------------------------------------------
 	//  Setup indyva's conection 
 	// ----------------------------------------------------------
@@ -92,12 +93,18 @@
 		    return _(attrs).keys().sort().value();
 		}
 
+		return rpc.call("TableSrv.get_data", [table]);
+
 	    })
-	    .then(function() {
+	    .then(function(rows) {
 
-		var Table = FixedDataTable.Table;
-	//	var Column = FixedDataTable.Column;
+		console.log("********", schema);
 
+		var tableWidth = 1200;
+
+		function rowGetter(i) {
+		    return rows[i];
+		}
 
 		React.render(
 		    React.createElement("div", null, 
@@ -111,7 +118,14 @@
 	              ), 
 	              React.createElement("div", {className: "row"}, 
 	                React.createElement("div", {className: "col-sm-12 well"}, 
-			  "PEEEEEEpooo"
+	                  React.createElement(DataTable, {			  
+				  rowGetter: rowGetter, 
+				  rowsCount: totalItems, 
+				  tableWidth: tableWidth, 
+				  tableHeight: 600, 
+				  columnNames: _.keys(schema.attributes)
+				  }
+	                  )
 	                )
 	              )
 		    )
@@ -316,24 +330,24 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var timed = __webpack_require__(10);
-		var array = __webpack_require__(11);
-		var flow = __webpack_require__(12);
-		var fold = __webpack_require__(13);
-		var inspect = __webpack_require__(14);
-		var generate = __webpack_require__(15);
-		var progress = __webpack_require__(16);
-		var withThis = __webpack_require__(17);
-		var unhandledRejection = __webpack_require__(18);
-		var TimeoutError = __webpack_require__(19);
+		var timed = __webpack_require__(11);
+		var array = __webpack_require__(12);
+		var flow = __webpack_require__(13);
+		var fold = __webpack_require__(14);
+		var inspect = __webpack_require__(15);
+		var generate = __webpack_require__(16);
+		var progress = __webpack_require__(17);
+		var withThis = __webpack_require__(18);
+		var unhandledRejection = __webpack_require__(19);
+		var TimeoutError = __webpack_require__(20);
 
 		var Promise = [array, flow, fold, generate, progress,
 			inspect, withThis, timed, unhandledRejection]
 			.reduce(function(Promise, feature) {
 				return feature(Promise);
-			}, __webpack_require__(20));
+			}, __webpack_require__(21));
 
-		var apply = __webpack_require__(21)(Promise);
+		var apply = __webpack_require__(22)(Promise);
 
 		// Public API
 
@@ -539,7 +553,7 @@
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(22);
+	module.exports = __webpack_require__(10);
 
 
 /***/ },
@@ -1019,6 +1033,51 @@
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableRoot
+	 */
+
+	"use strict";
+
+	if (process.env.NODE_ENV !== 'production') {
+	  var ExecutionEnvironment = __webpack_require__(25);
+	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
+
+	    if (!Object.assign) {
+	      console.error(
+	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
+	      );
+	    }
+	  }
+	}
+
+	var FixedDataTable = __webpack_require__(26);
+	var FixedDataTableColumn = __webpack_require__(27);
+	var FixedDataTableColumnGroup = __webpack_require__(28);
+
+	var FixedDataTableRoot = {
+	  Column: FixedDataTableColumn,
+	  ColumnGroup: FixedDataTableColumnGroup,
+	  Table: FixedDataTable,
+	};
+
+	FixedDataTableRoot.version = '0.1.2';
+
+	module.exports = FixedDataTableRoot;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
 	/** @author Brian Cavalier */
 	/** @author John Hann */
@@ -1027,7 +1086,7 @@
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
 		var env = __webpack_require__(24);
-		var TimeoutError = __webpack_require__(19);
+		var TimeoutError = __webpack_require__(20);
 
 		function setTimeout(f, ms, x, y) {
 			return env.setTimer(function() {
@@ -1100,7 +1159,7 @@
 
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1110,8 +1169,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var state = __webpack_require__(25);
-		var applier = __webpack_require__(21);
+		var state = __webpack_require__(29);
+		var applier = __webpack_require__(22);
 
 		return function array(Promise) {
 
@@ -1395,7 +1454,7 @@
 
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1561,7 +1620,7 @@
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1594,7 +1653,7 @@
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1604,7 +1663,7 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var inspect = __webpack_require__(25).inspect;
+		var inspect = __webpack_require__(29).inspect;
 
 		return function inspection(Promise) {
 
@@ -1620,7 +1679,7 @@
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1691,7 +1750,7 @@
 
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1721,7 +1780,7 @@
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1765,7 +1824,7 @@
 
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1776,7 +1835,7 @@
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
 		var setTimer = __webpack_require__(24).setTimer;
-		var format = __webpack_require__(26);
+		var format = __webpack_require__(30);
 
 		return function unhandledRejection(Promise) {
 
@@ -1857,7 +1916,7 @@
 
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1889,7 +1948,7 @@
 	}(__webpack_require__(23)));
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1899,8 +1958,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var makePromise = __webpack_require__(27);
-		var Scheduler = __webpack_require__(28);
+		var makePromise = __webpack_require__(31);
+		var Scheduler = __webpack_require__(32);
 		var async = __webpack_require__(24).asap;
 
 		return makePromise({
@@ -1912,7 +1971,7 @@
 
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1971,51 +2030,6 @@
 
 
 
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableRoot
-	 */
-
-	"use strict";
-
-	if (process.env.NODE_ENV !== 'production') {
-	  var ExecutionEnvironment = __webpack_require__(29);
-	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
-
-	    if (!Object.assign) {
-	      console.error(
-	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
-	      );
-	    }
-	  }
-	}
-
-	var FixedDataTable = __webpack_require__(30);
-	var FixedDataTableColumn = __webpack_require__(31);
-	var FixedDataTableColumnGroup = __webpack_require__(32);
-
-	var FixedDataTableRoot = {
-	  Column: FixedDataTableColumn,
-	  ColumnGroup: FixedDataTableColumnGroup,
-	  Table: FixedDataTable,
-	};
-
-	FixedDataTableRoot.version = '0.1.2';
-
-	module.exports = FixedDataTableRoot;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
 
 /***/ },
 /* 23 */
@@ -2108,1129 +2122,6 @@
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		return {
-			pending: toPendingState,
-			fulfilled: toFulfilledState,
-			rejected: toRejectedState,
-			inspect: inspect
-		};
-
-		function toPendingState() {
-			return { state: 'pending' };
-		}
-
-		function toRejectedState(e) {
-			return { state: 'rejected', reason: e };
-		}
-
-		function toFulfilledState(x) {
-			return { state: 'fulfilled', value: x };
-		}
-
-		function inspect(handler) {
-			var state = handler.state();
-			return state === 0 ? toPendingState()
-				 : state > 0   ? toFulfilledState(handler.value)
-				               : toRejectedState(handler.value);
-		}
-
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		return {
-			formatError: formatError,
-			formatObject: formatObject,
-			tryStringify: tryStringify
-		};
-
-		/**
-		 * Format an error into a string.  If e is an Error and has a stack property,
-		 * it's returned.  Otherwise, e is formatted using formatObject, with a
-		 * warning added about e not being a proper Error.
-		 * @param {*} e
-		 * @returns {String} formatted string, suitable for output to developers
-		 */
-		function formatError(e) {
-			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
-			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
-		}
-
-		/**
-		 * Format an object, detecting "plain" objects and running them through
-		 * JSON.stringify if possible.
-		 * @param {Object} o
-		 * @returns {string}
-		 */
-		function formatObject(o) {
-			var s = String(o);
-			if(s === '[object Object]' && typeof JSON !== 'undefined') {
-				s = tryStringify(o, s);
-			}
-			return s;
-		}
-
-		/**
-		 * Try to return the result of JSON.stringify(x).  If that fails, return
-		 * defaultValue
-		 * @param {*} x
-		 * @param {*} defaultValue
-		 * @returns {String|*} JSON.stringify(x) or defaultValue
-		 */
-		function tryStringify(x, defaultValue) {
-			try {
-				return JSON.stringify(x);
-			} catch(e) {
-				return defaultValue;
-			}
-		}
-
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		return function makePromise(environment) {
-
-			var tasks = environment.scheduler;
-			var emitRejection = initEmitRejection();
-
-			var objectCreate = Object.create ||
-				function(proto) {
-					function Child() {}
-					Child.prototype = proto;
-					return new Child();
-				};
-
-			/**
-			 * Create a promise whose fate is determined by resolver
-			 * @constructor
-			 * @returns {Promise} promise
-			 * @name Promise
-			 */
-			function Promise(resolver, handler) {
-				this._handler = resolver === Handler ? handler : init(resolver);
-			}
-
-			/**
-			 * Run the supplied resolver
-			 * @param resolver
-			 * @returns {Pending}
-			 */
-			function init(resolver) {
-				var handler = new Pending();
-
-				try {
-					resolver(promiseResolve, promiseReject, promiseNotify);
-				} catch (e) {
-					promiseReject(e);
-				}
-
-				return handler;
-
-				/**
-				 * Transition from pre-resolution state to post-resolution state, notifying
-				 * all listeners of the ultimate fulfillment or rejection
-				 * @param {*} x resolution value
-				 */
-				function promiseResolve (x) {
-					handler.resolve(x);
-				}
-				/**
-				 * Reject this promise with reason, which will be used verbatim
-				 * @param {Error|*} reason rejection reason, strongly suggested
-				 *   to be an Error type
-				 */
-				function promiseReject (reason) {
-					handler.reject(reason);
-				}
-
-				/**
-				 * @deprecated
-				 * Issue a progress event, notifying all progress listeners
-				 * @param {*} x progress event payload to pass to all listeners
-				 */
-				function promiseNotify (x) {
-					handler.notify(x);
-				}
-			}
-
-			// Creation
-
-			Promise.resolve = resolve;
-			Promise.reject = reject;
-			Promise.never = never;
-
-			Promise._defer = defer;
-			Promise._handler = getHandler;
-
-			/**
-			 * Returns a trusted promise. If x is already a trusted promise, it is
-			 * returned, otherwise returns a new trusted Promise which follows x.
-			 * @param  {*} x
-			 * @return {Promise} promise
-			 */
-			function resolve(x) {
-				return isPromise(x) ? x
-					: new Promise(Handler, new Async(getHandler(x)));
-			}
-
-			/**
-			 * Return a reject promise with x as its reason (x is used verbatim)
-			 * @param {*} x
-			 * @returns {Promise} rejected promise
-			 */
-			function reject(x) {
-				return new Promise(Handler, new Async(new Rejected(x)));
-			}
-
-			/**
-			 * Return a promise that remains pending forever
-			 * @returns {Promise} forever-pending promise.
-			 */
-			function never() {
-				return foreverPendingPromise; // Should be frozen
-			}
-
-			/**
-			 * Creates an internal {promise, resolver} pair
-			 * @private
-			 * @returns {Promise}
-			 */
-			function defer() {
-				return new Promise(Handler, new Pending());
-			}
-
-			// Transformation and flow control
-
-			/**
-			 * Transform this promise's fulfillment value, returning a new Promise
-			 * for the transformed result.  If the promise cannot be fulfilled, onRejected
-			 * is called with the reason.  onProgress *may* be called with updates toward
-			 * this promise's fulfillment.
-			 * @param {function=} onFulfilled fulfillment handler
-			 * @param {function=} onRejected rejection handler
-			 * @param {function=} onProgress @deprecated progress handler
-			 * @return {Promise} new promise
-			 */
-			Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
-				var parent = this._handler;
-				var state = parent.join().state();
-
-				if ((typeof onFulfilled !== 'function' && state > 0) ||
-					(typeof onRejected !== 'function' && state < 0)) {
-					// Short circuit: value will not change, simply share handler
-					return new this.constructor(Handler, parent);
-				}
-
-				var p = this._beget();
-				var child = p._handler;
-
-				parent.chain(child, parent.receiver, onFulfilled, onRejected, onProgress);
-
-				return p;
-			};
-
-			/**
-			 * If this promise cannot be fulfilled due to an error, call onRejected to
-			 * handle the error. Shortcut for .then(undefined, onRejected)
-			 * @param {function?} onRejected
-			 * @return {Promise}
-			 */
-			Promise.prototype['catch'] = function(onRejected) {
-				return this.then(void 0, onRejected);
-			};
-
-			/**
-			 * Creates a new, pending promise of the same type as this promise
-			 * @private
-			 * @returns {Promise}
-			 */
-			Promise.prototype._beget = function() {
-				return begetFrom(this._handler, this.constructor);
-			};
-
-			function begetFrom(parent, Promise) {
-				var child = new Pending(parent.receiver, parent.join().context);
-				return new Promise(Handler, child);
-			}
-
-			// Array combinators
-
-			Promise.all = all;
-			Promise.race = race;
-			Promise._traverse = traverse;
-
-			/**
-			 * Return a promise that will fulfill when all promises in the
-			 * input array have fulfilled, or will reject when one of the
-			 * promises rejects.
-			 * @param {array} promises array of promises
-			 * @returns {Promise} promise for array of fulfillment values
-			 */
-			function all(promises) {
-				return traverseWith(snd, null, promises);
-			}
-
-			/**
-			 * Array<Promise<X>> -> Promise<Array<f(X)>>
-			 * @private
-			 * @param {function} f function to apply to each promise's value
-			 * @param {Array} promises array of promises
-			 * @returns {Promise} promise for transformed values
-			 */
-			function traverse(f, promises) {
-				return traverseWith(tryCatch2, f, promises);
-			}
-
-			function traverseWith(tryMap, f, promises) {
-				var handler = typeof f === 'function' ? mapAt : settleAt;
-
-				var resolver = new Pending();
-				var pending = promises.length >>> 0;
-				var results = new Array(pending);
-
-				for (var i = 0, x; i < promises.length && !resolver.resolved; ++i) {
-					x = promises[i];
-
-					if (x === void 0 && !(i in promises)) {
-						--pending;
-						continue;
-					}
-
-					traverseAt(promises, handler, i, x, resolver);
-				}
-
-				if(pending === 0) {
-					resolver.become(new Fulfilled(results));
-				}
-
-				return new Promise(Handler, resolver);
-
-				function mapAt(i, x, resolver) {
-					if(!resolver.resolved) {
-						traverseAt(promises, settleAt, i, tryMap(f, x, i), resolver);
-					}
-				}
-
-				function settleAt(i, x, resolver) {
-					results[i] = x;
-					if(--pending === 0) {
-						resolver.become(new Fulfilled(results));
-					}
-				}
-			}
-
-			function traverseAt(promises, handler, i, x, resolver) {
-				if (maybeThenable(x)) {
-					var h = getHandlerMaybeThenable(x);
-					var s = h.state();
-
-					if (s === 0) {
-						h.fold(handler, i, void 0, resolver);
-					} else if (s > 0) {
-						handler(i, h.value, resolver);
-					} else {
-						resolver.become(h);
-						visitRemaining(promises, i+1, h);
-					}
-				} else {
-					handler(i, x, resolver);
-				}
-			}
-
-			Promise._visitRemaining = visitRemaining;
-			function visitRemaining(promises, start, handler) {
-				for(var i=start; i<promises.length; ++i) {
-					markAsHandled(getHandler(promises[i]), handler);
-				}
-			}
-
-			function markAsHandled(h, handler) {
-				if(h === handler) {
-					return;
-				}
-
-				var s = h.state();
-				if(s === 0) {
-					h.visit(h, void 0, h._unreport);
-				} else if(s < 0) {
-					h._unreport();
-				}
-			}
-
-			/**
-			 * Fulfill-reject competitive race. Return a promise that will settle
-			 * to the same state as the earliest input promise to settle.
-			 *
-			 * WARNING: The ES6 Promise spec requires that race()ing an empty array
-			 * must return a promise that is pending forever.  This implementation
-			 * returns a singleton forever-pending promise, the same singleton that is
-			 * returned by Promise.never(), thus can be checked with ===
-			 *
-			 * @param {array} promises array of promises to race
-			 * @returns {Promise} if input is non-empty, a promise that will settle
-			 * to the same outcome as the earliest input promise to settle. if empty
-			 * is empty, returns a promise that will never settle.
-			 */
-			function race(promises) {
-				if(typeof promises !== 'object' || promises === null) {
-					return reject(new TypeError('non-iterable passed to race()'));
-				}
-
-				// Sigh, race([]) is untestable unless we return *something*
-				// that is recognizable without calling .then() on it.
-				return promises.length === 0 ? never()
-					 : promises.length === 1 ? resolve(promises[0])
-					 : runRace(promises);
-			}
-
-			function runRace(promises) {
-				var resolver = new Pending();
-				var i, x, h;
-				for(i=0; i<promises.length; ++i) {
-					x = promises[i];
-					if (x === void 0 && !(i in promises)) {
-						continue;
-					}
-
-					h = getHandler(x);
-					if(h.state() !== 0) {
-						resolver.become(h);
-						visitRemaining(promises, i+1, h);
-						break;
-					} else {
-						h.visit(resolver, resolver.resolve, resolver.reject);
-					}
-				}
-				return new Promise(Handler, resolver);
-			}
-
-			// Promise internals
-			// Below this, everything is @private
-
-			/**
-			 * Get an appropriate handler for x, without checking for cycles
-			 * @param {*} x
-			 * @returns {object} handler
-			 */
-			function getHandler(x) {
-				if(isPromise(x)) {
-					return x._handler.join();
-				}
-				return maybeThenable(x) ? getHandlerUntrusted(x) : new Fulfilled(x);
-			}
-
-			/**
-			 * Get a handler for thenable x.
-			 * NOTE: You must only call this if maybeThenable(x) == true
-			 * @param {object|function|Promise} x
-			 * @returns {object} handler
-			 */
-			function getHandlerMaybeThenable(x) {
-				return isPromise(x) ? x._handler.join() : getHandlerUntrusted(x);
-			}
-
-			/**
-			 * Get a handler for potentially untrusted thenable x
-			 * @param {*} x
-			 * @returns {object} handler
-			 */
-			function getHandlerUntrusted(x) {
-				try {
-					var untrustedThen = x.then;
-					return typeof untrustedThen === 'function'
-						? new Thenable(untrustedThen, x)
-						: new Fulfilled(x);
-				} catch(e) {
-					return new Rejected(e);
-				}
-			}
-
-			/**
-			 * Handler for a promise that is pending forever
-			 * @constructor
-			 */
-			function Handler() {}
-
-			Handler.prototype.when
-				= Handler.prototype.become
-				= Handler.prototype.notify // deprecated
-				= Handler.prototype.fail
-				= Handler.prototype._unreport
-				= Handler.prototype._report
-				= noop;
-
-			Handler.prototype._state = 0;
-
-			Handler.prototype.state = function() {
-				return this._state;
-			};
-
-			/**
-			 * Recursively collapse handler chain to find the handler
-			 * nearest to the fully resolved value.
-			 * @returns {object} handler nearest the fully resolved value
-			 */
-			Handler.prototype.join = function() {
-				var h = this;
-				while(h.handler !== void 0) {
-					h = h.handler;
-				}
-				return h;
-			};
-
-			Handler.prototype.chain = function(to, receiver, fulfilled, rejected, progress) {
-				this.when({
-					resolver: to,
-					receiver: receiver,
-					fulfilled: fulfilled,
-					rejected: rejected,
-					progress: progress
-				});
-			};
-
-			Handler.prototype.visit = function(receiver, fulfilled, rejected, progress) {
-				this.chain(failIfRejected, receiver, fulfilled, rejected, progress);
-			};
-
-			Handler.prototype.fold = function(f, z, c, to) {
-				this.when(new Fold(f, z, c, to));
-			};
-
-			/**
-			 * Handler that invokes fail() on any handler it becomes
-			 * @constructor
-			 */
-			function FailIfRejected() {}
-
-			inherit(Handler, FailIfRejected);
-
-			FailIfRejected.prototype.become = function(h) {
-				h.fail();
-			};
-
-			var failIfRejected = new FailIfRejected();
-
-			/**
-			 * Handler that manages a queue of consumers waiting on a pending promise
-			 * @constructor
-			 */
-			function Pending(receiver, inheritedContext) {
-				Promise.createContext(this, inheritedContext);
-
-				this.consumers = void 0;
-				this.receiver = receiver;
-				this.handler = void 0;
-				this.resolved = false;
-			}
-
-			inherit(Handler, Pending);
-
-			Pending.prototype._state = 0;
-
-			Pending.prototype.resolve = function(x) {
-				this.become(getHandler(x));
-			};
-
-			Pending.prototype.reject = function(x) {
-				if(this.resolved) {
-					return;
-				}
-
-				this.become(new Rejected(x));
-			};
-
-			Pending.prototype.join = function() {
-				if (!this.resolved) {
-					return this;
-				}
-
-				var h = this;
-
-				while (h.handler !== void 0) {
-					h = h.handler;
-					if (h === this) {
-						return this.handler = cycle();
-					}
-				}
-
-				return h;
-			};
-
-			Pending.prototype.run = function() {
-				var q = this.consumers;
-				var handler = this.handler;
-				this.handler = this.handler.join();
-				this.consumers = void 0;
-
-				for (var i = 0; i < q.length; ++i) {
-					handler.when(q[i]);
-				}
-			};
-
-			Pending.prototype.become = function(handler) {
-				if(this.resolved) {
-					return;
-				}
-
-				this.resolved = true;
-				this.handler = handler;
-				if(this.consumers !== void 0) {
-					tasks.enqueue(this);
-				}
-
-				if(this.context !== void 0) {
-					handler._report(this.context);
-				}
-			};
-
-			Pending.prototype.when = function(continuation) {
-				if(this.resolved) {
-					tasks.enqueue(new ContinuationTask(continuation, this.handler));
-				} else {
-					if(this.consumers === void 0) {
-						this.consumers = [continuation];
-					} else {
-						this.consumers.push(continuation);
-					}
-				}
-			};
-
-			/**
-			 * @deprecated
-			 */
-			Pending.prototype.notify = function(x) {
-				if(!this.resolved) {
-					tasks.enqueue(new ProgressTask(x, this));
-				}
-			};
-
-			Pending.prototype.fail = function(context) {
-				var c = typeof context === 'undefined' ? this.context : context;
-				this.resolved && this.handler.join().fail(c);
-			};
-
-			Pending.prototype._report = function(context) {
-				this.resolved && this.handler.join()._report(context);
-			};
-
-			Pending.prototype._unreport = function() {
-				this.resolved && this.handler.join()._unreport();
-			};
-
-			/**
-			 * Wrap another handler and force it into a future stack
-			 * @param {object} handler
-			 * @constructor
-			 */
-			function Async(handler) {
-				this.handler = handler;
-			}
-
-			inherit(Handler, Async);
-
-			Async.prototype.when = function(continuation) {
-				tasks.enqueue(new ContinuationTask(continuation, this));
-			};
-
-			Async.prototype._report = function(context) {
-				this.join()._report(context);
-			};
-
-			Async.prototype._unreport = function() {
-				this.join()._unreport();
-			};
-
-			/**
-			 * Handler that wraps an untrusted thenable and assimilates it in a future stack
-			 * @param {function} then
-			 * @param {{then: function}} thenable
-			 * @constructor
-			 */
-			function Thenable(then, thenable) {
-				Pending.call(this);
-				tasks.enqueue(new AssimilateTask(then, thenable, this));
-			}
-
-			inherit(Pending, Thenable);
-
-			/**
-			 * Handler for a fulfilled promise
-			 * @param {*} x fulfillment value
-			 * @constructor
-			 */
-			function Fulfilled(x) {
-				Promise.createContext(this);
-				this.value = x;
-			}
-
-			inherit(Handler, Fulfilled);
-
-			Fulfilled.prototype._state = 1;
-
-			Fulfilled.prototype.fold = function(f, z, c, to) {
-				runContinuation3(f, z, this, c, to);
-			};
-
-			Fulfilled.prototype.when = function(cont) {
-				runContinuation1(cont.fulfilled, this, cont.receiver, cont.resolver);
-			};
-
-			var errorId = 0;
-
-			/**
-			 * Handler for a rejected promise
-			 * @param {*} x rejection reason
-			 * @constructor
-			 */
-			function Rejected(x) {
-				Promise.createContext(this);
-
-				this.id = ++errorId;
-				this.value = x;
-				this.handled = false;
-				this.reported = false;
-
-				this._report();
-			}
-
-			inherit(Handler, Rejected);
-
-			Rejected.prototype._state = -1;
-
-			Rejected.prototype.fold = function(f, z, c, to) {
-				to.become(this);
-			};
-
-			Rejected.prototype.when = function(cont) {
-				if(typeof cont.rejected === 'function') {
-					this._unreport();
-				}
-				runContinuation1(cont.rejected, this, cont.receiver, cont.resolver);
-			};
-
-			Rejected.prototype._report = function(context) {
-				tasks.afterQueue(new ReportTask(this, context));
-			};
-
-			Rejected.prototype._unreport = function() {
-				if(this.handled) {
-					return;
-				}
-				this.handled = true;
-				tasks.afterQueue(new UnreportTask(this));
-			};
-
-			Rejected.prototype.fail = function(context) {
-				this.reported = true;
-				emitRejection('unhandledRejection', this);
-				Promise.onFatalRejection(this, context === void 0 ? this.context : context);
-			};
-
-			function ReportTask(rejection, context) {
-				this.rejection = rejection;
-				this.context = context;
-			}
-
-			ReportTask.prototype.run = function() {
-				if(!this.rejection.handled && !this.rejection.reported) {
-					this.rejection.reported = true;
-					emitRejection('unhandledRejection', this.rejection) ||
-						Promise.onPotentiallyUnhandledRejection(this.rejection, this.context);
-				}
-			};
-
-			function UnreportTask(rejection) {
-				this.rejection = rejection;
-			}
-
-			UnreportTask.prototype.run = function() {
-				if(this.rejection.reported) {
-					emitRejection('rejectionHandled', this.rejection) ||
-						Promise.onPotentiallyUnhandledRejectionHandled(this.rejection);
-				}
-			};
-
-			// Unhandled rejection hooks
-			// By default, everything is a noop
-
-			Promise.createContext
-				= Promise.enterContext
-				= Promise.exitContext
-				= Promise.onPotentiallyUnhandledRejection
-				= Promise.onPotentiallyUnhandledRejectionHandled
-				= Promise.onFatalRejection
-				= noop;
-
-			// Errors and singletons
-
-			var foreverPendingHandler = new Handler();
-			var foreverPendingPromise = new Promise(Handler, foreverPendingHandler);
-
-			function cycle() {
-				return new Rejected(new TypeError('Promise cycle'));
-			}
-
-			// Task runners
-
-			/**
-			 * Run a single consumer
-			 * @constructor
-			 */
-			function ContinuationTask(continuation, handler) {
-				this.continuation = continuation;
-				this.handler = handler;
-			}
-
-			ContinuationTask.prototype.run = function() {
-				this.handler.join().when(this.continuation);
-			};
-
-			/**
-			 * Run a queue of progress handlers
-			 * @constructor
-			 */
-			function ProgressTask(value, handler) {
-				this.handler = handler;
-				this.value = value;
-			}
-
-			ProgressTask.prototype.run = function() {
-				var q = this.handler.consumers;
-				if(q === void 0) {
-					return;
-				}
-
-				for (var c, i = 0; i < q.length; ++i) {
-					c = q[i];
-					runNotify(c.progress, this.value, this.handler, c.receiver, c.resolver);
-				}
-			};
-
-			/**
-			 * Assimilate a thenable, sending it's value to resolver
-			 * @param {function} then
-			 * @param {object|function} thenable
-			 * @param {object} resolver
-			 * @constructor
-			 */
-			function AssimilateTask(then, thenable, resolver) {
-				this._then = then;
-				this.thenable = thenable;
-				this.resolver = resolver;
-			}
-
-			AssimilateTask.prototype.run = function() {
-				var h = this.resolver;
-				tryAssimilate(this._then, this.thenable, _resolve, _reject, _notify);
-
-				function _resolve(x) { h.resolve(x); }
-				function _reject(x)  { h.reject(x); }
-				function _notify(x)  { h.notify(x); }
-			};
-
-			function tryAssimilate(then, thenable, resolve, reject, notify) {
-				try {
-					then.call(thenable, resolve, reject, notify);
-				} catch (e) {
-					reject(e);
-				}
-			}
-
-			/**
-			 * Fold a handler value with z
-			 * @constructor
-			 */
-			function Fold(f, z, c, to) {
-				this.f = f; this.z = z; this.c = c; this.to = to;
-				this.resolver = failIfRejected;
-				this.receiver = this;
-			}
-
-			Fold.prototype.fulfilled = function(x) {
-				this.f.call(this.c, this.z, x, this.to);
-			};
-
-			Fold.prototype.rejected = function(x) {
-				this.to.reject(x);
-			};
-
-			Fold.prototype.progress = function(x) {
-				this.to.notify(x);
-			};
-
-			// Other helpers
-
-			/**
-			 * @param {*} x
-			 * @returns {boolean} true iff x is a trusted Promise
-			 */
-			function isPromise(x) {
-				return x instanceof Promise;
-			}
-
-			/**
-			 * Test just enough to rule out primitives, in order to take faster
-			 * paths in some code
-			 * @param {*} x
-			 * @returns {boolean} false iff x is guaranteed *not* to be a thenable
-			 */
-			function maybeThenable(x) {
-				return (typeof x === 'object' || typeof x === 'function') && x !== null;
-			}
-
-			function runContinuation1(f, h, receiver, next) {
-				if(typeof f !== 'function') {
-					return next.become(h);
-				}
-
-				Promise.enterContext(h);
-				tryCatchReject(f, h.value, receiver, next);
-				Promise.exitContext();
-			}
-
-			function runContinuation3(f, x, h, receiver, next) {
-				if(typeof f !== 'function') {
-					return next.become(h);
-				}
-
-				Promise.enterContext(h);
-				tryCatchReject3(f, x, h.value, receiver, next);
-				Promise.exitContext();
-			}
-
-			/**
-			 * @deprecated
-			 */
-			function runNotify(f, x, h, receiver, next) {
-				if(typeof f !== 'function') {
-					return next.notify(x);
-				}
-
-				Promise.enterContext(h);
-				tryCatchReturn(f, x, receiver, next);
-				Promise.exitContext();
-			}
-
-			function tryCatch2(f, a, b) {
-				try {
-					return f(a, b);
-				} catch(e) {
-					return reject(e);
-				}
-			}
-
-			/**
-			 * Return f.call(thisArg, x), or if it throws return a rejected promise for
-			 * the thrown exception
-			 */
-			function tryCatchReject(f, x, thisArg, next) {
-				try {
-					next.become(getHandler(f.call(thisArg, x)));
-				} catch(e) {
-					next.become(new Rejected(e));
-				}
-			}
-
-			/**
-			 * Same as above, but includes the extra argument parameter.
-			 */
-			function tryCatchReject3(f, x, y, thisArg, next) {
-				try {
-					f.call(thisArg, x, y, next);
-				} catch(e) {
-					next.become(new Rejected(e));
-				}
-			}
-
-			/**
-			 * @deprecated
-			 * Return f.call(thisArg, x), or if it throws, *return* the exception
-			 */
-			function tryCatchReturn(f, x, thisArg, next) {
-				try {
-					next.notify(f.call(thisArg, x));
-				} catch(e) {
-					next.notify(e);
-				}
-			}
-
-			function inherit(Parent, Child) {
-				Child.prototype = objectCreate(Parent.prototype);
-				Child.prototype.constructor = Child;
-			}
-
-			function snd(x, y) {
-				return y;
-			}
-
-			function noop() {}
-
-			function initEmitRejection() {
-				/*global process, self, CustomEvent*/
-				if(typeof process !== 'undefined' && process !== null
-					&& typeof process.emit === 'function') {
-					// Returning falsy here means to call the default
-					// onPotentiallyUnhandledRejection API.  This is safe even in
-					// browserify since process.emit always returns falsy in browserify:
-					// https://github.com/defunctzombie/node-process/blob/master/browser.js#L40-L46
-					return function(type, rejection) {
-						return type === 'unhandledRejection'
-							? process.emit(type, rejection.value, rejection)
-							: process.emit(type, rejection);
-					};
-				} else if(typeof self !== 'undefined' && typeof CustomEvent === 'function') {
-					return (function(noop, self, CustomEvent) {
-						var hasCustomEvent = false;
-						try {
-							var ev = new CustomEvent('unhandledRejection');
-							hasCustomEvent = ev instanceof CustomEvent;
-						} catch (e) {}
-
-						return !hasCustomEvent ? noop : function(type, rejection) {
-							var ev = new CustomEvent(type, {
-								detail: {
-									reason: rejection.value,
-									key: rejection
-								},
-								bubbles: false,
-								cancelable: true
-							});
-
-							return !self.dispatchEvent(ev);
-						};
-					}(noop, self, CustomEvent));
-				}
-
-				return noop;
-			}
-
-			return Promise;
-		};
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		// Credit to Twisol (https://github.com/Twisol) for suggesting
-		// this type of extensible queue + trampoline approach for next-tick conflation.
-
-		/**
-		 * Async task scheduler
-		 * @param {function} async function to schedule a single async function
-		 * @constructor
-		 */
-		function Scheduler(async) {
-			this._async = async;
-			this._running = false;
-
-			this._queue = this;
-			this._queueLen = 0;
-			this._afterQueue = {};
-			this._afterQueueLen = 0;
-
-			var self = this;
-			this.drain = function() {
-				self._drain();
-			};
-		}
-
-		/**
-		 * Enqueue a task
-		 * @param {{ run:function }} task
-		 */
-		Scheduler.prototype.enqueue = function(task) {
-			this._queue[this._queueLen++] = task;
-			this.run();
-		};
-
-		/**
-		 * Enqueue a task to run after the main task queue
-		 * @param {{ run:function }} task
-		 */
-		Scheduler.prototype.afterQueue = function(task) {
-			this._afterQueue[this._afterQueueLen++] = task;
-			this.run();
-		};
-
-		Scheduler.prototype.run = function() {
-			if (!this._running) {
-				this._running = true;
-				this._async(this.drain);
-			}
-		};
-
-		/**
-		 * Drain the handler queue entirely, and then the after queue
-		 */
-		Scheduler.prototype._drain = function() {
-			var i = 0;
-			for (; i < this._queueLen; ++i) {
-				this._queue[i].run();
-				this._queue[i] = void 0;
-			}
-
-			this._queueLen = 0;
-			this._running = false;
-
-			for (i = 0; i < this._afterQueueLen; ++i) {
-				this._afterQueue[i].run();
-				this._afterQueue[i] = void 0;
-			}
-
-			this._afterQueueLen = 0;
-		};
-
-		return Scheduler;
-
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/**
 	 * Copyright (c) 2015, Facebook, Inc.
 	 * All rights reserved.
@@ -3277,7 +2168,7 @@
 
 
 /***/ },
-/* 30 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4309,7 +3200,7 @@
 
 
 /***/ },
-/* 31 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -4467,7 +3358,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
 
 /***/ },
-/* 32 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -4545,6 +3436,1129 @@
 	module.exports = FixedDataTableColumnGroup;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		return {
+			pending: toPendingState,
+			fulfilled: toFulfilledState,
+			rejected: toRejectedState,
+			inspect: inspect
+		};
+
+		function toPendingState() {
+			return { state: 'pending' };
+		}
+
+		function toRejectedState(e) {
+			return { state: 'rejected', reason: e };
+		}
+
+		function toFulfilledState(x) {
+			return { state: 'fulfilled', value: x };
+		}
+
+		function inspect(handler) {
+			var state = handler.state();
+			return state === 0 ? toPendingState()
+				 : state > 0   ? toFulfilledState(handler.value)
+				               : toRejectedState(handler.value);
+		}
+
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(23)));
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		return {
+			formatError: formatError,
+			formatObject: formatObject,
+			tryStringify: tryStringify
+		};
+
+		/**
+		 * Format an error into a string.  If e is an Error and has a stack property,
+		 * it's returned.  Otherwise, e is formatted using formatObject, with a
+		 * warning added about e not being a proper Error.
+		 * @param {*} e
+		 * @returns {String} formatted string, suitable for output to developers
+		 */
+		function formatError(e) {
+			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
+			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
+		}
+
+		/**
+		 * Format an object, detecting "plain" objects and running them through
+		 * JSON.stringify if possible.
+		 * @param {Object} o
+		 * @returns {string}
+		 */
+		function formatObject(o) {
+			var s = String(o);
+			if(s === '[object Object]' && typeof JSON !== 'undefined') {
+				s = tryStringify(o, s);
+			}
+			return s;
+		}
+
+		/**
+		 * Try to return the result of JSON.stringify(x).  If that fails, return
+		 * defaultValue
+		 * @param {*} x
+		 * @param {*} defaultValue
+		 * @returns {String|*} JSON.stringify(x) or defaultValue
+		 */
+		function tryStringify(x, defaultValue) {
+			try {
+				return JSON.stringify(x);
+			} catch(e) {
+				return defaultValue;
+			}
+		}
+
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(23)));
+
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		return function makePromise(environment) {
+
+			var tasks = environment.scheduler;
+			var emitRejection = initEmitRejection();
+
+			var objectCreate = Object.create ||
+				function(proto) {
+					function Child() {}
+					Child.prototype = proto;
+					return new Child();
+				};
+
+			/**
+			 * Create a promise whose fate is determined by resolver
+			 * @constructor
+			 * @returns {Promise} promise
+			 * @name Promise
+			 */
+			function Promise(resolver, handler) {
+				this._handler = resolver === Handler ? handler : init(resolver);
+			}
+
+			/**
+			 * Run the supplied resolver
+			 * @param resolver
+			 * @returns {Pending}
+			 */
+			function init(resolver) {
+				var handler = new Pending();
+
+				try {
+					resolver(promiseResolve, promiseReject, promiseNotify);
+				} catch (e) {
+					promiseReject(e);
+				}
+
+				return handler;
+
+				/**
+				 * Transition from pre-resolution state to post-resolution state, notifying
+				 * all listeners of the ultimate fulfillment or rejection
+				 * @param {*} x resolution value
+				 */
+				function promiseResolve (x) {
+					handler.resolve(x);
+				}
+				/**
+				 * Reject this promise with reason, which will be used verbatim
+				 * @param {Error|*} reason rejection reason, strongly suggested
+				 *   to be an Error type
+				 */
+				function promiseReject (reason) {
+					handler.reject(reason);
+				}
+
+				/**
+				 * @deprecated
+				 * Issue a progress event, notifying all progress listeners
+				 * @param {*} x progress event payload to pass to all listeners
+				 */
+				function promiseNotify (x) {
+					handler.notify(x);
+				}
+			}
+
+			// Creation
+
+			Promise.resolve = resolve;
+			Promise.reject = reject;
+			Promise.never = never;
+
+			Promise._defer = defer;
+			Promise._handler = getHandler;
+
+			/**
+			 * Returns a trusted promise. If x is already a trusted promise, it is
+			 * returned, otherwise returns a new trusted Promise which follows x.
+			 * @param  {*} x
+			 * @return {Promise} promise
+			 */
+			function resolve(x) {
+				return isPromise(x) ? x
+					: new Promise(Handler, new Async(getHandler(x)));
+			}
+
+			/**
+			 * Return a reject promise with x as its reason (x is used verbatim)
+			 * @param {*} x
+			 * @returns {Promise} rejected promise
+			 */
+			function reject(x) {
+				return new Promise(Handler, new Async(new Rejected(x)));
+			}
+
+			/**
+			 * Return a promise that remains pending forever
+			 * @returns {Promise} forever-pending promise.
+			 */
+			function never() {
+				return foreverPendingPromise; // Should be frozen
+			}
+
+			/**
+			 * Creates an internal {promise, resolver} pair
+			 * @private
+			 * @returns {Promise}
+			 */
+			function defer() {
+				return new Promise(Handler, new Pending());
+			}
+
+			// Transformation and flow control
+
+			/**
+			 * Transform this promise's fulfillment value, returning a new Promise
+			 * for the transformed result.  If the promise cannot be fulfilled, onRejected
+			 * is called with the reason.  onProgress *may* be called with updates toward
+			 * this promise's fulfillment.
+			 * @param {function=} onFulfilled fulfillment handler
+			 * @param {function=} onRejected rejection handler
+			 * @param {function=} onProgress @deprecated progress handler
+			 * @return {Promise} new promise
+			 */
+			Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
+				var parent = this._handler;
+				var state = parent.join().state();
+
+				if ((typeof onFulfilled !== 'function' && state > 0) ||
+					(typeof onRejected !== 'function' && state < 0)) {
+					// Short circuit: value will not change, simply share handler
+					return new this.constructor(Handler, parent);
+				}
+
+				var p = this._beget();
+				var child = p._handler;
+
+				parent.chain(child, parent.receiver, onFulfilled, onRejected, onProgress);
+
+				return p;
+			};
+
+			/**
+			 * If this promise cannot be fulfilled due to an error, call onRejected to
+			 * handle the error. Shortcut for .then(undefined, onRejected)
+			 * @param {function?} onRejected
+			 * @return {Promise}
+			 */
+			Promise.prototype['catch'] = function(onRejected) {
+				return this.then(void 0, onRejected);
+			};
+
+			/**
+			 * Creates a new, pending promise of the same type as this promise
+			 * @private
+			 * @returns {Promise}
+			 */
+			Promise.prototype._beget = function() {
+				return begetFrom(this._handler, this.constructor);
+			};
+
+			function begetFrom(parent, Promise) {
+				var child = new Pending(parent.receiver, parent.join().context);
+				return new Promise(Handler, child);
+			}
+
+			// Array combinators
+
+			Promise.all = all;
+			Promise.race = race;
+			Promise._traverse = traverse;
+
+			/**
+			 * Return a promise that will fulfill when all promises in the
+			 * input array have fulfilled, or will reject when one of the
+			 * promises rejects.
+			 * @param {array} promises array of promises
+			 * @returns {Promise} promise for array of fulfillment values
+			 */
+			function all(promises) {
+				return traverseWith(snd, null, promises);
+			}
+
+			/**
+			 * Array<Promise<X>> -> Promise<Array<f(X)>>
+			 * @private
+			 * @param {function} f function to apply to each promise's value
+			 * @param {Array} promises array of promises
+			 * @returns {Promise} promise for transformed values
+			 */
+			function traverse(f, promises) {
+				return traverseWith(tryCatch2, f, promises);
+			}
+
+			function traverseWith(tryMap, f, promises) {
+				var handler = typeof f === 'function' ? mapAt : settleAt;
+
+				var resolver = new Pending();
+				var pending = promises.length >>> 0;
+				var results = new Array(pending);
+
+				for (var i = 0, x; i < promises.length && !resolver.resolved; ++i) {
+					x = promises[i];
+
+					if (x === void 0 && !(i in promises)) {
+						--pending;
+						continue;
+					}
+
+					traverseAt(promises, handler, i, x, resolver);
+				}
+
+				if(pending === 0) {
+					resolver.become(new Fulfilled(results));
+				}
+
+				return new Promise(Handler, resolver);
+
+				function mapAt(i, x, resolver) {
+					if(!resolver.resolved) {
+						traverseAt(promises, settleAt, i, tryMap(f, x, i), resolver);
+					}
+				}
+
+				function settleAt(i, x, resolver) {
+					results[i] = x;
+					if(--pending === 0) {
+						resolver.become(new Fulfilled(results));
+					}
+				}
+			}
+
+			function traverseAt(promises, handler, i, x, resolver) {
+				if (maybeThenable(x)) {
+					var h = getHandlerMaybeThenable(x);
+					var s = h.state();
+
+					if (s === 0) {
+						h.fold(handler, i, void 0, resolver);
+					} else if (s > 0) {
+						handler(i, h.value, resolver);
+					} else {
+						resolver.become(h);
+						visitRemaining(promises, i+1, h);
+					}
+				} else {
+					handler(i, x, resolver);
+				}
+			}
+
+			Promise._visitRemaining = visitRemaining;
+			function visitRemaining(promises, start, handler) {
+				for(var i=start; i<promises.length; ++i) {
+					markAsHandled(getHandler(promises[i]), handler);
+				}
+			}
+
+			function markAsHandled(h, handler) {
+				if(h === handler) {
+					return;
+				}
+
+				var s = h.state();
+				if(s === 0) {
+					h.visit(h, void 0, h._unreport);
+				} else if(s < 0) {
+					h._unreport();
+				}
+			}
+
+			/**
+			 * Fulfill-reject competitive race. Return a promise that will settle
+			 * to the same state as the earliest input promise to settle.
+			 *
+			 * WARNING: The ES6 Promise spec requires that race()ing an empty array
+			 * must return a promise that is pending forever.  This implementation
+			 * returns a singleton forever-pending promise, the same singleton that is
+			 * returned by Promise.never(), thus can be checked with ===
+			 *
+			 * @param {array} promises array of promises to race
+			 * @returns {Promise} if input is non-empty, a promise that will settle
+			 * to the same outcome as the earliest input promise to settle. if empty
+			 * is empty, returns a promise that will never settle.
+			 */
+			function race(promises) {
+				if(typeof promises !== 'object' || promises === null) {
+					return reject(new TypeError('non-iterable passed to race()'));
+				}
+
+				// Sigh, race([]) is untestable unless we return *something*
+				// that is recognizable without calling .then() on it.
+				return promises.length === 0 ? never()
+					 : promises.length === 1 ? resolve(promises[0])
+					 : runRace(promises);
+			}
+
+			function runRace(promises) {
+				var resolver = new Pending();
+				var i, x, h;
+				for(i=0; i<promises.length; ++i) {
+					x = promises[i];
+					if (x === void 0 && !(i in promises)) {
+						continue;
+					}
+
+					h = getHandler(x);
+					if(h.state() !== 0) {
+						resolver.become(h);
+						visitRemaining(promises, i+1, h);
+						break;
+					} else {
+						h.visit(resolver, resolver.resolve, resolver.reject);
+					}
+				}
+				return new Promise(Handler, resolver);
+			}
+
+			// Promise internals
+			// Below this, everything is @private
+
+			/**
+			 * Get an appropriate handler for x, without checking for cycles
+			 * @param {*} x
+			 * @returns {object} handler
+			 */
+			function getHandler(x) {
+				if(isPromise(x)) {
+					return x._handler.join();
+				}
+				return maybeThenable(x) ? getHandlerUntrusted(x) : new Fulfilled(x);
+			}
+
+			/**
+			 * Get a handler for thenable x.
+			 * NOTE: You must only call this if maybeThenable(x) == true
+			 * @param {object|function|Promise} x
+			 * @returns {object} handler
+			 */
+			function getHandlerMaybeThenable(x) {
+				return isPromise(x) ? x._handler.join() : getHandlerUntrusted(x);
+			}
+
+			/**
+			 * Get a handler for potentially untrusted thenable x
+			 * @param {*} x
+			 * @returns {object} handler
+			 */
+			function getHandlerUntrusted(x) {
+				try {
+					var untrustedThen = x.then;
+					return typeof untrustedThen === 'function'
+						? new Thenable(untrustedThen, x)
+						: new Fulfilled(x);
+				} catch(e) {
+					return new Rejected(e);
+				}
+			}
+
+			/**
+			 * Handler for a promise that is pending forever
+			 * @constructor
+			 */
+			function Handler() {}
+
+			Handler.prototype.when
+				= Handler.prototype.become
+				= Handler.prototype.notify // deprecated
+				= Handler.prototype.fail
+				= Handler.prototype._unreport
+				= Handler.prototype._report
+				= noop;
+
+			Handler.prototype._state = 0;
+
+			Handler.prototype.state = function() {
+				return this._state;
+			};
+
+			/**
+			 * Recursively collapse handler chain to find the handler
+			 * nearest to the fully resolved value.
+			 * @returns {object} handler nearest the fully resolved value
+			 */
+			Handler.prototype.join = function() {
+				var h = this;
+				while(h.handler !== void 0) {
+					h = h.handler;
+				}
+				return h;
+			};
+
+			Handler.prototype.chain = function(to, receiver, fulfilled, rejected, progress) {
+				this.when({
+					resolver: to,
+					receiver: receiver,
+					fulfilled: fulfilled,
+					rejected: rejected,
+					progress: progress
+				});
+			};
+
+			Handler.prototype.visit = function(receiver, fulfilled, rejected, progress) {
+				this.chain(failIfRejected, receiver, fulfilled, rejected, progress);
+			};
+
+			Handler.prototype.fold = function(f, z, c, to) {
+				this.when(new Fold(f, z, c, to));
+			};
+
+			/**
+			 * Handler that invokes fail() on any handler it becomes
+			 * @constructor
+			 */
+			function FailIfRejected() {}
+
+			inherit(Handler, FailIfRejected);
+
+			FailIfRejected.prototype.become = function(h) {
+				h.fail();
+			};
+
+			var failIfRejected = new FailIfRejected();
+
+			/**
+			 * Handler that manages a queue of consumers waiting on a pending promise
+			 * @constructor
+			 */
+			function Pending(receiver, inheritedContext) {
+				Promise.createContext(this, inheritedContext);
+
+				this.consumers = void 0;
+				this.receiver = receiver;
+				this.handler = void 0;
+				this.resolved = false;
+			}
+
+			inherit(Handler, Pending);
+
+			Pending.prototype._state = 0;
+
+			Pending.prototype.resolve = function(x) {
+				this.become(getHandler(x));
+			};
+
+			Pending.prototype.reject = function(x) {
+				if(this.resolved) {
+					return;
+				}
+
+				this.become(new Rejected(x));
+			};
+
+			Pending.prototype.join = function() {
+				if (!this.resolved) {
+					return this;
+				}
+
+				var h = this;
+
+				while (h.handler !== void 0) {
+					h = h.handler;
+					if (h === this) {
+						return this.handler = cycle();
+					}
+				}
+
+				return h;
+			};
+
+			Pending.prototype.run = function() {
+				var q = this.consumers;
+				var handler = this.handler;
+				this.handler = this.handler.join();
+				this.consumers = void 0;
+
+				for (var i = 0; i < q.length; ++i) {
+					handler.when(q[i]);
+				}
+			};
+
+			Pending.prototype.become = function(handler) {
+				if(this.resolved) {
+					return;
+				}
+
+				this.resolved = true;
+				this.handler = handler;
+				if(this.consumers !== void 0) {
+					tasks.enqueue(this);
+				}
+
+				if(this.context !== void 0) {
+					handler._report(this.context);
+				}
+			};
+
+			Pending.prototype.when = function(continuation) {
+				if(this.resolved) {
+					tasks.enqueue(new ContinuationTask(continuation, this.handler));
+				} else {
+					if(this.consumers === void 0) {
+						this.consumers = [continuation];
+					} else {
+						this.consumers.push(continuation);
+					}
+				}
+			};
+
+			/**
+			 * @deprecated
+			 */
+			Pending.prototype.notify = function(x) {
+				if(!this.resolved) {
+					tasks.enqueue(new ProgressTask(x, this));
+				}
+			};
+
+			Pending.prototype.fail = function(context) {
+				var c = typeof context === 'undefined' ? this.context : context;
+				this.resolved && this.handler.join().fail(c);
+			};
+
+			Pending.prototype._report = function(context) {
+				this.resolved && this.handler.join()._report(context);
+			};
+
+			Pending.prototype._unreport = function() {
+				this.resolved && this.handler.join()._unreport();
+			};
+
+			/**
+			 * Wrap another handler and force it into a future stack
+			 * @param {object} handler
+			 * @constructor
+			 */
+			function Async(handler) {
+				this.handler = handler;
+			}
+
+			inherit(Handler, Async);
+
+			Async.prototype.when = function(continuation) {
+				tasks.enqueue(new ContinuationTask(continuation, this));
+			};
+
+			Async.prototype._report = function(context) {
+				this.join()._report(context);
+			};
+
+			Async.prototype._unreport = function() {
+				this.join()._unreport();
+			};
+
+			/**
+			 * Handler that wraps an untrusted thenable and assimilates it in a future stack
+			 * @param {function} then
+			 * @param {{then: function}} thenable
+			 * @constructor
+			 */
+			function Thenable(then, thenable) {
+				Pending.call(this);
+				tasks.enqueue(new AssimilateTask(then, thenable, this));
+			}
+
+			inherit(Pending, Thenable);
+
+			/**
+			 * Handler for a fulfilled promise
+			 * @param {*} x fulfillment value
+			 * @constructor
+			 */
+			function Fulfilled(x) {
+				Promise.createContext(this);
+				this.value = x;
+			}
+
+			inherit(Handler, Fulfilled);
+
+			Fulfilled.prototype._state = 1;
+
+			Fulfilled.prototype.fold = function(f, z, c, to) {
+				runContinuation3(f, z, this, c, to);
+			};
+
+			Fulfilled.prototype.when = function(cont) {
+				runContinuation1(cont.fulfilled, this, cont.receiver, cont.resolver);
+			};
+
+			var errorId = 0;
+
+			/**
+			 * Handler for a rejected promise
+			 * @param {*} x rejection reason
+			 * @constructor
+			 */
+			function Rejected(x) {
+				Promise.createContext(this);
+
+				this.id = ++errorId;
+				this.value = x;
+				this.handled = false;
+				this.reported = false;
+
+				this._report();
+			}
+
+			inherit(Handler, Rejected);
+
+			Rejected.prototype._state = -1;
+
+			Rejected.prototype.fold = function(f, z, c, to) {
+				to.become(this);
+			};
+
+			Rejected.prototype.when = function(cont) {
+				if(typeof cont.rejected === 'function') {
+					this._unreport();
+				}
+				runContinuation1(cont.rejected, this, cont.receiver, cont.resolver);
+			};
+
+			Rejected.prototype._report = function(context) {
+				tasks.afterQueue(new ReportTask(this, context));
+			};
+
+			Rejected.prototype._unreport = function() {
+				if(this.handled) {
+					return;
+				}
+				this.handled = true;
+				tasks.afterQueue(new UnreportTask(this));
+			};
+
+			Rejected.prototype.fail = function(context) {
+				this.reported = true;
+				emitRejection('unhandledRejection', this);
+				Promise.onFatalRejection(this, context === void 0 ? this.context : context);
+			};
+
+			function ReportTask(rejection, context) {
+				this.rejection = rejection;
+				this.context = context;
+			}
+
+			ReportTask.prototype.run = function() {
+				if(!this.rejection.handled && !this.rejection.reported) {
+					this.rejection.reported = true;
+					emitRejection('unhandledRejection', this.rejection) ||
+						Promise.onPotentiallyUnhandledRejection(this.rejection, this.context);
+				}
+			};
+
+			function UnreportTask(rejection) {
+				this.rejection = rejection;
+			}
+
+			UnreportTask.prototype.run = function() {
+				if(this.rejection.reported) {
+					emitRejection('rejectionHandled', this.rejection) ||
+						Promise.onPotentiallyUnhandledRejectionHandled(this.rejection);
+				}
+			};
+
+			// Unhandled rejection hooks
+			// By default, everything is a noop
+
+			Promise.createContext
+				= Promise.enterContext
+				= Promise.exitContext
+				= Promise.onPotentiallyUnhandledRejection
+				= Promise.onPotentiallyUnhandledRejectionHandled
+				= Promise.onFatalRejection
+				= noop;
+
+			// Errors and singletons
+
+			var foreverPendingHandler = new Handler();
+			var foreverPendingPromise = new Promise(Handler, foreverPendingHandler);
+
+			function cycle() {
+				return new Rejected(new TypeError('Promise cycle'));
+			}
+
+			// Task runners
+
+			/**
+			 * Run a single consumer
+			 * @constructor
+			 */
+			function ContinuationTask(continuation, handler) {
+				this.continuation = continuation;
+				this.handler = handler;
+			}
+
+			ContinuationTask.prototype.run = function() {
+				this.handler.join().when(this.continuation);
+			};
+
+			/**
+			 * Run a queue of progress handlers
+			 * @constructor
+			 */
+			function ProgressTask(value, handler) {
+				this.handler = handler;
+				this.value = value;
+			}
+
+			ProgressTask.prototype.run = function() {
+				var q = this.handler.consumers;
+				if(q === void 0) {
+					return;
+				}
+
+				for (var c, i = 0; i < q.length; ++i) {
+					c = q[i];
+					runNotify(c.progress, this.value, this.handler, c.receiver, c.resolver);
+				}
+			};
+
+			/**
+			 * Assimilate a thenable, sending it's value to resolver
+			 * @param {function} then
+			 * @param {object|function} thenable
+			 * @param {object} resolver
+			 * @constructor
+			 */
+			function AssimilateTask(then, thenable, resolver) {
+				this._then = then;
+				this.thenable = thenable;
+				this.resolver = resolver;
+			}
+
+			AssimilateTask.prototype.run = function() {
+				var h = this.resolver;
+				tryAssimilate(this._then, this.thenable, _resolve, _reject, _notify);
+
+				function _resolve(x) { h.resolve(x); }
+				function _reject(x)  { h.reject(x); }
+				function _notify(x)  { h.notify(x); }
+			};
+
+			function tryAssimilate(then, thenable, resolve, reject, notify) {
+				try {
+					then.call(thenable, resolve, reject, notify);
+				} catch (e) {
+					reject(e);
+				}
+			}
+
+			/**
+			 * Fold a handler value with z
+			 * @constructor
+			 */
+			function Fold(f, z, c, to) {
+				this.f = f; this.z = z; this.c = c; this.to = to;
+				this.resolver = failIfRejected;
+				this.receiver = this;
+			}
+
+			Fold.prototype.fulfilled = function(x) {
+				this.f.call(this.c, this.z, x, this.to);
+			};
+
+			Fold.prototype.rejected = function(x) {
+				this.to.reject(x);
+			};
+
+			Fold.prototype.progress = function(x) {
+				this.to.notify(x);
+			};
+
+			// Other helpers
+
+			/**
+			 * @param {*} x
+			 * @returns {boolean} true iff x is a trusted Promise
+			 */
+			function isPromise(x) {
+				return x instanceof Promise;
+			}
+
+			/**
+			 * Test just enough to rule out primitives, in order to take faster
+			 * paths in some code
+			 * @param {*} x
+			 * @returns {boolean} false iff x is guaranteed *not* to be a thenable
+			 */
+			function maybeThenable(x) {
+				return (typeof x === 'object' || typeof x === 'function') && x !== null;
+			}
+
+			function runContinuation1(f, h, receiver, next) {
+				if(typeof f !== 'function') {
+					return next.become(h);
+				}
+
+				Promise.enterContext(h);
+				tryCatchReject(f, h.value, receiver, next);
+				Promise.exitContext();
+			}
+
+			function runContinuation3(f, x, h, receiver, next) {
+				if(typeof f !== 'function') {
+					return next.become(h);
+				}
+
+				Promise.enterContext(h);
+				tryCatchReject3(f, x, h.value, receiver, next);
+				Promise.exitContext();
+			}
+
+			/**
+			 * @deprecated
+			 */
+			function runNotify(f, x, h, receiver, next) {
+				if(typeof f !== 'function') {
+					return next.notify(x);
+				}
+
+				Promise.enterContext(h);
+				tryCatchReturn(f, x, receiver, next);
+				Promise.exitContext();
+			}
+
+			function tryCatch2(f, a, b) {
+				try {
+					return f(a, b);
+				} catch(e) {
+					return reject(e);
+				}
+			}
+
+			/**
+			 * Return f.call(thisArg, x), or if it throws return a rejected promise for
+			 * the thrown exception
+			 */
+			function tryCatchReject(f, x, thisArg, next) {
+				try {
+					next.become(getHandler(f.call(thisArg, x)));
+				} catch(e) {
+					next.become(new Rejected(e));
+				}
+			}
+
+			/**
+			 * Same as above, but includes the extra argument parameter.
+			 */
+			function tryCatchReject3(f, x, y, thisArg, next) {
+				try {
+					f.call(thisArg, x, y, next);
+				} catch(e) {
+					next.become(new Rejected(e));
+				}
+			}
+
+			/**
+			 * @deprecated
+			 * Return f.call(thisArg, x), or if it throws, *return* the exception
+			 */
+			function tryCatchReturn(f, x, thisArg, next) {
+				try {
+					next.notify(f.call(thisArg, x));
+				} catch(e) {
+					next.notify(e);
+				}
+			}
+
+			function inherit(Parent, Child) {
+				Child.prototype = objectCreate(Parent.prototype);
+				Child.prototype.constructor = Child;
+			}
+
+			function snd(x, y) {
+				return y;
+			}
+
+			function noop() {}
+
+			function initEmitRejection() {
+				/*global process, self, CustomEvent*/
+				if(typeof process !== 'undefined' && process !== null
+					&& typeof process.emit === 'function') {
+					// Returning falsy here means to call the default
+					// onPotentiallyUnhandledRejection API.  This is safe even in
+					// browserify since process.emit always returns falsy in browserify:
+					// https://github.com/defunctzombie/node-process/blob/master/browser.js#L40-L46
+					return function(type, rejection) {
+						return type === 'unhandledRejection'
+							? process.emit(type, rejection.value, rejection)
+							: process.emit(type, rejection);
+					};
+				} else if(typeof self !== 'undefined' && typeof CustomEvent === 'function') {
+					return (function(noop, self, CustomEvent) {
+						var hasCustomEvent = false;
+						try {
+							var ev = new CustomEvent('unhandledRejection');
+							hasCustomEvent = ev instanceof CustomEvent;
+						} catch (e) {}
+
+						return !hasCustomEvent ? noop : function(type, rejection) {
+							var ev = new CustomEvent(type, {
+								detail: {
+									reason: rejection.value,
+									key: rejection
+								},
+								bubbles: false,
+								cancelable: true
+							});
+
+							return !self.dispatchEvent(ev);
+						};
+					}(noop, self, CustomEvent));
+				}
+
+				return noop;
+			}
+
+			return Promise;
+		};
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(23)));
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		// Credit to Twisol (https://github.com/Twisol) for suggesting
+		// this type of extensible queue + trampoline approach for next-tick conflation.
+
+		/**
+		 * Async task scheduler
+		 * @param {function} async function to schedule a single async function
+		 * @constructor
+		 */
+		function Scheduler(async) {
+			this._async = async;
+			this._running = false;
+
+			this._queue = this;
+			this._queueLen = 0;
+			this._afterQueue = {};
+			this._afterQueueLen = 0;
+
+			var self = this;
+			this.drain = function() {
+				self._drain();
+			};
+		}
+
+		/**
+		 * Enqueue a task
+		 * @param {{ run:function }} task
+		 */
+		Scheduler.prototype.enqueue = function(task) {
+			this._queue[this._queueLen++] = task;
+			this.run();
+		};
+
+		/**
+		 * Enqueue a task to run after the main task queue
+		 * @param {{ run:function }} task
+		 */
+		Scheduler.prototype.afterQueue = function(task) {
+			this._afterQueue[this._afterQueueLen++] = task;
+			this.run();
+		};
+
+		Scheduler.prototype.run = function() {
+			if (!this._running) {
+				this._running = true;
+				this._async(this.drain);
+			}
+		};
+
+		/**
+		 * Drain the handler queue entirely, and then the after queue
+		 */
+		Scheduler.prototype._drain = function() {
+			var i = 0;
+			for (; i < this._queueLen; ++i) {
+				this._queue[i].run();
+				this._queue[i] = void 0;
+			}
+
+			this._queueLen = 0;
+			this._running = false;
+
+			for (i = 0; i < this._afterQueueLen; ++i) {
+				this._afterQueue[i].run();
+				this._afterQueue[i] = void 0;
+			}
+
+			this._afterQueueLen = 0;
+		};
+
+		return Scheduler;
+
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(23)));
+
 
 /***/ },
 /* 33 */
@@ -4636,8 +4650,8 @@
 
 	var Locale = __webpack_require__(36);
 	var React = __webpack_require__(37);
-	var FixedDataTableColumnGroup = __webpack_require__(32);
-	var FixedDataTableColumn = __webpack_require__(31);
+	var FixedDataTableColumnGroup = __webpack_require__(28);
+	var FixedDataTableColumn = __webpack_require__(27);
 
 	var cloneWithProps = __webpack_require__(46);
 
@@ -7857,7 +7871,7 @@
 	 * @typechecks
 	 */
 
-	var ExecutionEnvironment = __webpack_require__(29);
+	var ExecutionEnvironment = __webpack_require__(25);
 
 	var camelize = __webpack_require__(75);
 	var invariant = __webpack_require__(50);
@@ -7920,7 +7934,7 @@
 
 	'use strict';
 
-	var shallowEqual = __webpack_require__(80);
+	var shallowEqual = __webpack_require__(76);
 
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -7974,11 +7988,11 @@
 
 	'use strict';
 
-	var ReactElement = __webpack_require__(76);
-	var ReactPropTransferer = __webpack_require__(77);
+	var ReactElement = __webpack_require__(77);
+	var ReactPropTransferer = __webpack_require__(78);
 
-	var keyOf = __webpack_require__(78);
-	var warning = __webpack_require__(79);
+	var keyOf = __webpack_require__(79);
+	var warning = __webpack_require__(80);
 
 	var CHILDREN_PROP = keyOf({children: null});
 
@@ -8328,7 +8342,7 @@
 
 	'use strict';
 
-	var ExecutionEnvironment = __webpack_require__(29);
+	var ExecutionEnvironment = __webpack_require__(25);
 
 	var useHasFeature;
 	if (ExecutionEnvironment.canUseDOM) {
@@ -9160,6 +9174,54 @@
 /* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule shallowEqual
+	 */
+
+	'use strict';
+
+	/**
+	 * Performs equality by iterating through keys on an object and returning
+	 * false when any key has values which are not strictly equal between
+	 * objA and objB. Returns true when the values of all keys are strictly equal.
+	 *
+	 * @return {boolean}
+	 */
+	function shallowEqual(objA, objB) {
+	  if (objA === objB) {
+	    return true;
+	  }
+	  var key;
+	  // Test for A's keys different from B.
+	  for (key in objA) {
+	    if (objA.hasOwnProperty(key) &&
+	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
+	      return false;
+	    }
+	  }
+	  // Test for B's keys missing from A.
+	  for (key in objB) {
+	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
+	      return false;
+	    }
+	  }
+	  return true;
+	}
+
+	module.exports = shallowEqual;
+
+
+/***/ },
+/* 77 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2014-2015, Facebook, Inc.
 	 * All rights reserved.
@@ -9173,11 +9235,11 @@
 
 	'use strict';
 
-	var ReactContext = __webpack_require__(88);
-	var ReactCurrentOwner = __webpack_require__(89);
+	var ReactContext = __webpack_require__(85);
+	var ReactCurrentOwner = __webpack_require__(86);
 
-	var assign = __webpack_require__(85);
-	var warning = __webpack_require__(79);
+	var assign = __webpack_require__(87);
+	var warning = __webpack_require__(80);
 
 	var RESERVED_PROPS = {
 	  key: true,
@@ -9468,7 +9530,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9484,9 +9546,9 @@
 
 	'use strict';
 
-	var assign = __webpack_require__(85);
-	var emptyFunction = __webpack_require__(86);
-	var joinClasses = __webpack_require__(87);
+	var assign = __webpack_require__(87);
+	var emptyFunction = __webpack_require__(88);
+	var joinClasses = __webpack_require__(89);
 
 	/**
 	 * Creates a transfer strategy that will merge prop values using the supplied
@@ -9582,7 +9644,7 @@
 
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9622,7 +9684,7 @@
 
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -9638,7 +9700,7 @@
 
 	"use strict";
 
-	var emptyFunction = __webpack_require__(86);
+	var emptyFunction = __webpack_require__(88);
 
 	/**
 	 * Similar to invariant but only logs a warning if the condition is not met.
@@ -9686,54 +9748,6 @@
 	module.exports = warning;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
-
-/***/ },
-/* 80 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule shallowEqual
-	 */
-
-	'use strict';
-
-	/**
-	 * Performs equality by iterating through keys on an object and returning
-	 * false when any key has values which are not strictly equal between
-	 * objA and objB. Returns true when the values of all keys are strictly equal.
-	 *
-	 * @return {boolean}
-	 */
-	function shallowEqual(objA, objB) {
-	  if (objA === objB) {
-	    return true;
-	  }
-	  var key;
-	  // Test for A's keys different from B.
-	  for (key in objA) {
-	    if (objA.hasOwnProperty(key) &&
-	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
-	      return false;
-	    }
-	  }
-	  // Test for B's keys missing from A.
-	  for (key in objB) {
-	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
-	      return false;
-	    }
-	  }
-	  return true;
-	}
-
-	module.exports = shallowEqual;
-
 
 /***/ },
 /* 81 */
@@ -10218,142 +10232,6 @@
 /* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright 2014-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Object.assign
-	 */
-
-	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
-
-	'use strict';
-
-	function assign(target, sources) {
-	  if (target == null) {
-	    throw new TypeError('Object.assign target cannot be null or undefined');
-	  }
-
-	  var to = Object(target);
-	  var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
-	    var nextSource = arguments[nextIndex];
-	    if (nextSource == null) {
-	      continue;
-	    }
-
-	    var from = Object(nextSource);
-
-	    // We don't currently support accessors nor proxies. Therefore this
-	    // copy cannot throw. If we ever supported this then we must handle
-	    // exceptions and side-effects. We don't support symbols so they won't
-	    // be transferred.
-
-	    for (var key in from) {
-	      if (hasOwnProperty.call(from, key)) {
-	        to[key] = from[key];
-	      }
-	    }
-	  }
-
-	  return to;
-	}
-
-	module.exports = assign;
-
-
-/***/ },
-/* 86 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule emptyFunction
-	 */
-
-	function makeEmptyFunction(arg) {
-	  return function() {
-	    return arg;
-	  };
-	}
-
-	/**
-	 * This function accepts and discards inputs; it has no side effects. This is
-	 * primarily useful idiomatically for overridable function endpoints which
-	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
-	 */
-	function emptyFunction() {}
-
-	emptyFunction.thatReturns = makeEmptyFunction;
-	emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
-	emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
-	emptyFunction.thatReturnsNull = makeEmptyFunction(null);
-	emptyFunction.thatReturnsThis = function() { return this; };
-	emptyFunction.thatReturnsArgument = function(arg) { return arg; };
-
-	module.exports = emptyFunction;
-
-
-/***/ },
-/* 87 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule joinClasses
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	/**
-	 * Combines multiple className strings into one.
-	 * http://jsperf.com/joinclasses-args-vs-array
-	 *
-	 * @param {...?string} classes
-	 * @return {string}
-	 */
-	function joinClasses(className/*, ... */) {
-	  if (!className) {
-	    className = '';
-	  }
-	  var nextClass;
-	  var argLength = arguments.length;
-	  if (argLength > 1) {
-	    for (var ii = 1; ii < argLength; ii++) {
-	      nextClass = arguments[ii];
-	      if (nextClass) {
-	        className = (className ? className + ' ' : '') + nextClass;
-	      }
-	    }
-	  }
-	  return className;
-	}
-
-	module.exports = joinClasses;
-
-
-/***/ },
-/* 88 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/* WEBPACK VAR INJECTION */(function(process) {/**
 	 * Copyright 2013-2015, Facebook, Inc.
 	 * All rights reserved.
@@ -10367,9 +10245,9 @@
 
 	'use strict';
 
-	var assign = __webpack_require__(85);
+	var assign = __webpack_require__(87);
 	var emptyObject = __webpack_require__(92);
-	var warning = __webpack_require__(79);
+	var warning = __webpack_require__(80);
 
 	var didWarn = false;
 
@@ -10432,7 +10310,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
 
 /***/ },
-/* 89 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10467,6 +10345,142 @@
 	};
 
 	module.exports = ReactCurrentOwner;
+
+
+/***/ },
+/* 87 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2014-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Object.assign
+	 */
+
+	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
+
+	'use strict';
+
+	function assign(target, sources) {
+	  if (target == null) {
+	    throw new TypeError('Object.assign target cannot be null or undefined');
+	  }
+
+	  var to = Object(target);
+	  var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
+	    var nextSource = arguments[nextIndex];
+	    if (nextSource == null) {
+	      continue;
+	    }
+
+	    var from = Object(nextSource);
+
+	    // We don't currently support accessors nor proxies. Therefore this
+	    // copy cannot throw. If we ever supported this then we must handle
+	    // exceptions and side-effects. We don't support symbols so they won't
+	    // be transferred.
+
+	    for (var key in from) {
+	      if (hasOwnProperty.call(from, key)) {
+	        to[key] = from[key];
+	      }
+	    }
+	  }
+
+	  return to;
+	}
+
+	module.exports = assign;
+
+
+/***/ },
+/* 88 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule emptyFunction
+	 */
+
+	function makeEmptyFunction(arg) {
+	  return function() {
+	    return arg;
+	  };
+	}
+
+	/**
+	 * This function accepts and discards inputs; it has no side effects. This is
+	 * primarily useful idiomatically for overridable function endpoints which
+	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
+	 */
+	function emptyFunction() {}
+
+	emptyFunction.thatReturns = makeEmptyFunction;
+	emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
+	emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
+	emptyFunction.thatReturnsNull = makeEmptyFunction(null);
+	emptyFunction.thatReturnsThis = function() { return this; };
+	emptyFunction.thatReturnsArgument = function(arg) { return arg; };
+
+	module.exports = emptyFunction;
+
+
+/***/ },
+/* 89 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule joinClasses
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	/**
+	 * Combines multiple className strings into one.
+	 * http://jsperf.com/joinclasses-args-vs-array
+	 *
+	 * @param {...?string} classes
+	 * @return {string}
+	 */
+	function joinClasses(className/*, ... */) {
+	  if (!className) {
+	    className = '';
+	  }
+	  var nextClass;
+	  var argLength = arguments.length;
+	  if (argLength > 1) {
+	    for (var ii = 1; ii < argLength; ii++) {
+	      nextClass = arguments[ii];
+	      if (nextClass) {
+	        className = (className ? className + ' ' : '') + nextClass;
+	      }
+	    }
+	  }
+	  return className;
+	}
+
+	module.exports = joinClasses;
 
 
 /***/ },
@@ -10584,6 +10598,73 @@
 	module.exports = emptyObject;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+
+/***/ },
+/* 93 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = _;
+
+/***/ },
+/* 94 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var FixedDataTable = __webpack_require__(6);
+	var _ = __webpack_require__(93);
+
+	var Table = FixedDataTable.Table;
+	var Column = FixedDataTable.Column;
+
+
+	module.exports = React.createClass({displayName: "exports",
+	    getInitialState: function() {
+		var initialColumnWith = Math.round(this.props.tableWidth / this.props.columnNames.length);
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+		return {"columnWidths": columnWidths};
+	    },
+	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
+		this.state.columnWidths[dataKey] = newColumnWidth;
+	//	isColumnResizing = false;
+	    },
+	    render: function(){
+		var columnNames = this.props.columnNames;
+		var columnWidths = this.state.columnWidths
+
+		return (
+		    React.createElement(Table, {
+			    rowHeight: 50, 
+			    rowGetter: this.props.rowGetter, 
+			    rowsCount: this.props.rowsCount, 
+			    width: this.props.tableWidth, 
+			    height: this.props.tableHeight, 
+			    headerHeight: 50, 
+			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
+
+		      
+			  this.props.columnNames.map(function(name){
+
+			      return (
+				  React.createElement(Column, {
+				  label: name, 
+				  width: columnWidths[name], 			  
+				  dataKey: name, 
+				  isResizable: false}
+				  )
+			      );
+			  })
+		       
+		    )
+		);
+	    }
+	});
+
+
+
+
 
 /***/ }
 /******/ ]);
