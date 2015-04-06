@@ -23,5 +23,5 @@ def init_table(dataset, schema_desc=None):
 
 
 if __name__ == '__main__':
-    table = init_table("fragmentator")
+    table = init_table("all")
     print table.schema

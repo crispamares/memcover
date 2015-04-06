@@ -2,6 +2,7 @@
 var React = require('react');
 var when = require('when'); 
 var d3 = require('d3'); 
+var FixedDataTable = require('fixed-data-table');
 
 var Hello = require('./hello');
 // ----------------------------------------------------------
@@ -47,6 +48,11 @@ rpc.call('init', [])
 
     })
     .then(function() {
+
+	var Table = FixedDataTable.Table;
+//	var Column = FixedDataTable.Column;
+
+
 	React.render(
 	    <div>
               <div className="row">
@@ -54,12 +60,12 @@ rpc.call('init', [])
 		  Clinical data
                 </div>
                 <div className="col-sm-6 well">
-		  Regions
+		  RegionsSSS
                 </div>
               </div>
               <div className="row">
                 <div className="col-sm-12 well">
-		  POOOOO 
+		  PDOPWED
                 </div>
               </div>
 	    </div>

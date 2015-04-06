@@ -1,5 +1,5 @@
 {
- "index": "path", 
+ "index": "measure_id", 
  "attributes": {
   "total population by optical fractionator": {
    "attribute_type": "QUANTITATIVE", 
@@ -7,6 +7,20 @@
    "key": false, 
    "shape": [], 
    "continuous": true
+  }, 
+  "avg volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "measure_id": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": true, 
+   "shape": [], 
+   "continuous": false
   }, 
   "tint": {
    "attribute_type": "CATEGORICAL", 
@@ -22,14 +36,14 @@
    "shape": [], 
    "continuous": false
   }, 
-  "estimated volume (mm)": {
+  "total markers counted": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": false
   }, 
-  "cells/volume (\u00b5m3)": {
+  "cells/volume (mm3)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
@@ -43,19 +57,19 @@
    "shape": [], 
    "continuous": false
   }, 
-  "cells/volume (mm3)": {
+  "% Occupied by plaques": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": true
   }, 
-  "measured volume (\u00b5m3)": {
+  "total nucleators counted": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": true
   }, 
   "CE Schaeffer": {
    "attribute_type": "QUANTITATIVE", 
@@ -64,12 +78,19 @@
    "shape": [], 
    "continuous": true
   }, 
-  "path": {
-   "attribute_type": "CATEGORICAL", 
+  "estimated volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
-   "key": true, 
+   "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": true
+  }, 
+  "CE Gundersen": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
   }
  }
 }
