@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="32.819801"
+   height="187.65906"
+   id="svg2">
+  <defs
+     id="defs4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(-25.763971,-323.2774)"
+     id="layer1">
+    <rect
+       width="31.819801"
+       height="186.65906"
+       x="26.263971"
+       y="323.7774"
+       id="bar"
+       style="color:#000000;fill:#fc3030;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <g
+       transform="translate(0.98637216,3.9064801)"
+       id="g3803">
+      <g
+         transform="matrix(0.81898066,0,0,0.81898066,7.4557339,132.75243)"
+         id="g3002"
+         style="opacity:0.18518521;fill:#4d4d4d">
+        <path
+           d="m 50,49.094482 a 10,10 0 1 1 -20,0 10,10 0 1 1 20,0 z"
+           transform="translate(1.1875,310.19626)"
+           id="path2987"
+           style="color:#000000;fill:#4d4d4d;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.22103;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+        <path
+           d="m 33.40625,63.15625 c -8.705492,6.751164 -9.722202,13.530086 -11.25,20.28125 l 0,26.375 c 1.666667,1.7357 3.333333,2.28875 5,0 l 0,-23.5625 c 0.607612,-4.076209 1.612932,-7.153683 3.5625,-7.875 l 0,17.15625 0,50.71875 6.4375,0 0,-36.40625 c 0,-0.97875 1.763614,-3.28601 4.03125,-3.875 2.263451,0.59271 4.03125,2.89749 4.03125,3.875 l 0,36.40625 6.40625,0 0,-50.71875 0,-17.15625 c 1.949568,0.72131 2.986138,3.79879 3.59375,7.875 l 0,23.5625 c 1.666667,2.28875 3.333333,1.7357 5,0 l 0,-26.375 c -1.527798,-6.75116 -2.544508,-13.53008 -11.25,-20.28125 l -7.53125,0.21875 -0.5,0 -7.53125,-0.21875 z"
+           transform="translate(0,308.2677)"
+           id="path2991"
+           style="fill:#4d4d4d;stroke:#000000;stroke-width:1.22103px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      </g>
+      <text
+         x="42.205673"
+         y="455.8671"
+         id="dorsal"
+         xml:space="preserve"
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"><tspan
+           x="42.205673"
+           y="455.8671"
+           id="tspan3794">01</tspan></text>
+    </g>
+  </g>
+</svg>

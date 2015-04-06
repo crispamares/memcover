@@ -24,6 +24,8 @@ class App(MetaApp):
         Front.instance().get_method('TableSrv.expose_table')(table)
         Front.instance().get_method('DynSelectSrv.expose_dselect')(definition_dselect)
 
+        xlsx_exporter.expose_methods()
+        dist_vis.expose_methods()
 
         return {'table': table_name}
 

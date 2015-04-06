@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <link type="text/css" rel="stylesheet" href="style.css"/>
+    <style type="text/css">
+
+svg {
+  font-size: 14px;
+}
+
+.foreground path {
+  fill: none;
+  stroke-opacity: .5;
+  stroke-width: 2px;
+}
+
+.foreground path.fade {
+  stroke: #000;
+  stroke-opacity: .05;
+}
+
+.legend {
+  font-size: 18px;
+  font-style: oblique;
+}
+
+.legend line {
+  stroke-width: 4px;
+}
+
+.BCN01 {
+  stroke: #1f77b4;
+  color: #1f77b4;
+}
+
+.BCN02 {
+  stroke: #ff7f0e;
+  color: #ff7f0e;
+}
+
+.BCN03 {
+  stroke: #d62728;
+color: #d62728;
+}
+
+.BCN04 {
+  stroke: #9467bd;
+color: #9467bd;
+}
+
+.BCN05 {
+  stroke: #8c564b;
+color: #8c564b;
+}
+
+.BCN06 {
+  stroke: #e377c2;
+color: #e377c2;
+}
+
+.BCN07 {
+  stroke: #7f7f7f;
+color: #7f7f7f;
+}
+
+.BCN08 {
+  stroke: #bcbd22;
+color: #bcbd22;
+}
+
+.BCN09 {
+  stroke: #17becf;
+color: #17becf;
+}
+
+.BCN10 {
+  stroke: #2ca02c;
+     color: #2ca02c;
+}
+
+
+.brush .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.axis line, .axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  text-shadow: 0 1px 0 #fff;
+  cursor: move;
+}
+
+.hide {
+     display: none;
+}
+
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+    <table id="table">
+      <thead></thead>
+      <tbody></tbody>
+    </table> 
+    <script type="text/javascript" src="d3/d3.js"></script>
+    <script type="text/javascript" src="d3/d3.csv.js"></script>
+<script type="text/javascript">
+
+ var patients = ['BCN01','BCN02','BCN03','BCN04','BCN05','BCN06','BCN07','BCN08','BCN09','BCN10'],
+     traits = ["género","duración enfermedad","edad diagnóstico","total population by optical fractionator", "CE Schaeffer", "cells/volume (mm3)"];
+
+var m = [40, 160, 40, 160],
+    w = 1280 - m[1] - m[3],
+    h = 600 - m[0] - m[2];
+
+var x = d3.scale.ordinal().domain(traits).rangePoints([0, w]),
+    y = {};
+
+var line = d3.svg.line(),
+    axis = d3.svg.axis().orient("left"),
+    foreground;
+
+var svg = d3.select("#chart").append("svg:svg")
+    .attr("width", w + m[1] + m[3])
+    .attr("height", h + m[0] + m[2])
+  .append("svg:g")
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+d3.csv("modif2.csv", function(flowers) {
+
+  // Create a scale and brush for each trait.
+  traits.forEach(function(d) {
+    // Coerce values to numbers.
+    flowers.forEach(function(p) { p[d] = +p[d]; });
+
+    y[d] = d3.scale.linear()
+        .domain(d3.extent(flowers, function(p) { return p[d]; }))
+        .range([h, 0]);
+
+    y[d].brush = d3.svg.brush()
+        .y(y[d])
+        .on("brush", brush);
+ });
+
+  // Add a legend.
+  var legend = svg.selectAll("g.legend")
+      .data(patients)
+    .enter().append("svg:g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(1000," + (i * 20 + 100) + ")"; });
+
+  legend.append("svg:line")
+      .attr("class", String)
+      .attr("x2", 8);
+
+  legend.append("svg:text")
+      .attr("x", 12)
+      .attr("dy", ".31em")
+      .text(function(d) { return d; });
+
+  // Add foreground lines.
+  foreground = svg.append("svg:g")
+      .attr("class", "foreground")
+    .selectAll("path")
+      .data(flowers)
+    .enter().append("svg:path")
+      .attr("d", path)
+      .attr("class", function(d) { return d.patient; })
+      .attr("title", function(d) {return d.path;});
+
+  // Add a group element for each trait.
+  var g = svg.selectAll(".trait")
+      .data(traits)
+    .enter().append("svg:g")
+      .attr("class", "trait")
+      .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+      .call(d3.behavior.drag()
+      .origin(function(d) { return {x: x(d)}; })
+      .on("dragstart", dragstart)
+      .on("drag", drag)
+      .on("dragend", dragend));
+
+  // Add an axis and title.
+  g.append("svg:g")
+      .attr("class", "axis")
+      .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+    .append("svg:text")
+      .attr("text-anchor", "middle")
+      .attr("y", -9)
+      .text(String);
+
+  // Add a brush for each axis.
+  g.append("svg:g")
+      .attr("class", "brush")
+      .each(function(d) { d3.select(this).call(y[d].brush); })
+    .selectAll("rect")
+      .attr("x", -8)
+      .attr("width", 16);
+
+  // create the table header
+  var thead = d3.select("thead").selectAll("th")
+		.data(d3.keys(flowers[0]))
+	 .enter().append("th").text(function(d){return d});
+  // fill the table
+  // create rows
+  tr = d3.select("tbody").selectAll("tr")
+	     .data(flowers, function(d){return d.path;})
+	   .enter()
+	     .append("tr")
+	     .attr("class", function(d) {return d.patient;});
+  // cells
+  var td = tr.selectAll("td")
+	     .data(function(d){return d3.values(d)})
+	     .enter().append("td")
+	     .text(function(d) {return d})
+
+
+  function dragstart(d) {
+    i = traits.indexOf(d);
+  }
+
+  function drag(d) {
+    x.range()[i] = d3.event.x;
+    traits.sort(function(a, b) { return x(a) - x(b); });
+    g.attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+    foreground.attr("d", path);
+  }
+
+  function dragend(d) {
+    x.domain(traits).rangePoints([0, w]);
+    var t = d3.transition().duration(500);
+    t.selectAll(".trait").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+    t.selectAll(".foreground path").attr("d", path);
+  }
+});
+
+// Returns the path for a given data point.
+function path(d) {
+  return line(traits.map(function(p) { return [x(p), y[p](d[p])]; }));
+}
+
+// Handles a brush event, toggling the display of foreground lines.
+function brush() {
+  var actives = traits.filter(function(p) { return !y[p].brush.empty(); }),
+      extents = actives.map(function(p) { return y[p].brush.extent(); });
+  foreground.classed("fade", function(d) {
+    return !actives.every(function(p, i) {
+      return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+    });
+  });
+  tr.classed("hide", function(d) {
+    return !actives.every(function(p, i) {
+      return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+    });
+  });
+}
+
+    </script>
+  </body>
+</html>

@@ -4,3 +4,5 @@
 .settings
 
 venv
+node_modules
+memcover/web/assets/exports/*

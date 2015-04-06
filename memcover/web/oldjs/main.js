@@ -144,7 +144,7 @@ function($, _, when, bootstrap, Context, d3) {
     // ----------------------------------------
     //     TreemapStatusBar
     // ----------------------------------------
-    var hierarchy = ['Dendritic Compartment', 'Dendrite Id', 'Spine Id'];
+    var hierarchy = ['Patient', 'Tint', 'Region'];
     var TreemapStatusBar = require("treemapStatusBar");
     var treemapStatusBar = new TreemapStatusBar('#overview-status', hierarchy, totalItems);
     treemapStatusBar.setDselect(definition_dselect);
@@ -221,6 +221,7 @@ function($, _, when, bootstrap, Context, d3) {
     });
     // =============================================================
 
+    var patients = ['BCN01','BCN02','BCN03','BCN04','BCN05','BCN06','BCN07','BCN08','BCN09','BCN10'];
     function drawTreemap(view, column) {
 	when.map( groupBySpine(column),
 		  function(pipeline) {
@@ -234,11 +235,8 @@ function($, _, when, bootstrap, Context, d3) {
 	    .then(
 		function (sizes) {
 		    var data = {
-			name: "Spine Volume",
-			children: [
-			    {name: "apical", children: sizes[0] },
-			    {name: "colateral", children: sizes[1] }
-			]};
+			name: "Variable",
+			children: _.map(patients, function(v, i) { return {name: v, children: sizes[i]};})};
 		    view.setData(data);
 		    console.log(data);
 		    view.render();		    
@@ -247,25 +245,26 @@ function($, _, when, bootstrap, Context, d3) {
     }
 
     function groupBySpine(column) {
-	column = column || 'Spine Volume';
+	column = column || 'CE Schaeffer';
 
 	//	var project1 = {$project: {dendrite_type:1, cell: 1, synapse_id:1}};
 
-	var project1 = {$project: {'Dendritic Compartment':1, 'Dendrite Id': 1, 'Spine Id':1}};
+	var project1 = {$project: {'patient':1, 'path': 1, 'region':1}};
 	project1.$project[column] = 1;
 
-	var group = {$group : {_id: "$Dendrite Id", 
-			       children: {$addToSet: {name: "$Spine Id", size:'$'+column}} }};
+	var group = {$group : {_id: "$region", 
+			       children: {$addToSet: {name: "$path", size:'$'+column}} }};
 
-	var apical_pipeline = [{$match: {"Dendritic Compartment":"apical"}} ,
-			       project1,
-			       group,
-			       {$project : { name: "$_id", children:1 , _id: 0}}];
+	var pipelines = [];
+	patients.forEach(function(patient) {
+	    var pipeline = [{$match: {"patient":patient}} ,
+			    project1,
+			    group,
+			    {$project : { name: "$_id", children:1 , _id: 0}}];
+	    pipelines.push(pipeline);
+	});
 
-	var colateral_pipeline = apical_pipeline.slice();
-	colateral_pipeline[0] = {$match: {"Dendritic Compartment":"colateral"}};
-
-	return [ apical_pipeline, colateral_pipeline];
+	return pipelines;
     }
 
 });
