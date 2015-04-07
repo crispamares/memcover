@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="svg2"
+   viewBox="0 0 1062.9854 761.06452"
+   height="214.78932mm"
+   width="299.99811mm"
+   inkscape:version="0.91 r"
+   sodipodi:docname="hipo_map.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="834"
+     inkscape:window-height="480"
+     id="namedview19"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="0.22425739"
+     inkscape:cx="434.21251"
+     inkscape:cy="359.89343"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     transform="translate(62.165265,-125.00996)">
+    <path
+       id="regionSub"
+       d="M 329.70097,497.92712 C 313.7557,486.80286 290.86295,469.87301 277.0225,456.51336 237.46761,418.33253 205.84421,372.18417 178.35512,324.70722 141.49344,275.62995 73.084098,227.43093 10.714968,258.71091 c -72.51219,47.66455 -81.26415,147.54992 -62.71168,225.57983 17.39161,74.21385 47.6519444,153.82062 89.579384,218.09943 z"
+       style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       id="regionCA1"
+       d="M 483.87499,555.18996 C 426.59175,554.61506 381.28695,533.35246 334.4433,502.13409 L 40.860168,707.99768 c 25.64333,37.14678 56.6634,70.34267 94.257702,97.21504 56.15177,43.20402 127.21256,58.57365 196.68194,61.01135 45.88663,3.25296 91.89549,5.61062 137.88629,8.00908 z"
+       style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       id="path4192"
+       d="m 601.90022,508.49723 c 0.47224,2.69912 -0.0665,6.0736 -1.84272,10.25445 -13.62441,32.06988 -65.38588,23.21672 -108.81625,36.39872 l -15.35283,319.40655 c 51.56052,2.69527 103.0904,5.49473 154.39189,9.71756 C 831.61026,865.57514 997.84454,689.96964 991.88094,487.628 Z"
+       style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       id="regionCA3"
+       d="m 597.47034,500.40222 395.6985,-21.78104 c 11.15966,-82.26315 8.78976,-185.23241 -28.7772,-226.2305 -39.97586,-43.62704 -107.17185,-35.96663 -202.30018,-42.60637 z"
+       style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <path
+       id="regionDG"
+       d="M 753.67369,207.98506 C 681.11224,186.95559 607.7017,168.32899 537.18926,140.91304 448.86901,106.57323 335.78131,138.0233 260.66981,203.07351 c -41.61804,36.28017 -61.10842,96.54554 -39.39365,149.04316 36.42541,94.81988 177.81635,151.23342 217.17793,161.58463 7.81192,2.05436 34.19912,-3.8488 80.91192,-7.41047 17.33176,-1.32148 51.02128,-9.69184 69.60442,-6.89924 z"
+       style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:connector-curvature="0" />
+    <text
+       id="text4198"
+       y="359.11636"
+       x="390.61215"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       xml:space="preserve"
+       sodipodi:linespacing="125%"><tspan
+         y="359.11636"
+         x="390.61215"
+         id="tspan4200">DG</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       x="760.328"
+       y="397.50217"
+       id="text4202"
+       sodipodi:linespacing="125%"><tspan
+         id="tspan4204"
+         x="760.328"
+         y="397.50217">CA3</tspan></text>
+    <text
+       id="text4206"
+       y="706.60883"
+       x="237.06897"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       xml:space="preserve"
+       sodipodi:linespacing="125%"><tspan
+         y="706.60883"
+         x="237.06897"
+         id="tspan4208">CA1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
+       x="35.038471"
+       y="466.1925"
+       id="text4210"
+       sodipodi:linespacing="125%"><tspan
+         id="tspan4212"
+         x="35.038471"
+         y="466.1925">Sub</tspan></text>
+  </g>
+</svg>
