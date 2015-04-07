@@ -6,6 +6,7 @@ var d3 = require('d3');
 
 var Hello = require('./hello');
 var DataTable = require('./dataTable');
+var BrainRegions = require('./brainRegions');
 // ----------------------------------------------------------
 //  Setup indyva's conection 
 // ----------------------------------------------------------
@@ -67,7 +68,7 @@ rpc.call('init', [])
 		  Clinical data
                 </div>
                 <div className="col-sm-6 well">
-		  RegionsSSS
+                  <BrainRegions></BrainRegions>
                 </div>
               </div>
               <div className="row">

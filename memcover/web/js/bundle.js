@@ -46,16 +46,17 @@
 
 	'use strict'
 	var React = __webpack_require__(1);
-	var _ = __webpack_require__(93);
-	var when = __webpack_require__(5); 
-	var d3 = __webpack_require__(2); 
+	var _ = __webpack_require__(2);
+	var when = __webpack_require__(7); 
+	var d3 = __webpack_require__(3); 
 
-	var Hello = __webpack_require__(3);
-	var DataTable = __webpack_require__(94);
+	var Hello = __webpack_require__(4);
+	var DataTable = __webpack_require__(5);
+	var BrainRegions = __webpack_require__(95);
 	// ----------------------------------------------------------
 	//  Setup indyva's conection 
 	// ----------------------------------------------------------
-	var Context = __webpack_require__(4);
+	var Context = __webpack_require__(6);
 	var context = new Context(window.location.hostname, 'ws', 19000);
 	context.install();
 	var session = 's'+String(Math.round((Math.random()*100000)));
@@ -113,7 +114,7 @@
 			  "Clinical data"
 	                ), 
 	                React.createElement("div", {className: "col-sm-6 well"}, 
-			  "RegionsSSS"
+	                  React.createElement(BrainRegions, null)
 	                )
 	              ), 
 	              React.createElement("div", {className: "row"}, 
@@ -145,10 +146,16 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = d3;
+	module.exports = _;
 
 /***/ },
 /* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = d3;
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -165,11 +172,72 @@
 
 
 /***/ },
-/* 4 */
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var FixedDataTable = __webpack_require__(23);
+	var _ = __webpack_require__(2);
+
+	var Table = FixedDataTable.Table;
+	var Column = FixedDataTable.Column;
+
+
+	module.exports = React.createClass({displayName: "exports",
+	    getInitialState: function() {
+		var initialColumnWith = Math.round(this.props.tableWidth / this.props.columnNames.length);
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+		return {"columnWidths": columnWidths};
+	    },
+	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
+		this.state.columnWidths[dataKey] = newColumnWidth;
+	//	isColumnResizing = false;
+	    },
+	    render: function(){
+		var columnNames = this.props.columnNames;
+		var columnWidths = this.state.columnWidths
+
+		return (
+		    React.createElement(Table, {
+			    rowHeight: 50, 
+			    rowGetter: this.props.rowGetter, 
+			    rowsCount: this.props.rowsCount, 
+			    width: this.props.tableWidth, 
+			    height: this.props.tableHeight, 
+			    headerHeight: 50, 
+			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
+
+		      
+			  this.props.columnNames.map(function(name){
+
+			      return (
+				  React.createElement(Column, {
+				  label: name, 
+				  width: columnWidths[name], 			  
+				  dataKey: name, 
+				  isResizable: false}
+				  )
+			      );
+			  })
+		       
+		    )
+		);
+	    }
+	});
+
+
+
+
+
+/***/ },
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(7), __webpack_require__(8), __webpack_require__(9)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7), __webpack_require__(8), __webpack_require__(9), __webpack_require__(10)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
 
 	    var Context = function(server, path, port){
 		var self = this;
@@ -315,7 +383,7 @@
 
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -546,18 +614,11 @@
 
 		return when;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(23));
+	})(__webpack_require__(24));
 
 
 /***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(10);
-
-
-/***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;// MIT License:
@@ -757,11 +818,11 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7), __webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
 
 	    var WsRpc = function(server, path, port){
 		var self = this;
@@ -917,10 +978,10 @@
 
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(7)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
 
 	    var Hub = function(server, port, rpc, gateway){
 		var self = this;
@@ -1030,51 +1091,6 @@
 
 
 /***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableRoot
-	 */
-
-	"use strict";
-
-	if (process.env.NODE_ENV !== 'production') {
-	  var ExecutionEnvironment = __webpack_require__(25);
-	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
-
-	    if (!Object.assign) {
-	      console.error(
-	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
-	      );
-	    }
-	  }
-	}
-
-	var FixedDataTable = __webpack_require__(26);
-	var FixedDataTableColumn = __webpack_require__(27);
-	var FixedDataTableColumnGroup = __webpack_require__(28);
-
-	var FixedDataTableRoot = {
-	  Column: FixedDataTableColumn,
-	  ColumnGroup: FixedDataTableColumnGroup,
-	  Table: FixedDataTable,
-	};
-
-	FixedDataTableRoot.version = '0.1.2';
-
-	module.exports = FixedDataTableRoot;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
-
-/***/ },
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -1085,7 +1101,7 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var env = __webpack_require__(24);
+		var env = __webpack_require__(26);
 		var TimeoutError = __webpack_require__(20);
 
 		function setTimeout(f, ms, x, y) {
@@ -1155,7 +1171,7 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1169,7 +1185,7 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var state = __webpack_require__(29);
+		var state = __webpack_require__(25);
 		var applier = __webpack_require__(22);
 
 		return function array(Promise) {
@@ -1450,7 +1466,7 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1616,7 +1632,7 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1649,7 +1665,7 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1663,7 +1679,7 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var inspect = __webpack_require__(29).inspect;
+		var inspect = __webpack_require__(25).inspect;
 
 		return function inspection(Promise) {
 
@@ -1675,7 +1691,7 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1746,7 +1762,7 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1776,7 +1792,7 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1819,7 +1835,7 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 
@@ -1834,8 +1850,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var setTimer = __webpack_require__(24).setTimer;
-		var format = __webpack_require__(30);
+		var setTimer = __webpack_require__(26).setTimer;
+		var format = __webpack_require__(27);
 
 		return function unhandledRejection(Promise) {
 
@@ -1912,7 +1928,7 @@
 		function noop() {}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 /***/ },
@@ -1945,7 +1961,7 @@
 
 		return TimeoutError;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 /***/ },
 /* 21 */
@@ -1958,16 +1974,16 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var makePromise = __webpack_require__(31);
-		var Scheduler = __webpack_require__(32);
-		var async = __webpack_require__(24).asap;
+		var makePromise = __webpack_require__(28);
+		var Scheduler = __webpack_require__(29);
+		var async = __webpack_require__(26).asap;
 
 		return makePromise({
 			scheduler: new Scheduler(async)
 		});
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(23));
+	})(__webpack_require__(24));
 
 
 /***/ },
@@ -2026,7 +2042,7 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
 
 
@@ -2035,11 +2051,59 @@
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = function() { throw new Error("define cannot be used indirect"); };
+	module.exports = __webpack_require__(30);
 
 
 /***/ },
 /* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function() { throw new Error("define cannot be used indirect"); };
+
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		return {
+			pending: toPendingState,
+			fulfilled: toFulfilledState,
+			rejected: toRejectedState,
+			inspect: inspect
+		};
+
+		function toPendingState() {
+			return { state: 'pending' };
+		}
+
+		function toRejectedState(e) {
+			return { state: 'rejected', reason: e };
+		}
+
+		function toFulfilledState(x) {
+			return { state: 'fulfilled', value: x };
+		}
+
+		function inspect(handler) {
+			var state = handler.state();
+			return state === 0 ? toPendingState()
+				 : state > 0   ? toFulfilledState(handler.value)
+				               : toRejectedState(handler.value);
+		}
+
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(24)));
+
+
+/***/ },
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2073,7 +2137,7 @@
 
 		} else if (!capturedSetTimeout) { // vert.x
 			var vertxRequire = require;
-			var vertx = __webpack_require__(34);
+			var vertx = __webpack_require__(31);
 			setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 			clearTimer = vertx.cancelTimer;
 			asap = vertx.runOnLoop || vertx.runOnContext;
@@ -2114,12 +2178,1145 @@
 			};
 		}
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
+	}(__webpack_require__(24)));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 25 */
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		return {
+			formatError: formatError,
+			formatObject: formatObject,
+			tryStringify: tryStringify
+		};
+
+		/**
+		 * Format an error into a string.  If e is an Error and has a stack property,
+		 * it's returned.  Otherwise, e is formatted using formatObject, with a
+		 * warning added about e not being a proper Error.
+		 * @param {*} e
+		 * @returns {String} formatted string, suitable for output to developers
+		 */
+		function formatError(e) {
+			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
+			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
+		}
+
+		/**
+		 * Format an object, detecting "plain" objects and running them through
+		 * JSON.stringify if possible.
+		 * @param {Object} o
+		 * @returns {string}
+		 */
+		function formatObject(o) {
+			var s = String(o);
+			if(s === '[object Object]' && typeof JSON !== 'undefined') {
+				s = tryStringify(o, s);
+			}
+			return s;
+		}
+
+		/**
+		 * Try to return the result of JSON.stringify(x).  If that fails, return
+		 * defaultValue
+		 * @param {*} x
+		 * @param {*} defaultValue
+		 * @returns {String|*} JSON.stringify(x) or defaultValue
+		 */
+		function tryStringify(x, defaultValue) {
+			try {
+				return JSON.stringify(x);
+			} catch(e) {
+				return defaultValue;
+			}
+		}
+
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(24)));
+
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		return function makePromise(environment) {
+
+			var tasks = environment.scheduler;
+			var emitRejection = initEmitRejection();
+
+			var objectCreate = Object.create ||
+				function(proto) {
+					function Child() {}
+					Child.prototype = proto;
+					return new Child();
+				};
+
+			/**
+			 * Create a promise whose fate is determined by resolver
+			 * @constructor
+			 * @returns {Promise} promise
+			 * @name Promise
+			 */
+			function Promise(resolver, handler) {
+				this._handler = resolver === Handler ? handler : init(resolver);
+			}
+
+			/**
+			 * Run the supplied resolver
+			 * @param resolver
+			 * @returns {Pending}
+			 */
+			function init(resolver) {
+				var handler = new Pending();
+
+				try {
+					resolver(promiseResolve, promiseReject, promiseNotify);
+				} catch (e) {
+					promiseReject(e);
+				}
+
+				return handler;
+
+				/**
+				 * Transition from pre-resolution state to post-resolution state, notifying
+				 * all listeners of the ultimate fulfillment or rejection
+				 * @param {*} x resolution value
+				 */
+				function promiseResolve (x) {
+					handler.resolve(x);
+				}
+				/**
+				 * Reject this promise with reason, which will be used verbatim
+				 * @param {Error|*} reason rejection reason, strongly suggested
+				 *   to be an Error type
+				 */
+				function promiseReject (reason) {
+					handler.reject(reason);
+				}
+
+				/**
+				 * @deprecated
+				 * Issue a progress event, notifying all progress listeners
+				 * @param {*} x progress event payload to pass to all listeners
+				 */
+				function promiseNotify (x) {
+					handler.notify(x);
+				}
+			}
+
+			// Creation
+
+			Promise.resolve = resolve;
+			Promise.reject = reject;
+			Promise.never = never;
+
+			Promise._defer = defer;
+			Promise._handler = getHandler;
+
+			/**
+			 * Returns a trusted promise. If x is already a trusted promise, it is
+			 * returned, otherwise returns a new trusted Promise which follows x.
+			 * @param  {*} x
+			 * @return {Promise} promise
+			 */
+			function resolve(x) {
+				return isPromise(x) ? x
+					: new Promise(Handler, new Async(getHandler(x)));
+			}
+
+			/**
+			 * Return a reject promise with x as its reason (x is used verbatim)
+			 * @param {*} x
+			 * @returns {Promise} rejected promise
+			 */
+			function reject(x) {
+				return new Promise(Handler, new Async(new Rejected(x)));
+			}
+
+			/**
+			 * Return a promise that remains pending forever
+			 * @returns {Promise} forever-pending promise.
+			 */
+			function never() {
+				return foreverPendingPromise; // Should be frozen
+			}
+
+			/**
+			 * Creates an internal {promise, resolver} pair
+			 * @private
+			 * @returns {Promise}
+			 */
+			function defer() {
+				return new Promise(Handler, new Pending());
+			}
+
+			// Transformation and flow control
+
+			/**
+			 * Transform this promise's fulfillment value, returning a new Promise
+			 * for the transformed result.  If the promise cannot be fulfilled, onRejected
+			 * is called with the reason.  onProgress *may* be called with updates toward
+			 * this promise's fulfillment.
+			 * @param {function=} onFulfilled fulfillment handler
+			 * @param {function=} onRejected rejection handler
+			 * @param {function=} onProgress @deprecated progress handler
+			 * @return {Promise} new promise
+			 */
+			Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
+				var parent = this._handler;
+				var state = parent.join().state();
+
+				if ((typeof onFulfilled !== 'function' && state > 0) ||
+					(typeof onRejected !== 'function' && state < 0)) {
+					// Short circuit: value will not change, simply share handler
+					return new this.constructor(Handler, parent);
+				}
+
+				var p = this._beget();
+				var child = p._handler;
+
+				parent.chain(child, parent.receiver, onFulfilled, onRejected, onProgress);
+
+				return p;
+			};
+
+			/**
+			 * If this promise cannot be fulfilled due to an error, call onRejected to
+			 * handle the error. Shortcut for .then(undefined, onRejected)
+			 * @param {function?} onRejected
+			 * @return {Promise}
+			 */
+			Promise.prototype['catch'] = function(onRejected) {
+				return this.then(void 0, onRejected);
+			};
+
+			/**
+			 * Creates a new, pending promise of the same type as this promise
+			 * @private
+			 * @returns {Promise}
+			 */
+			Promise.prototype._beget = function() {
+				return begetFrom(this._handler, this.constructor);
+			};
+
+			function begetFrom(parent, Promise) {
+				var child = new Pending(parent.receiver, parent.join().context);
+				return new Promise(Handler, child);
+			}
+
+			// Array combinators
+
+			Promise.all = all;
+			Promise.race = race;
+			Promise._traverse = traverse;
+
+			/**
+			 * Return a promise that will fulfill when all promises in the
+			 * input array have fulfilled, or will reject when one of the
+			 * promises rejects.
+			 * @param {array} promises array of promises
+			 * @returns {Promise} promise for array of fulfillment values
+			 */
+			function all(promises) {
+				return traverseWith(snd, null, promises);
+			}
+
+			/**
+			 * Array<Promise<X>> -> Promise<Array<f(X)>>
+			 * @private
+			 * @param {function} f function to apply to each promise's value
+			 * @param {Array} promises array of promises
+			 * @returns {Promise} promise for transformed values
+			 */
+			function traverse(f, promises) {
+				return traverseWith(tryCatch2, f, promises);
+			}
+
+			function traverseWith(tryMap, f, promises) {
+				var handler = typeof f === 'function' ? mapAt : settleAt;
+
+				var resolver = new Pending();
+				var pending = promises.length >>> 0;
+				var results = new Array(pending);
+
+				for (var i = 0, x; i < promises.length && !resolver.resolved; ++i) {
+					x = promises[i];
+
+					if (x === void 0 && !(i in promises)) {
+						--pending;
+						continue;
+					}
+
+					traverseAt(promises, handler, i, x, resolver);
+				}
+
+				if(pending === 0) {
+					resolver.become(new Fulfilled(results));
+				}
+
+				return new Promise(Handler, resolver);
+
+				function mapAt(i, x, resolver) {
+					if(!resolver.resolved) {
+						traverseAt(promises, settleAt, i, tryMap(f, x, i), resolver);
+					}
+				}
+
+				function settleAt(i, x, resolver) {
+					results[i] = x;
+					if(--pending === 0) {
+						resolver.become(new Fulfilled(results));
+					}
+				}
+			}
+
+			function traverseAt(promises, handler, i, x, resolver) {
+				if (maybeThenable(x)) {
+					var h = getHandlerMaybeThenable(x);
+					var s = h.state();
+
+					if (s === 0) {
+						h.fold(handler, i, void 0, resolver);
+					} else if (s > 0) {
+						handler(i, h.value, resolver);
+					} else {
+						resolver.become(h);
+						visitRemaining(promises, i+1, h);
+					}
+				} else {
+					handler(i, x, resolver);
+				}
+			}
+
+			Promise._visitRemaining = visitRemaining;
+			function visitRemaining(promises, start, handler) {
+				for(var i=start; i<promises.length; ++i) {
+					markAsHandled(getHandler(promises[i]), handler);
+				}
+			}
+
+			function markAsHandled(h, handler) {
+				if(h === handler) {
+					return;
+				}
+
+				var s = h.state();
+				if(s === 0) {
+					h.visit(h, void 0, h._unreport);
+				} else if(s < 0) {
+					h._unreport();
+				}
+			}
+
+			/**
+			 * Fulfill-reject competitive race. Return a promise that will settle
+			 * to the same state as the earliest input promise to settle.
+			 *
+			 * WARNING: The ES6 Promise spec requires that race()ing an empty array
+			 * must return a promise that is pending forever.  This implementation
+			 * returns a singleton forever-pending promise, the same singleton that is
+			 * returned by Promise.never(), thus can be checked with ===
+			 *
+			 * @param {array} promises array of promises to race
+			 * @returns {Promise} if input is non-empty, a promise that will settle
+			 * to the same outcome as the earliest input promise to settle. if empty
+			 * is empty, returns a promise that will never settle.
+			 */
+			function race(promises) {
+				if(typeof promises !== 'object' || promises === null) {
+					return reject(new TypeError('non-iterable passed to race()'));
+				}
+
+				// Sigh, race([]) is untestable unless we return *something*
+				// that is recognizable without calling .then() on it.
+				return promises.length === 0 ? never()
+					 : promises.length === 1 ? resolve(promises[0])
+					 : runRace(promises);
+			}
+
+			function runRace(promises) {
+				var resolver = new Pending();
+				var i, x, h;
+				for(i=0; i<promises.length; ++i) {
+					x = promises[i];
+					if (x === void 0 && !(i in promises)) {
+						continue;
+					}
+
+					h = getHandler(x);
+					if(h.state() !== 0) {
+						resolver.become(h);
+						visitRemaining(promises, i+1, h);
+						break;
+					} else {
+						h.visit(resolver, resolver.resolve, resolver.reject);
+					}
+				}
+				return new Promise(Handler, resolver);
+			}
+
+			// Promise internals
+			// Below this, everything is @private
+
+			/**
+			 * Get an appropriate handler for x, without checking for cycles
+			 * @param {*} x
+			 * @returns {object} handler
+			 */
+			function getHandler(x) {
+				if(isPromise(x)) {
+					return x._handler.join();
+				}
+				return maybeThenable(x) ? getHandlerUntrusted(x) : new Fulfilled(x);
+			}
+
+			/**
+			 * Get a handler for thenable x.
+			 * NOTE: You must only call this if maybeThenable(x) == true
+			 * @param {object|function|Promise} x
+			 * @returns {object} handler
+			 */
+			function getHandlerMaybeThenable(x) {
+				return isPromise(x) ? x._handler.join() : getHandlerUntrusted(x);
+			}
+
+			/**
+			 * Get a handler for potentially untrusted thenable x
+			 * @param {*} x
+			 * @returns {object} handler
+			 */
+			function getHandlerUntrusted(x) {
+				try {
+					var untrustedThen = x.then;
+					return typeof untrustedThen === 'function'
+						? new Thenable(untrustedThen, x)
+						: new Fulfilled(x);
+				} catch(e) {
+					return new Rejected(e);
+				}
+			}
+
+			/**
+			 * Handler for a promise that is pending forever
+			 * @constructor
+			 */
+			function Handler() {}
+
+			Handler.prototype.when
+				= Handler.prototype.become
+				= Handler.prototype.notify // deprecated
+				= Handler.prototype.fail
+				= Handler.prototype._unreport
+				= Handler.prototype._report
+				= noop;
+
+			Handler.prototype._state = 0;
+
+			Handler.prototype.state = function() {
+				return this._state;
+			};
+
+			/**
+			 * Recursively collapse handler chain to find the handler
+			 * nearest to the fully resolved value.
+			 * @returns {object} handler nearest the fully resolved value
+			 */
+			Handler.prototype.join = function() {
+				var h = this;
+				while(h.handler !== void 0) {
+					h = h.handler;
+				}
+				return h;
+			};
+
+			Handler.prototype.chain = function(to, receiver, fulfilled, rejected, progress) {
+				this.when({
+					resolver: to,
+					receiver: receiver,
+					fulfilled: fulfilled,
+					rejected: rejected,
+					progress: progress
+				});
+			};
+
+			Handler.prototype.visit = function(receiver, fulfilled, rejected, progress) {
+				this.chain(failIfRejected, receiver, fulfilled, rejected, progress);
+			};
+
+			Handler.prototype.fold = function(f, z, c, to) {
+				this.when(new Fold(f, z, c, to));
+			};
+
+			/**
+			 * Handler that invokes fail() on any handler it becomes
+			 * @constructor
+			 */
+			function FailIfRejected() {}
+
+			inherit(Handler, FailIfRejected);
+
+			FailIfRejected.prototype.become = function(h) {
+				h.fail();
+			};
+
+			var failIfRejected = new FailIfRejected();
+
+			/**
+			 * Handler that manages a queue of consumers waiting on a pending promise
+			 * @constructor
+			 */
+			function Pending(receiver, inheritedContext) {
+				Promise.createContext(this, inheritedContext);
+
+				this.consumers = void 0;
+				this.receiver = receiver;
+				this.handler = void 0;
+				this.resolved = false;
+			}
+
+			inherit(Handler, Pending);
+
+			Pending.prototype._state = 0;
+
+			Pending.prototype.resolve = function(x) {
+				this.become(getHandler(x));
+			};
+
+			Pending.prototype.reject = function(x) {
+				if(this.resolved) {
+					return;
+				}
+
+				this.become(new Rejected(x));
+			};
+
+			Pending.prototype.join = function() {
+				if (!this.resolved) {
+					return this;
+				}
+
+				var h = this;
+
+				while (h.handler !== void 0) {
+					h = h.handler;
+					if (h === this) {
+						return this.handler = cycle();
+					}
+				}
+
+				return h;
+			};
+
+			Pending.prototype.run = function() {
+				var q = this.consumers;
+				var handler = this.handler;
+				this.handler = this.handler.join();
+				this.consumers = void 0;
+
+				for (var i = 0; i < q.length; ++i) {
+					handler.when(q[i]);
+				}
+			};
+
+			Pending.prototype.become = function(handler) {
+				if(this.resolved) {
+					return;
+				}
+
+				this.resolved = true;
+				this.handler = handler;
+				if(this.consumers !== void 0) {
+					tasks.enqueue(this);
+				}
+
+				if(this.context !== void 0) {
+					handler._report(this.context);
+				}
+			};
+
+			Pending.prototype.when = function(continuation) {
+				if(this.resolved) {
+					tasks.enqueue(new ContinuationTask(continuation, this.handler));
+				} else {
+					if(this.consumers === void 0) {
+						this.consumers = [continuation];
+					} else {
+						this.consumers.push(continuation);
+					}
+				}
+			};
+
+			/**
+			 * @deprecated
+			 */
+			Pending.prototype.notify = function(x) {
+				if(!this.resolved) {
+					tasks.enqueue(new ProgressTask(x, this));
+				}
+			};
+
+			Pending.prototype.fail = function(context) {
+				var c = typeof context === 'undefined' ? this.context : context;
+				this.resolved && this.handler.join().fail(c);
+			};
+
+			Pending.prototype._report = function(context) {
+				this.resolved && this.handler.join()._report(context);
+			};
+
+			Pending.prototype._unreport = function() {
+				this.resolved && this.handler.join()._unreport();
+			};
+
+			/**
+			 * Wrap another handler and force it into a future stack
+			 * @param {object} handler
+			 * @constructor
+			 */
+			function Async(handler) {
+				this.handler = handler;
+			}
+
+			inherit(Handler, Async);
+
+			Async.prototype.when = function(continuation) {
+				tasks.enqueue(new ContinuationTask(continuation, this));
+			};
+
+			Async.prototype._report = function(context) {
+				this.join()._report(context);
+			};
+
+			Async.prototype._unreport = function() {
+				this.join()._unreport();
+			};
+
+			/**
+			 * Handler that wraps an untrusted thenable and assimilates it in a future stack
+			 * @param {function} then
+			 * @param {{then: function}} thenable
+			 * @constructor
+			 */
+			function Thenable(then, thenable) {
+				Pending.call(this);
+				tasks.enqueue(new AssimilateTask(then, thenable, this));
+			}
+
+			inherit(Pending, Thenable);
+
+			/**
+			 * Handler for a fulfilled promise
+			 * @param {*} x fulfillment value
+			 * @constructor
+			 */
+			function Fulfilled(x) {
+				Promise.createContext(this);
+				this.value = x;
+			}
+
+			inherit(Handler, Fulfilled);
+
+			Fulfilled.prototype._state = 1;
+
+			Fulfilled.prototype.fold = function(f, z, c, to) {
+				runContinuation3(f, z, this, c, to);
+			};
+
+			Fulfilled.prototype.when = function(cont) {
+				runContinuation1(cont.fulfilled, this, cont.receiver, cont.resolver);
+			};
+
+			var errorId = 0;
+
+			/**
+			 * Handler for a rejected promise
+			 * @param {*} x rejection reason
+			 * @constructor
+			 */
+			function Rejected(x) {
+				Promise.createContext(this);
+
+				this.id = ++errorId;
+				this.value = x;
+				this.handled = false;
+				this.reported = false;
+
+				this._report();
+			}
+
+			inherit(Handler, Rejected);
+
+			Rejected.prototype._state = -1;
+
+			Rejected.prototype.fold = function(f, z, c, to) {
+				to.become(this);
+			};
+
+			Rejected.prototype.when = function(cont) {
+				if(typeof cont.rejected === 'function') {
+					this._unreport();
+				}
+				runContinuation1(cont.rejected, this, cont.receiver, cont.resolver);
+			};
+
+			Rejected.prototype._report = function(context) {
+				tasks.afterQueue(new ReportTask(this, context));
+			};
+
+			Rejected.prototype._unreport = function() {
+				if(this.handled) {
+					return;
+				}
+				this.handled = true;
+				tasks.afterQueue(new UnreportTask(this));
+			};
+
+			Rejected.prototype.fail = function(context) {
+				this.reported = true;
+				emitRejection('unhandledRejection', this);
+				Promise.onFatalRejection(this, context === void 0 ? this.context : context);
+			};
+
+			function ReportTask(rejection, context) {
+				this.rejection = rejection;
+				this.context = context;
+			}
+
+			ReportTask.prototype.run = function() {
+				if(!this.rejection.handled && !this.rejection.reported) {
+					this.rejection.reported = true;
+					emitRejection('unhandledRejection', this.rejection) ||
+						Promise.onPotentiallyUnhandledRejection(this.rejection, this.context);
+				}
+			};
+
+			function UnreportTask(rejection) {
+				this.rejection = rejection;
+			}
+
+			UnreportTask.prototype.run = function() {
+				if(this.rejection.reported) {
+					emitRejection('rejectionHandled', this.rejection) ||
+						Promise.onPotentiallyUnhandledRejectionHandled(this.rejection);
+				}
+			};
+
+			// Unhandled rejection hooks
+			// By default, everything is a noop
+
+			Promise.createContext
+				= Promise.enterContext
+				= Promise.exitContext
+				= Promise.onPotentiallyUnhandledRejection
+				= Promise.onPotentiallyUnhandledRejectionHandled
+				= Promise.onFatalRejection
+				= noop;
+
+			// Errors and singletons
+
+			var foreverPendingHandler = new Handler();
+			var foreverPendingPromise = new Promise(Handler, foreverPendingHandler);
+
+			function cycle() {
+				return new Rejected(new TypeError('Promise cycle'));
+			}
+
+			// Task runners
+
+			/**
+			 * Run a single consumer
+			 * @constructor
+			 */
+			function ContinuationTask(continuation, handler) {
+				this.continuation = continuation;
+				this.handler = handler;
+			}
+
+			ContinuationTask.prototype.run = function() {
+				this.handler.join().when(this.continuation);
+			};
+
+			/**
+			 * Run a queue of progress handlers
+			 * @constructor
+			 */
+			function ProgressTask(value, handler) {
+				this.handler = handler;
+				this.value = value;
+			}
+
+			ProgressTask.prototype.run = function() {
+				var q = this.handler.consumers;
+				if(q === void 0) {
+					return;
+				}
+
+				for (var c, i = 0; i < q.length; ++i) {
+					c = q[i];
+					runNotify(c.progress, this.value, this.handler, c.receiver, c.resolver);
+				}
+			};
+
+			/**
+			 * Assimilate a thenable, sending it's value to resolver
+			 * @param {function} then
+			 * @param {object|function} thenable
+			 * @param {object} resolver
+			 * @constructor
+			 */
+			function AssimilateTask(then, thenable, resolver) {
+				this._then = then;
+				this.thenable = thenable;
+				this.resolver = resolver;
+			}
+
+			AssimilateTask.prototype.run = function() {
+				var h = this.resolver;
+				tryAssimilate(this._then, this.thenable, _resolve, _reject, _notify);
+
+				function _resolve(x) { h.resolve(x); }
+				function _reject(x)  { h.reject(x); }
+				function _notify(x)  { h.notify(x); }
+			};
+
+			function tryAssimilate(then, thenable, resolve, reject, notify) {
+				try {
+					then.call(thenable, resolve, reject, notify);
+				} catch (e) {
+					reject(e);
+				}
+			}
+
+			/**
+			 * Fold a handler value with z
+			 * @constructor
+			 */
+			function Fold(f, z, c, to) {
+				this.f = f; this.z = z; this.c = c; this.to = to;
+				this.resolver = failIfRejected;
+				this.receiver = this;
+			}
+
+			Fold.prototype.fulfilled = function(x) {
+				this.f.call(this.c, this.z, x, this.to);
+			};
+
+			Fold.prototype.rejected = function(x) {
+				this.to.reject(x);
+			};
+
+			Fold.prototype.progress = function(x) {
+				this.to.notify(x);
+			};
+
+			// Other helpers
+
+			/**
+			 * @param {*} x
+			 * @returns {boolean} true iff x is a trusted Promise
+			 */
+			function isPromise(x) {
+				return x instanceof Promise;
+			}
+
+			/**
+			 * Test just enough to rule out primitives, in order to take faster
+			 * paths in some code
+			 * @param {*} x
+			 * @returns {boolean} false iff x is guaranteed *not* to be a thenable
+			 */
+			function maybeThenable(x) {
+				return (typeof x === 'object' || typeof x === 'function') && x !== null;
+			}
+
+			function runContinuation1(f, h, receiver, next) {
+				if(typeof f !== 'function') {
+					return next.become(h);
+				}
+
+				Promise.enterContext(h);
+				tryCatchReject(f, h.value, receiver, next);
+				Promise.exitContext();
+			}
+
+			function runContinuation3(f, x, h, receiver, next) {
+				if(typeof f !== 'function') {
+					return next.become(h);
+				}
+
+				Promise.enterContext(h);
+				tryCatchReject3(f, x, h.value, receiver, next);
+				Promise.exitContext();
+			}
+
+			/**
+			 * @deprecated
+			 */
+			function runNotify(f, x, h, receiver, next) {
+				if(typeof f !== 'function') {
+					return next.notify(x);
+				}
+
+				Promise.enterContext(h);
+				tryCatchReturn(f, x, receiver, next);
+				Promise.exitContext();
+			}
+
+			function tryCatch2(f, a, b) {
+				try {
+					return f(a, b);
+				} catch(e) {
+					return reject(e);
+				}
+			}
+
+			/**
+			 * Return f.call(thisArg, x), or if it throws return a rejected promise for
+			 * the thrown exception
+			 */
+			function tryCatchReject(f, x, thisArg, next) {
+				try {
+					next.become(getHandler(f.call(thisArg, x)));
+				} catch(e) {
+					next.become(new Rejected(e));
+				}
+			}
+
+			/**
+			 * Same as above, but includes the extra argument parameter.
+			 */
+			function tryCatchReject3(f, x, y, thisArg, next) {
+				try {
+					f.call(thisArg, x, y, next);
+				} catch(e) {
+					next.become(new Rejected(e));
+				}
+			}
+
+			/**
+			 * @deprecated
+			 * Return f.call(thisArg, x), or if it throws, *return* the exception
+			 */
+			function tryCatchReturn(f, x, thisArg, next) {
+				try {
+					next.notify(f.call(thisArg, x));
+				} catch(e) {
+					next.notify(e);
+				}
+			}
+
+			function inherit(Parent, Child) {
+				Child.prototype = objectCreate(Parent.prototype);
+				Child.prototype.constructor = Child;
+			}
+
+			function snd(x, y) {
+				return y;
+			}
+
+			function noop() {}
+
+			function initEmitRejection() {
+				/*global process, self, CustomEvent*/
+				if(typeof process !== 'undefined' && process !== null
+					&& typeof process.emit === 'function') {
+					// Returning falsy here means to call the default
+					// onPotentiallyUnhandledRejection API.  This is safe even in
+					// browserify since process.emit always returns falsy in browserify:
+					// https://github.com/defunctzombie/node-process/blob/master/browser.js#L40-L46
+					return function(type, rejection) {
+						return type === 'unhandledRejection'
+							? process.emit(type, rejection.value, rejection)
+							: process.emit(type, rejection);
+					};
+				} else if(typeof self !== 'undefined' && typeof CustomEvent === 'function') {
+					return (function(noop, self, CustomEvent) {
+						var hasCustomEvent = false;
+						try {
+							var ev = new CustomEvent('unhandledRejection');
+							hasCustomEvent = ev instanceof CustomEvent;
+						} catch (e) {}
+
+						return !hasCustomEvent ? noop : function(type, rejection) {
+							var ev = new CustomEvent(type, {
+								detail: {
+									reason: rejection.value,
+									key: rejection
+								},
+								bubbles: false,
+								cancelable: true
+							});
+
+							return !self.dispatchEvent(ev);
+						};
+					}(noop, self, CustomEvent));
+				}
+
+				return noop;
+			}
+
+			return Promise;
+		};
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(24)));
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		// Credit to Twisol (https://github.com/Twisol) for suggesting
+		// this type of extensible queue + trampoline approach for next-tick conflation.
+
+		/**
+		 * Async task scheduler
+		 * @param {function} async function to schedule a single async function
+		 * @constructor
+		 */
+		function Scheduler(async) {
+			this._async = async;
+			this._running = false;
+
+			this._queue = this;
+			this._queueLen = 0;
+			this._afterQueue = {};
+			this._afterQueueLen = 0;
+
+			var self = this;
+			this.drain = function() {
+				self._drain();
+			};
+		}
+
+		/**
+		 * Enqueue a task
+		 * @param {{ run:function }} task
+		 */
+		Scheduler.prototype.enqueue = function(task) {
+			this._queue[this._queueLen++] = task;
+			this.run();
+		};
+
+		/**
+		 * Enqueue a task to run after the main task queue
+		 * @param {{ run:function }} task
+		 */
+		Scheduler.prototype.afterQueue = function(task) {
+			this._afterQueue[this._afterQueueLen++] = task;
+			this.run();
+		};
+
+		Scheduler.prototype.run = function() {
+			if (!this._running) {
+				this._running = true;
+				this._async(this.drain);
+			}
+		};
+
+		/**
+		 * Drain the handler queue entirely, and then the after queue
+		 */
+		Scheduler.prototype._drain = function() {
+			var i = 0;
+			for (; i < this._queueLen; ++i) {
+				this._queue[i].run();
+				this._queue[i] = void 0;
+			}
+
+			this._queueLen = 0;
+			this._running = false;
+
+			for (i = 0; i < this._afterQueueLen; ++i) {
+				this._afterQueue[i].run();
+				this._afterQueue[i] = void 0;
+			}
+
+			this._afterQueueLen = 0;
+		};
+
+		return Scheduler;
+
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(24)));
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableRoot
+	 */
+
+	"use strict";
+
+	if (process.env.NODE_ENV !== 'production') {
+	  var ExecutionEnvironment = __webpack_require__(32);
+	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
+
+	    if (!Object.assign) {
+	      console.error(
+	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
+	      );
+	    }
+	  }
+	}
+
+	var FixedDataTable = __webpack_require__(33);
+	var FixedDataTableColumn = __webpack_require__(34);
+	var FixedDataTableColumnGroup = __webpack_require__(35);
+
+	var FixedDataTableRoot = {
+	  Column: FixedDataTableColumn,
+	  ColumnGroup: FixedDataTableColumnGroup,
+	  Table: FixedDataTable,
+	};
+
+	FixedDataTableRoot.version = '0.1.2';
+
+	module.exports = FixedDataTableRoot;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* (ignored) */
+
+/***/ },
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2168,7 +3365,7 @@
 
 
 /***/ },
-/* 26 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2185,25 +3382,25 @@
 
 	/* jslint bitwise: true */
 
-	var FixedDataTableHelper = __webpack_require__(35);
-	var Locale = __webpack_require__(36);
-	var React = __webpack_require__(37);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(38);
-	var ReactWheelHandler = __webpack_require__(39);
-	var Scrollbar = __webpack_require__(40);
-	var FixedDataTableBufferedRows = __webpack_require__(41);
-	var FixedDataTableColumnResizeHandle = __webpack_require__(42);
-	var FixedDataTableRow = __webpack_require__(43);
-	var FixedDataTableScrollHelper = __webpack_require__(44);
-	var FixedDataTableWidthHelper = __webpack_require__(45);
+	var FixedDataTableHelper = __webpack_require__(37);
+	var Locale = __webpack_require__(38);
+	var React = __webpack_require__(39);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(40);
+	var ReactWheelHandler = __webpack_require__(41);
+	var Scrollbar = __webpack_require__(42);
+	var FixedDataTableBufferedRows = __webpack_require__(43);
+	var FixedDataTableColumnResizeHandle = __webpack_require__(44);
+	var FixedDataTableRow = __webpack_require__(45);
+	var FixedDataTableScrollHelper = __webpack_require__(46);
+	var FixedDataTableWidthHelper = __webpack_require__(47);
 
-	var cloneWithProps = __webpack_require__(46);
-	var cx = __webpack_require__(47);
-	var debounceCore = __webpack_require__(48);
-	var emptyFunction = __webpack_require__(49);
-	var invariant = __webpack_require__(50);
-	var shallowEqual = __webpack_require__(51);
-	var translateDOMPositionXY = __webpack_require__(52);
+	var cloneWithProps = __webpack_require__(48);
+	var cx = __webpack_require__(49);
+	var debounceCore = __webpack_require__(50);
+	var emptyFunction = __webpack_require__(51);
+	var invariant = __webpack_require__(52);
+	var shallowEqual = __webpack_require__(53);
+	var translateDOMPositionXY = __webpack_require__(54);
 
 	var PropTypes = React.PropTypes;
 	var ReactChildren = React.Children;
@@ -3200,7 +4397,7 @@
 
 
 /***/ },
-/* 27 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -3215,7 +4412,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(37);
+	var React = __webpack_require__(39);
 
 	var PropTypes = React.PropTypes;
 
@@ -3355,10 +4552,10 @@
 
 	module.exports = FixedDataTableColumn;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 28 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -3373,7 +4570,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(37);
+	var React = __webpack_require__(39);
 
 	var PropTypes = React.PropTypes;
 
@@ -3435,1133 +4632,10 @@
 
 	module.exports = FixedDataTableColumnGroup;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		return {
-			pending: toPendingState,
-			fulfilled: toFulfilledState,
-			rejected: toRejectedState,
-			inspect: inspect
-		};
-
-		function toPendingState() {
-			return { state: 'pending' };
-		}
-
-		function toRejectedState(e) {
-			return { state: 'rejected', reason: e };
-		}
-
-		function toFulfilledState(x) {
-			return { state: 'fulfilled', value: x };
-		}
-
-		function inspect(handler) {
-			var state = handler.state();
-			return state === 0 ? toPendingState()
-				 : state > 0   ? toFulfilledState(handler.value)
-				               : toRejectedState(handler.value);
-		}
-
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		return {
-			formatError: formatError,
-			formatObject: formatObject,
-			tryStringify: tryStringify
-		};
-
-		/**
-		 * Format an error into a string.  If e is an Error and has a stack property,
-		 * it's returned.  Otherwise, e is formatted using formatObject, with a
-		 * warning added about e not being a proper Error.
-		 * @param {*} e
-		 * @returns {String} formatted string, suitable for output to developers
-		 */
-		function formatError(e) {
-			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
-			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
-		}
-
-		/**
-		 * Format an object, detecting "plain" objects and running them through
-		 * JSON.stringify if possible.
-		 * @param {Object} o
-		 * @returns {string}
-		 */
-		function formatObject(o) {
-			var s = String(o);
-			if(s === '[object Object]' && typeof JSON !== 'undefined') {
-				s = tryStringify(o, s);
-			}
-			return s;
-		}
-
-		/**
-		 * Try to return the result of JSON.stringify(x).  If that fails, return
-		 * defaultValue
-		 * @param {*} x
-		 * @param {*} defaultValue
-		 * @returns {String|*} JSON.stringify(x) or defaultValue
-		 */
-		function tryStringify(x, defaultValue) {
-			try {
-				return JSON.stringify(x);
-			} catch(e) {
-				return defaultValue;
-			}
-		}
-
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		return function makePromise(environment) {
-
-			var tasks = environment.scheduler;
-			var emitRejection = initEmitRejection();
-
-			var objectCreate = Object.create ||
-				function(proto) {
-					function Child() {}
-					Child.prototype = proto;
-					return new Child();
-				};
-
-			/**
-			 * Create a promise whose fate is determined by resolver
-			 * @constructor
-			 * @returns {Promise} promise
-			 * @name Promise
-			 */
-			function Promise(resolver, handler) {
-				this._handler = resolver === Handler ? handler : init(resolver);
-			}
-
-			/**
-			 * Run the supplied resolver
-			 * @param resolver
-			 * @returns {Pending}
-			 */
-			function init(resolver) {
-				var handler = new Pending();
-
-				try {
-					resolver(promiseResolve, promiseReject, promiseNotify);
-				} catch (e) {
-					promiseReject(e);
-				}
-
-				return handler;
-
-				/**
-				 * Transition from pre-resolution state to post-resolution state, notifying
-				 * all listeners of the ultimate fulfillment or rejection
-				 * @param {*} x resolution value
-				 */
-				function promiseResolve (x) {
-					handler.resolve(x);
-				}
-				/**
-				 * Reject this promise with reason, which will be used verbatim
-				 * @param {Error|*} reason rejection reason, strongly suggested
-				 *   to be an Error type
-				 */
-				function promiseReject (reason) {
-					handler.reject(reason);
-				}
-
-				/**
-				 * @deprecated
-				 * Issue a progress event, notifying all progress listeners
-				 * @param {*} x progress event payload to pass to all listeners
-				 */
-				function promiseNotify (x) {
-					handler.notify(x);
-				}
-			}
-
-			// Creation
-
-			Promise.resolve = resolve;
-			Promise.reject = reject;
-			Promise.never = never;
-
-			Promise._defer = defer;
-			Promise._handler = getHandler;
-
-			/**
-			 * Returns a trusted promise. If x is already a trusted promise, it is
-			 * returned, otherwise returns a new trusted Promise which follows x.
-			 * @param  {*} x
-			 * @return {Promise} promise
-			 */
-			function resolve(x) {
-				return isPromise(x) ? x
-					: new Promise(Handler, new Async(getHandler(x)));
-			}
-
-			/**
-			 * Return a reject promise with x as its reason (x is used verbatim)
-			 * @param {*} x
-			 * @returns {Promise} rejected promise
-			 */
-			function reject(x) {
-				return new Promise(Handler, new Async(new Rejected(x)));
-			}
-
-			/**
-			 * Return a promise that remains pending forever
-			 * @returns {Promise} forever-pending promise.
-			 */
-			function never() {
-				return foreverPendingPromise; // Should be frozen
-			}
-
-			/**
-			 * Creates an internal {promise, resolver} pair
-			 * @private
-			 * @returns {Promise}
-			 */
-			function defer() {
-				return new Promise(Handler, new Pending());
-			}
-
-			// Transformation and flow control
-
-			/**
-			 * Transform this promise's fulfillment value, returning a new Promise
-			 * for the transformed result.  If the promise cannot be fulfilled, onRejected
-			 * is called with the reason.  onProgress *may* be called with updates toward
-			 * this promise's fulfillment.
-			 * @param {function=} onFulfilled fulfillment handler
-			 * @param {function=} onRejected rejection handler
-			 * @param {function=} onProgress @deprecated progress handler
-			 * @return {Promise} new promise
-			 */
-			Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
-				var parent = this._handler;
-				var state = parent.join().state();
-
-				if ((typeof onFulfilled !== 'function' && state > 0) ||
-					(typeof onRejected !== 'function' && state < 0)) {
-					// Short circuit: value will not change, simply share handler
-					return new this.constructor(Handler, parent);
-				}
-
-				var p = this._beget();
-				var child = p._handler;
-
-				parent.chain(child, parent.receiver, onFulfilled, onRejected, onProgress);
-
-				return p;
-			};
-
-			/**
-			 * If this promise cannot be fulfilled due to an error, call onRejected to
-			 * handle the error. Shortcut for .then(undefined, onRejected)
-			 * @param {function?} onRejected
-			 * @return {Promise}
-			 */
-			Promise.prototype['catch'] = function(onRejected) {
-				return this.then(void 0, onRejected);
-			};
-
-			/**
-			 * Creates a new, pending promise of the same type as this promise
-			 * @private
-			 * @returns {Promise}
-			 */
-			Promise.prototype._beget = function() {
-				return begetFrom(this._handler, this.constructor);
-			};
-
-			function begetFrom(parent, Promise) {
-				var child = new Pending(parent.receiver, parent.join().context);
-				return new Promise(Handler, child);
-			}
-
-			// Array combinators
-
-			Promise.all = all;
-			Promise.race = race;
-			Promise._traverse = traverse;
-
-			/**
-			 * Return a promise that will fulfill when all promises in the
-			 * input array have fulfilled, or will reject when one of the
-			 * promises rejects.
-			 * @param {array} promises array of promises
-			 * @returns {Promise} promise for array of fulfillment values
-			 */
-			function all(promises) {
-				return traverseWith(snd, null, promises);
-			}
-
-			/**
-			 * Array<Promise<X>> -> Promise<Array<f(X)>>
-			 * @private
-			 * @param {function} f function to apply to each promise's value
-			 * @param {Array} promises array of promises
-			 * @returns {Promise} promise for transformed values
-			 */
-			function traverse(f, promises) {
-				return traverseWith(tryCatch2, f, promises);
-			}
-
-			function traverseWith(tryMap, f, promises) {
-				var handler = typeof f === 'function' ? mapAt : settleAt;
-
-				var resolver = new Pending();
-				var pending = promises.length >>> 0;
-				var results = new Array(pending);
-
-				for (var i = 0, x; i < promises.length && !resolver.resolved; ++i) {
-					x = promises[i];
-
-					if (x === void 0 && !(i in promises)) {
-						--pending;
-						continue;
-					}
-
-					traverseAt(promises, handler, i, x, resolver);
-				}
-
-				if(pending === 0) {
-					resolver.become(new Fulfilled(results));
-				}
-
-				return new Promise(Handler, resolver);
-
-				function mapAt(i, x, resolver) {
-					if(!resolver.resolved) {
-						traverseAt(promises, settleAt, i, tryMap(f, x, i), resolver);
-					}
-				}
-
-				function settleAt(i, x, resolver) {
-					results[i] = x;
-					if(--pending === 0) {
-						resolver.become(new Fulfilled(results));
-					}
-				}
-			}
-
-			function traverseAt(promises, handler, i, x, resolver) {
-				if (maybeThenable(x)) {
-					var h = getHandlerMaybeThenable(x);
-					var s = h.state();
-
-					if (s === 0) {
-						h.fold(handler, i, void 0, resolver);
-					} else if (s > 0) {
-						handler(i, h.value, resolver);
-					} else {
-						resolver.become(h);
-						visitRemaining(promises, i+1, h);
-					}
-				} else {
-					handler(i, x, resolver);
-				}
-			}
-
-			Promise._visitRemaining = visitRemaining;
-			function visitRemaining(promises, start, handler) {
-				for(var i=start; i<promises.length; ++i) {
-					markAsHandled(getHandler(promises[i]), handler);
-				}
-			}
-
-			function markAsHandled(h, handler) {
-				if(h === handler) {
-					return;
-				}
-
-				var s = h.state();
-				if(s === 0) {
-					h.visit(h, void 0, h._unreport);
-				} else if(s < 0) {
-					h._unreport();
-				}
-			}
-
-			/**
-			 * Fulfill-reject competitive race. Return a promise that will settle
-			 * to the same state as the earliest input promise to settle.
-			 *
-			 * WARNING: The ES6 Promise spec requires that race()ing an empty array
-			 * must return a promise that is pending forever.  This implementation
-			 * returns a singleton forever-pending promise, the same singleton that is
-			 * returned by Promise.never(), thus can be checked with ===
-			 *
-			 * @param {array} promises array of promises to race
-			 * @returns {Promise} if input is non-empty, a promise that will settle
-			 * to the same outcome as the earliest input promise to settle. if empty
-			 * is empty, returns a promise that will never settle.
-			 */
-			function race(promises) {
-				if(typeof promises !== 'object' || promises === null) {
-					return reject(new TypeError('non-iterable passed to race()'));
-				}
-
-				// Sigh, race([]) is untestable unless we return *something*
-				// that is recognizable without calling .then() on it.
-				return promises.length === 0 ? never()
-					 : promises.length === 1 ? resolve(promises[0])
-					 : runRace(promises);
-			}
-
-			function runRace(promises) {
-				var resolver = new Pending();
-				var i, x, h;
-				for(i=0; i<promises.length; ++i) {
-					x = promises[i];
-					if (x === void 0 && !(i in promises)) {
-						continue;
-					}
-
-					h = getHandler(x);
-					if(h.state() !== 0) {
-						resolver.become(h);
-						visitRemaining(promises, i+1, h);
-						break;
-					} else {
-						h.visit(resolver, resolver.resolve, resolver.reject);
-					}
-				}
-				return new Promise(Handler, resolver);
-			}
-
-			// Promise internals
-			// Below this, everything is @private
-
-			/**
-			 * Get an appropriate handler for x, without checking for cycles
-			 * @param {*} x
-			 * @returns {object} handler
-			 */
-			function getHandler(x) {
-				if(isPromise(x)) {
-					return x._handler.join();
-				}
-				return maybeThenable(x) ? getHandlerUntrusted(x) : new Fulfilled(x);
-			}
-
-			/**
-			 * Get a handler for thenable x.
-			 * NOTE: You must only call this if maybeThenable(x) == true
-			 * @param {object|function|Promise} x
-			 * @returns {object} handler
-			 */
-			function getHandlerMaybeThenable(x) {
-				return isPromise(x) ? x._handler.join() : getHandlerUntrusted(x);
-			}
-
-			/**
-			 * Get a handler for potentially untrusted thenable x
-			 * @param {*} x
-			 * @returns {object} handler
-			 */
-			function getHandlerUntrusted(x) {
-				try {
-					var untrustedThen = x.then;
-					return typeof untrustedThen === 'function'
-						? new Thenable(untrustedThen, x)
-						: new Fulfilled(x);
-				} catch(e) {
-					return new Rejected(e);
-				}
-			}
-
-			/**
-			 * Handler for a promise that is pending forever
-			 * @constructor
-			 */
-			function Handler() {}
-
-			Handler.prototype.when
-				= Handler.prototype.become
-				= Handler.prototype.notify // deprecated
-				= Handler.prototype.fail
-				= Handler.prototype._unreport
-				= Handler.prototype._report
-				= noop;
-
-			Handler.prototype._state = 0;
-
-			Handler.prototype.state = function() {
-				return this._state;
-			};
-
-			/**
-			 * Recursively collapse handler chain to find the handler
-			 * nearest to the fully resolved value.
-			 * @returns {object} handler nearest the fully resolved value
-			 */
-			Handler.prototype.join = function() {
-				var h = this;
-				while(h.handler !== void 0) {
-					h = h.handler;
-				}
-				return h;
-			};
-
-			Handler.prototype.chain = function(to, receiver, fulfilled, rejected, progress) {
-				this.when({
-					resolver: to,
-					receiver: receiver,
-					fulfilled: fulfilled,
-					rejected: rejected,
-					progress: progress
-				});
-			};
-
-			Handler.prototype.visit = function(receiver, fulfilled, rejected, progress) {
-				this.chain(failIfRejected, receiver, fulfilled, rejected, progress);
-			};
-
-			Handler.prototype.fold = function(f, z, c, to) {
-				this.when(new Fold(f, z, c, to));
-			};
-
-			/**
-			 * Handler that invokes fail() on any handler it becomes
-			 * @constructor
-			 */
-			function FailIfRejected() {}
-
-			inherit(Handler, FailIfRejected);
-
-			FailIfRejected.prototype.become = function(h) {
-				h.fail();
-			};
-
-			var failIfRejected = new FailIfRejected();
-
-			/**
-			 * Handler that manages a queue of consumers waiting on a pending promise
-			 * @constructor
-			 */
-			function Pending(receiver, inheritedContext) {
-				Promise.createContext(this, inheritedContext);
-
-				this.consumers = void 0;
-				this.receiver = receiver;
-				this.handler = void 0;
-				this.resolved = false;
-			}
-
-			inherit(Handler, Pending);
-
-			Pending.prototype._state = 0;
-
-			Pending.prototype.resolve = function(x) {
-				this.become(getHandler(x));
-			};
-
-			Pending.prototype.reject = function(x) {
-				if(this.resolved) {
-					return;
-				}
-
-				this.become(new Rejected(x));
-			};
-
-			Pending.prototype.join = function() {
-				if (!this.resolved) {
-					return this;
-				}
-
-				var h = this;
-
-				while (h.handler !== void 0) {
-					h = h.handler;
-					if (h === this) {
-						return this.handler = cycle();
-					}
-				}
-
-				return h;
-			};
-
-			Pending.prototype.run = function() {
-				var q = this.consumers;
-				var handler = this.handler;
-				this.handler = this.handler.join();
-				this.consumers = void 0;
-
-				for (var i = 0; i < q.length; ++i) {
-					handler.when(q[i]);
-				}
-			};
-
-			Pending.prototype.become = function(handler) {
-				if(this.resolved) {
-					return;
-				}
-
-				this.resolved = true;
-				this.handler = handler;
-				if(this.consumers !== void 0) {
-					tasks.enqueue(this);
-				}
-
-				if(this.context !== void 0) {
-					handler._report(this.context);
-				}
-			};
-
-			Pending.prototype.when = function(continuation) {
-				if(this.resolved) {
-					tasks.enqueue(new ContinuationTask(continuation, this.handler));
-				} else {
-					if(this.consumers === void 0) {
-						this.consumers = [continuation];
-					} else {
-						this.consumers.push(continuation);
-					}
-				}
-			};
-
-			/**
-			 * @deprecated
-			 */
-			Pending.prototype.notify = function(x) {
-				if(!this.resolved) {
-					tasks.enqueue(new ProgressTask(x, this));
-				}
-			};
-
-			Pending.prototype.fail = function(context) {
-				var c = typeof context === 'undefined' ? this.context : context;
-				this.resolved && this.handler.join().fail(c);
-			};
-
-			Pending.prototype._report = function(context) {
-				this.resolved && this.handler.join()._report(context);
-			};
-
-			Pending.prototype._unreport = function() {
-				this.resolved && this.handler.join()._unreport();
-			};
-
-			/**
-			 * Wrap another handler and force it into a future stack
-			 * @param {object} handler
-			 * @constructor
-			 */
-			function Async(handler) {
-				this.handler = handler;
-			}
-
-			inherit(Handler, Async);
-
-			Async.prototype.when = function(continuation) {
-				tasks.enqueue(new ContinuationTask(continuation, this));
-			};
-
-			Async.prototype._report = function(context) {
-				this.join()._report(context);
-			};
-
-			Async.prototype._unreport = function() {
-				this.join()._unreport();
-			};
-
-			/**
-			 * Handler that wraps an untrusted thenable and assimilates it in a future stack
-			 * @param {function} then
-			 * @param {{then: function}} thenable
-			 * @constructor
-			 */
-			function Thenable(then, thenable) {
-				Pending.call(this);
-				tasks.enqueue(new AssimilateTask(then, thenable, this));
-			}
-
-			inherit(Pending, Thenable);
-
-			/**
-			 * Handler for a fulfilled promise
-			 * @param {*} x fulfillment value
-			 * @constructor
-			 */
-			function Fulfilled(x) {
-				Promise.createContext(this);
-				this.value = x;
-			}
-
-			inherit(Handler, Fulfilled);
-
-			Fulfilled.prototype._state = 1;
-
-			Fulfilled.prototype.fold = function(f, z, c, to) {
-				runContinuation3(f, z, this, c, to);
-			};
-
-			Fulfilled.prototype.when = function(cont) {
-				runContinuation1(cont.fulfilled, this, cont.receiver, cont.resolver);
-			};
-
-			var errorId = 0;
-
-			/**
-			 * Handler for a rejected promise
-			 * @param {*} x rejection reason
-			 * @constructor
-			 */
-			function Rejected(x) {
-				Promise.createContext(this);
-
-				this.id = ++errorId;
-				this.value = x;
-				this.handled = false;
-				this.reported = false;
-
-				this._report();
-			}
-
-			inherit(Handler, Rejected);
-
-			Rejected.prototype._state = -1;
-
-			Rejected.prototype.fold = function(f, z, c, to) {
-				to.become(this);
-			};
-
-			Rejected.prototype.when = function(cont) {
-				if(typeof cont.rejected === 'function') {
-					this._unreport();
-				}
-				runContinuation1(cont.rejected, this, cont.receiver, cont.resolver);
-			};
-
-			Rejected.prototype._report = function(context) {
-				tasks.afterQueue(new ReportTask(this, context));
-			};
-
-			Rejected.prototype._unreport = function() {
-				if(this.handled) {
-					return;
-				}
-				this.handled = true;
-				tasks.afterQueue(new UnreportTask(this));
-			};
-
-			Rejected.prototype.fail = function(context) {
-				this.reported = true;
-				emitRejection('unhandledRejection', this);
-				Promise.onFatalRejection(this, context === void 0 ? this.context : context);
-			};
-
-			function ReportTask(rejection, context) {
-				this.rejection = rejection;
-				this.context = context;
-			}
-
-			ReportTask.prototype.run = function() {
-				if(!this.rejection.handled && !this.rejection.reported) {
-					this.rejection.reported = true;
-					emitRejection('unhandledRejection', this.rejection) ||
-						Promise.onPotentiallyUnhandledRejection(this.rejection, this.context);
-				}
-			};
-
-			function UnreportTask(rejection) {
-				this.rejection = rejection;
-			}
-
-			UnreportTask.prototype.run = function() {
-				if(this.rejection.reported) {
-					emitRejection('rejectionHandled', this.rejection) ||
-						Promise.onPotentiallyUnhandledRejectionHandled(this.rejection);
-				}
-			};
-
-			// Unhandled rejection hooks
-			// By default, everything is a noop
-
-			Promise.createContext
-				= Promise.enterContext
-				= Promise.exitContext
-				= Promise.onPotentiallyUnhandledRejection
-				= Promise.onPotentiallyUnhandledRejectionHandled
-				= Promise.onFatalRejection
-				= noop;
-
-			// Errors and singletons
-
-			var foreverPendingHandler = new Handler();
-			var foreverPendingPromise = new Promise(Handler, foreverPendingHandler);
-
-			function cycle() {
-				return new Rejected(new TypeError('Promise cycle'));
-			}
-
-			// Task runners
-
-			/**
-			 * Run a single consumer
-			 * @constructor
-			 */
-			function ContinuationTask(continuation, handler) {
-				this.continuation = continuation;
-				this.handler = handler;
-			}
-
-			ContinuationTask.prototype.run = function() {
-				this.handler.join().when(this.continuation);
-			};
-
-			/**
-			 * Run a queue of progress handlers
-			 * @constructor
-			 */
-			function ProgressTask(value, handler) {
-				this.handler = handler;
-				this.value = value;
-			}
-
-			ProgressTask.prototype.run = function() {
-				var q = this.handler.consumers;
-				if(q === void 0) {
-					return;
-				}
-
-				for (var c, i = 0; i < q.length; ++i) {
-					c = q[i];
-					runNotify(c.progress, this.value, this.handler, c.receiver, c.resolver);
-				}
-			};
-
-			/**
-			 * Assimilate a thenable, sending it's value to resolver
-			 * @param {function} then
-			 * @param {object|function} thenable
-			 * @param {object} resolver
-			 * @constructor
-			 */
-			function AssimilateTask(then, thenable, resolver) {
-				this._then = then;
-				this.thenable = thenable;
-				this.resolver = resolver;
-			}
-
-			AssimilateTask.prototype.run = function() {
-				var h = this.resolver;
-				tryAssimilate(this._then, this.thenable, _resolve, _reject, _notify);
-
-				function _resolve(x) { h.resolve(x); }
-				function _reject(x)  { h.reject(x); }
-				function _notify(x)  { h.notify(x); }
-			};
-
-			function tryAssimilate(then, thenable, resolve, reject, notify) {
-				try {
-					then.call(thenable, resolve, reject, notify);
-				} catch (e) {
-					reject(e);
-				}
-			}
-
-			/**
-			 * Fold a handler value with z
-			 * @constructor
-			 */
-			function Fold(f, z, c, to) {
-				this.f = f; this.z = z; this.c = c; this.to = to;
-				this.resolver = failIfRejected;
-				this.receiver = this;
-			}
-
-			Fold.prototype.fulfilled = function(x) {
-				this.f.call(this.c, this.z, x, this.to);
-			};
-
-			Fold.prototype.rejected = function(x) {
-				this.to.reject(x);
-			};
-
-			Fold.prototype.progress = function(x) {
-				this.to.notify(x);
-			};
-
-			// Other helpers
-
-			/**
-			 * @param {*} x
-			 * @returns {boolean} true iff x is a trusted Promise
-			 */
-			function isPromise(x) {
-				return x instanceof Promise;
-			}
-
-			/**
-			 * Test just enough to rule out primitives, in order to take faster
-			 * paths in some code
-			 * @param {*} x
-			 * @returns {boolean} false iff x is guaranteed *not* to be a thenable
-			 */
-			function maybeThenable(x) {
-				return (typeof x === 'object' || typeof x === 'function') && x !== null;
-			}
-
-			function runContinuation1(f, h, receiver, next) {
-				if(typeof f !== 'function') {
-					return next.become(h);
-				}
-
-				Promise.enterContext(h);
-				tryCatchReject(f, h.value, receiver, next);
-				Promise.exitContext();
-			}
-
-			function runContinuation3(f, x, h, receiver, next) {
-				if(typeof f !== 'function') {
-					return next.become(h);
-				}
-
-				Promise.enterContext(h);
-				tryCatchReject3(f, x, h.value, receiver, next);
-				Promise.exitContext();
-			}
-
-			/**
-			 * @deprecated
-			 */
-			function runNotify(f, x, h, receiver, next) {
-				if(typeof f !== 'function') {
-					return next.notify(x);
-				}
-
-				Promise.enterContext(h);
-				tryCatchReturn(f, x, receiver, next);
-				Promise.exitContext();
-			}
-
-			function tryCatch2(f, a, b) {
-				try {
-					return f(a, b);
-				} catch(e) {
-					return reject(e);
-				}
-			}
-
-			/**
-			 * Return f.call(thisArg, x), or if it throws return a rejected promise for
-			 * the thrown exception
-			 */
-			function tryCatchReject(f, x, thisArg, next) {
-				try {
-					next.become(getHandler(f.call(thisArg, x)));
-				} catch(e) {
-					next.become(new Rejected(e));
-				}
-			}
-
-			/**
-			 * Same as above, but includes the extra argument parameter.
-			 */
-			function tryCatchReject3(f, x, y, thisArg, next) {
-				try {
-					f.call(thisArg, x, y, next);
-				} catch(e) {
-					next.become(new Rejected(e));
-				}
-			}
-
-			/**
-			 * @deprecated
-			 * Return f.call(thisArg, x), or if it throws, *return* the exception
-			 */
-			function tryCatchReturn(f, x, thisArg, next) {
-				try {
-					next.notify(f.call(thisArg, x));
-				} catch(e) {
-					next.notify(e);
-				}
-			}
-
-			function inherit(Parent, Child) {
-				Child.prototype = objectCreate(Parent.prototype);
-				Child.prototype.constructor = Child;
-			}
-
-			function snd(x, y) {
-				return y;
-			}
-
-			function noop() {}
-
-			function initEmitRejection() {
-				/*global process, self, CustomEvent*/
-				if(typeof process !== 'undefined' && process !== null
-					&& typeof process.emit === 'function') {
-					// Returning falsy here means to call the default
-					// onPotentiallyUnhandledRejection API.  This is safe even in
-					// browserify since process.emit always returns falsy in browserify:
-					// https://github.com/defunctzombie/node-process/blob/master/browser.js#L40-L46
-					return function(type, rejection) {
-						return type === 'unhandledRejection'
-							? process.emit(type, rejection.value, rejection)
-							: process.emit(type, rejection);
-					};
-				} else if(typeof self !== 'undefined' && typeof CustomEvent === 'function') {
-					return (function(noop, self, CustomEvent) {
-						var hasCustomEvent = false;
-						try {
-							var ev = new CustomEvent('unhandledRejection');
-							hasCustomEvent = ev instanceof CustomEvent;
-						} catch (e) {}
-
-						return !hasCustomEvent ? noop : function(type, rejection) {
-							var ev = new CustomEvent(type, {
-								detail: {
-									reason: rejection.value,
-									key: rejection
-								},
-								bubbles: false,
-								cancelable: true
-							});
-
-							return !self.dispatchEvent(ev);
-						};
-					}(noop, self, CustomEvent));
-				}
-
-				return noop;
-			}
-
-			return Promise;
-		};
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
-
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		// Credit to Twisol (https://github.com/Twisol) for suggesting
-		// this type of extensible queue + trampoline approach for next-tick conflation.
-
-		/**
-		 * Async task scheduler
-		 * @param {function} async function to schedule a single async function
-		 * @constructor
-		 */
-		function Scheduler(async) {
-			this._async = async;
-			this._running = false;
-
-			this._queue = this;
-			this._queueLen = 0;
-			this._afterQueue = {};
-			this._afterQueueLen = 0;
-
-			var self = this;
-			this.drain = function() {
-				self._drain();
-			};
-		}
-
-		/**
-		 * Enqueue a task
-		 * @param {{ run:function }} task
-		 */
-		Scheduler.prototype.enqueue = function(task) {
-			this._queue[this._queueLen++] = task;
-			this.run();
-		};
-
-		/**
-		 * Enqueue a task to run after the main task queue
-		 * @param {{ run:function }} task
-		 */
-		Scheduler.prototype.afterQueue = function(task) {
-			this._afterQueue[this._afterQueueLen++] = task;
-			this.run();
-		};
-
-		Scheduler.prototype.run = function() {
-			if (!this._running) {
-				this._running = true;
-				this._async(this.drain);
-			}
-		};
-
-		/**
-		 * Drain the handler queue entirely, and then the after queue
-		 */
-		Scheduler.prototype._drain = function() {
-			var i = 0;
-			for (; i < this._queueLen; ++i) {
-				this._queue[i].run();
-				this._queue[i] = void 0;
-			}
-
-			this._queueLen = 0;
-			this._running = false;
-
-			for (i = 0; i < this._afterQueueLen; ++i) {
-				this._afterQueue[i].run();
-				this._afterQueue[i] = void 0;
-			}
-
-			this._afterQueueLen = 0;
-		};
-
-		return Scheduler;
-
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(23)));
-
-
-/***/ },
-/* 33 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -4625,13 +4699,7 @@
 
 
 /***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* (ignored) */
-
-/***/ },
-/* 35 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4648,12 +4716,12 @@
 
 	"use strict";
 
-	var Locale = __webpack_require__(36);
-	var React = __webpack_require__(37);
-	var FixedDataTableColumnGroup = __webpack_require__(28);
-	var FixedDataTableColumn = __webpack_require__(27);
+	var Locale = __webpack_require__(38);
+	var React = __webpack_require__(39);
+	var FixedDataTableColumnGroup = __webpack_require__(35);
+	var FixedDataTableColumn = __webpack_require__(34);
 
-	var cloneWithProps = __webpack_require__(46);
+	var cloneWithProps = __webpack_require__(48);
 
 	var DIR_SIGN = (Locale.isRTL() ? -1 : +1);
 	// A cell up to 5px outside of the visible area will still be considered visible
@@ -4741,7 +4809,7 @@
 
 
 /***/ },
-/* 36 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4767,7 +4835,7 @@
 
 
 /***/ },
-/* 37 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4785,7 +4853,7 @@
 
 
 /***/ },
-/* 38 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4799,11 +4867,11 @@
 	 * @providesModule ReactComponentWithPureRenderMixin
 	 */
 
-	module.exports = __webpack_require__(65);
+	module.exports = __webpack_require__(67);
 
 
 /***/ },
-/* 39 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4820,8 +4888,8 @@
 
 	"use strict";
 
-	var normalizeWheel = __webpack_require__(53);
-	var requestAnimationFramePolyfill = __webpack_require__(54);
+	var normalizeWheel = __webpack_require__(61);
+	var requestAnimationFramePolyfill = __webpack_require__(62);
 
 
 	  /**
@@ -4881,7 +4949,7 @@
 
 
 /***/ },
-/* 40 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4896,16 +4964,16 @@
 	 * @typechecks
 	 */
 
-	var DOMMouseMoveTracker = __webpack_require__(55);
-	var Keys = __webpack_require__(56);
-	var React = __webpack_require__(37);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(38);
-	var ReactWheelHandler = __webpack_require__(39);
+	var DOMMouseMoveTracker = __webpack_require__(57);
+	var Keys = __webpack_require__(59);
+	var React = __webpack_require__(39);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(40);
+	var ReactWheelHandler = __webpack_require__(41);
 
-	var cssVar = __webpack_require__(57);
-	var cx = __webpack_require__(47);
-	var emptyFunction = __webpack_require__(49);
-	var translateDOMPositionXY = __webpack_require__(52);
+	var cssVar = __webpack_require__(60);
+	var cx = __webpack_require__(49);
+	var emptyFunction = __webpack_require__(51);
+	var translateDOMPositionXY = __webpack_require__(54);
 
 	var PropTypes = React.PropTypes;
 
@@ -5366,7 +5434,7 @@
 
 
 /***/ },
-/* 41 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -5381,13 +5449,13 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(37);
-	var FixedDataTableRowBuffer = __webpack_require__(58);
-	var FixedDataTableRow = __webpack_require__(43);
+	var React = __webpack_require__(39);
+	var FixedDataTableRowBuffer = __webpack_require__(55);
+	var FixedDataTableRow = __webpack_require__(45);
 
-	var cx = __webpack_require__(47);
-	var emptyFunction = __webpack_require__(49);
-	var joinClasses = __webpack_require__(59);
+	var cx = __webpack_require__(49);
+	var emptyFunction = __webpack_require__(51);
+	var joinClasses = __webpack_require__(56);
 
 	var PropTypes = React.PropTypes;
 
@@ -5533,7 +5601,7 @@
 
 
 /***/ },
-/* 42 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -5552,13 +5620,13 @@
 	 * @typechecks
 	 */
 
-	var DOMMouseMoveTracker = __webpack_require__(55);
-	var Locale = __webpack_require__(36);
-	var React = __webpack_require__(37);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(38);
+	var DOMMouseMoveTracker = __webpack_require__(57);
+	var Locale = __webpack_require__(38);
+	var React = __webpack_require__(39);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(40);
 
-	var clamp = __webpack_require__(60);
-	var cx = __webpack_require__(47);
+	var clamp = __webpack_require__(58);
+	var cx = __webpack_require__(49);
 
 	var PropTypes = React.PropTypes;
 
@@ -5705,7 +5773,7 @@
 
 
 /***/ },
-/* 43 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -5722,14 +5790,14 @@
 
 	"use strict";
 
-	var FixedDataTableHelper = __webpack_require__(35);
-	var React = __webpack_require__(37);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(38);
-	var FixedDataTableCellGroup = __webpack_require__(61);
+	var FixedDataTableHelper = __webpack_require__(37);
+	var React = __webpack_require__(39);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(40);
+	var FixedDataTableCellGroup = __webpack_require__(64);
 
-	var cx = __webpack_require__(47);
-	var joinClasses = __webpack_require__(59);
-	var translateDOMPositionXY = __webpack_require__(52);
+	var cx = __webpack_require__(49);
+	var joinClasses = __webpack_require__(56);
+	var translateDOMPositionXY = __webpack_require__(54);
 
 	var DIR_SIGN = FixedDataTableHelper.DIR_SIGN;
 	var PropTypes = React.PropTypes;
@@ -5952,7 +6020,7 @@
 
 
 /***/ },
-/* 44 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -5968,8 +6036,8 @@
 	 */
 	'use strict';
 
-	var PrefixIntervalTree = __webpack_require__(62);
-	var clamp = __webpack_require__(60);
+	var PrefixIntervalTree = __webpack_require__(63);
+	var clamp = __webpack_require__(58);
 
 	var BUFFER_ROWS = 5;
 
@@ -6222,7 +6290,7 @@
 
 
 /***/ },
-/* 45 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -6238,9 +6306,9 @@
 	 */
 	'use strict';
 
-	var React = __webpack_require__(37);
+	var React = __webpack_require__(39);
 
-	var cloneWithProps = __webpack_require__(46);
+	var cloneWithProps = __webpack_require__(48);
 
 	function getTotalWidth(/*array*/ columns) /*number*/ {
 	  var totalWidth = 0;
@@ -6380,7 +6448,7 @@
 
 
 /***/ },
-/* 46 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -6394,11 +6462,11 @@
 	 * @providesModule cloneWithProps
 	 */
 
-	module.exports = __webpack_require__(66);
+	module.exports = __webpack_require__(68);
 
 
 /***/ },
-/* 47 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -6456,7 +6524,7 @@
 
 
 /***/ },
-/* 48 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -6521,7 +6589,7 @@
 
 
 /***/ },
-/* 49 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -6559,7 +6627,7 @@
 
 
 /***/ },
-/* 50 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -6616,10 +6684,10 @@
 
 	module.exports = invariant;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 51 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -6667,7 +6735,7 @@
 
 
 /***/ },
-/* 52 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -6684,9 +6752,9 @@
 
 	"use strict";
 
-	var BrowserSupportCore = __webpack_require__(63);
+	var BrowserSupportCore = __webpack_require__(65);
 
-	var getVendorPrefixedName = __webpack_require__(64);
+	var getVendorPrefixedName = __webpack_require__(66);
 
 	var TRANSFORM = getVendorPrefixedName('transform');
 	var BACKFACE_VISIBILITY = getVendorPrefixedName('backfaceVisibility');
@@ -6722,7 +6790,484 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 53 */
+/* 55 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableRowBuffer
+	 * @typechecks
+	 */
+	'use strict';
+
+	var IntegerBufferSet = __webpack_require__(69);
+
+	var clamp = __webpack_require__(58);
+	var invariant = __webpack_require__(52);
+	var MIN_BUFFER_ROWS = 5;
+	var MAX_BUFFER_ROWS = 15;
+
+	// FixedDataTableRowBuffer is a helper class that executes row buffering
+	// logic for FixedDataTable. It figures out which rows should be rendered
+	// and in which positions.
+
+	  function FixedDataTableRowBuffer(
+	rowsCount,
+	    /*number*/  defaultRowHeight,
+	    /*number*/ viewportHeight,
+	    /*?function*/ rowHeightGetter)
+	   {
+	    invariant(
+	      defaultRowHeight !== 0,
+	      "defaultRowHeight musn't be equal 0 in FixedDataTableRowBuffer"
+	    );
+
+	    this.$FixedDataTableRowBuffer_bufferSet = new IntegerBufferSet();
+	    this.$FixedDataTableRowBuffer_defaultRowHeight = defaultRowHeight;
+	    this.$FixedDataTableRowBuffer_viewportRowsBegin = 0;
+	    this.$FixedDataTableRowBuffer_viewportRowsEnd = 0;
+	    this.$FixedDataTableRowBuffer_maxVisibleRowCount = Math.ceil(viewportHeight / defaultRowHeight) + 1;
+	    this.$FixedDataTableRowBuffer_bufferRowsCount = clamp(
+	      MIN_BUFFER_ROWS,
+	      Math.floor(this.$FixedDataTableRowBuffer_maxVisibleRowCount/2),
+	      MAX_BUFFER_ROWS
+	    );
+	    this.$FixedDataTableRowBuffer_rowsCount = rowsCount;
+	    this.$FixedDataTableRowBuffer_rowHeightGetter = rowHeightGetter;
+	    this.$FixedDataTableRowBuffer_rows = [];
+	    this.$FixedDataTableRowBuffer_viewportHeight = viewportHeight;
+
+	    this.getRows = this.getRows.bind(this);
+	    this.getRowsWithUpdatedBuffer = this.getRowsWithUpdatedBuffer.bind(this);
+	  }
+
+	  FixedDataTableRowBuffer.prototype.getRowsWithUpdatedBuffer=function()  {
+	    var remainingBufferRows = 2 * this.$FixedDataTableRowBuffer_bufferRowsCount;
+	    var bufferRowIndex =
+	      Math.max(this.$FixedDataTableRowBuffer_viewportRowsBegin - this.$FixedDataTableRowBuffer_bufferRowsCount, 0);
+	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_viewportRowsBegin) {
+	      this.$FixedDataTableRowBuffer_addRowToBuffer(
+	        bufferRowIndex,
+	        this.$FixedDataTableRowBuffer_viewportHeight,
+	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
+	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
+	      );
+	      bufferRowIndex++;
+	      remainingBufferRows--;
+	    }
+	    bufferRowIndex = this.$FixedDataTableRowBuffer_viewportRowsEnd;
+	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_rowsCount && remainingBufferRows > 0) {
+	      this.$FixedDataTableRowBuffer_addRowToBuffer(
+	        bufferRowIndex,
+	        this.$FixedDataTableRowBuffer_viewportHeight,
+	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
+	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
+	      );
+	      bufferRowIndex++;
+	      remainingBufferRows--;
+	    }
+	    return this.$FixedDataTableRowBuffer_rows;
+	  };
+
+	  FixedDataTableRowBuffer.prototype.getRows=function(
+	firstRowIndex,
+	    /*number*/ firstRowOffset)
+	    {
+	    // Update offsets of all rows to move them outside of viewport. Later we
+	    // will bring rows that we should show to their right offsets.
+	    this.$FixedDataTableRowBuffer_hideAllRows();
+
+	    var top = firstRowOffset;
+	    var totalHeight = top;
+	    var rowIndex = firstRowIndex;
+	    var endIndex =
+	      Math.min(firstRowIndex + this.$FixedDataTableRowBuffer_maxVisibleRowCount, this.$FixedDataTableRowBuffer_rowsCount);
+
+	    this.$FixedDataTableRowBuffer_viewportRowsBegin = firstRowIndex;
+	    while (rowIndex < endIndex ||
+	        (totalHeight < this.$FixedDataTableRowBuffer_viewportHeight && rowIndex < this.$FixedDataTableRowBuffer_rowsCount)) {
+	      this.$FixedDataTableRowBuffer_addRowToBuffer(
+	        rowIndex,
+	        totalHeight,
+	        firstRowIndex,
+	        endIndex - 1
+	      );
+	      totalHeight += this.$FixedDataTableRowBuffer_rowHeightGetter(rowIndex);
+	      ++rowIndex;
+	      // Store index after the last viewport row as end, to be able to
+	      // distinguish when there are no rows rendered in viewport
+	      this.$FixedDataTableRowBuffer_viewportRowsEnd = rowIndex;
+	    }
+
+	    return this.$FixedDataTableRowBuffer_rows;
+	  };
+
+	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_addRowToBuffer=function(
+	rowIndex,
+	    /*number*/ offsetTop,
+	    /*number*/ firstViewportRowIndex,
+	    /*number*/ lastViewportRowIndex)
+	   {
+	      var rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getValuePosition(rowIndex);
+	      var viewportRowsCount = lastViewportRowIndex - firstViewportRowIndex + 1;
+	      var allowedRowsCount = viewportRowsCount + this.$FixedDataTableRowBuffer_bufferRowsCount * 2;
+	      if (rowPosition === null &&
+	          this.$FixedDataTableRowBuffer_bufferSet.getSize() >= allowedRowsCount) {
+	        rowPosition =
+	          this.$FixedDataTableRowBuffer_bufferSet.replaceFurthestValuePosition(
+	            firstViewportRowIndex,
+	            lastViewportRowIndex,
+	            rowIndex
+	          );
+	      }
+	      if (rowPosition === null) {
+	        // We can't reuse any of existing positions for this row. We have to
+	        // create new position
+	        rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getNewPositionForValue(rowIndex);
+	        this.$FixedDataTableRowBuffer_rows[rowPosition] = {
+	          rowIndex:rowIndex,
+	          offsetTop:offsetTop,
+	        };
+	      } else {
+	        // This row already is in the table with rowPosition position or it
+	        // can replace row that is in that position
+	        this.$FixedDataTableRowBuffer_rows[rowPosition].rowIndex = rowIndex;
+	        this.$FixedDataTableRowBuffer_rows[rowPosition].offsetTop = offsetTop;
+	      }
+	  };
+
+	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_hideAllRows=function() {
+	    var i = this.$FixedDataTableRowBuffer_rows.length - 1;
+	    while (i > -1) {
+	      this.$FixedDataTableRowBuffer_rows[i].offsetTop = this.$FixedDataTableRowBuffer_viewportHeight;
+	      i--;
+	    }
+	  };
+
+
+	module.exports = FixedDataTableRowBuffer;
+
+
+/***/ },
+/* 56 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule joinClasses
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	/**
+	 * Combines multiple className strings into one.
+	 * http://jsperf.com/joinclasses-args-vs-array
+	 *
+	 * @param {...?string} classes
+	 * @return {string}
+	 */
+	function joinClasses(className/*, ... */) {
+	  if (!className) {
+	    className = '';
+	  }
+	  var nextClass;
+	  var argLength = arguments.length;
+	  if (argLength > 1) {
+	    for (var ii = 1; ii < argLength; ii++) {
+	      nextClass = arguments[ii];
+	      if (nextClass) {
+	        className = (className ? className + ' ' : '') + nextClass;
+	      }
+	    }
+	  }
+	  return className;
+	}
+
+	module.exports = joinClasses;
+
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule DOMMouseMoveTracker
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var EventListener = __webpack_require__(70);
+
+	var cancelAnimationFramePolyfill = __webpack_require__(71);
+	var requestAnimationFramePolyfill = __webpack_require__(62);
+
+
+	  /**
+	   * onMove is the callback that will be called on every mouse move.
+	   * onMoveEnd is called on mouse up when movement has ended.
+	   */
+	  function DOMMouseMoveTracker(
+	onMove,
+	    /*function*/ onMoveEnd,
+	    /*DOMElement*/ domNode) {
+	    this.$DOMMouseMoveTracker_isDragging = false;
+	    this.$DOMMouseMoveTracker_animationFrameID = null;
+	    this.$DOMMouseMoveTracker_domNode = domNode;
+	    this.$DOMMouseMoveTracker_onMove = onMove;
+	    this.$DOMMouseMoveTracker_onMoveEnd = onMoveEnd;
+	    this.$DOMMouseMoveTracker_onMouseMove = this.$DOMMouseMoveTracker_onMouseMove.bind(this);
+	    this.$DOMMouseMoveTracker_onMouseUp = this.$DOMMouseMoveTracker_onMouseUp.bind(this);
+	    this.$DOMMouseMoveTracker_didMouseMove = this.$DOMMouseMoveTracker_didMouseMove.bind(this);
+	  }
+
+	  /**
+	   * This is to set up the listeners for listening to mouse move
+	   * and mouse up signaling the movement has ended. Please note that these
+	   * listeners are added at the document.body level. It takes in an event
+	   * in order to grab inital state.
+	   */
+	  DOMMouseMoveTracker.prototype.captureMouseMoves=function(event) {
+	    if (!this.$DOMMouseMoveTracker_eventMoveToken && !this.$DOMMouseMoveTracker_eventUpToken) {
+	      this.$DOMMouseMoveTracker_eventMoveToken = EventListener.listen(
+	        this.$DOMMouseMoveTracker_domNode,
+	        'mousemove',
+	        this.$DOMMouseMoveTracker_onMouseMove
+	      );
+	      this.$DOMMouseMoveTracker_eventUpToken = EventListener.listen(
+	        this.$DOMMouseMoveTracker_domNode,
+	        'mouseup',
+	        this.$DOMMouseMoveTracker_onMouseUp
+	      );
+	    }
+
+	    if (!this.$DOMMouseMoveTracker_isDragging) {
+	      this.$DOMMouseMoveTracker_deltaX = 0;
+	      this.$DOMMouseMoveTracker_deltaY = 0;
+	      this.$DOMMouseMoveTracker_isDragging = true;
+	      this.$DOMMouseMoveTracker_x = event.clientX;
+	      this.$DOMMouseMoveTracker_y = event.clientY;
+	    }
+	    event.preventDefault();
+	  };
+
+	  /**
+	   * These releases all of the listeners on document.body.
+	   */
+	  DOMMouseMoveTracker.prototype.releaseMouseMoves=function() {
+	    if (this.$DOMMouseMoveTracker_eventMoveToken && this.$DOMMouseMoveTracker_eventUpToken) {
+	      this.$DOMMouseMoveTracker_eventMoveToken.remove();
+	      this.$DOMMouseMoveTracker_eventMoveToken = null;
+	      this.$DOMMouseMoveTracker_eventUpToken.remove();
+	      this.$DOMMouseMoveTracker_eventUpToken = null;
+	    }
+
+	    if (this.$DOMMouseMoveTracker_animationFrameID !== null) {
+	      cancelAnimationFramePolyfill(this.$DOMMouseMoveTracker_animationFrameID);
+	      this.$DOMMouseMoveTracker_animationFrameID = null;
+	    }
+
+	    if (this.$DOMMouseMoveTracker_isDragging) {
+	      this.$DOMMouseMoveTracker_isDragging = false;
+	      this.$DOMMouseMoveTracker_x = null;
+	      this.$DOMMouseMoveTracker_y = null;
+	    }
+	  };
+
+	  /**
+	   * Returns whether or not if the mouse movement is being tracked.
+	   */
+	  DOMMouseMoveTracker.prototype.isDragging=function() {
+	    return this.$DOMMouseMoveTracker_isDragging;
+	  };
+
+	  /**
+	   * Calls onMove passed into constructor and updates internal state.
+	   */
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseMove=function(event) {
+	    var x = event.clientX;
+	    var y = event.clientY;
+
+	    this.$DOMMouseMoveTracker_deltaX += (x - this.$DOMMouseMoveTracker_x);
+	    this.$DOMMouseMoveTracker_deltaY += (y - this.$DOMMouseMoveTracker_y);
+
+	    if (this.$DOMMouseMoveTracker_animationFrameID === null) {
+	      // The mouse may move faster then the animation frame does.
+	      // Use `requestAnimationFramePolyfill` to avoid over-updating.
+	      this.$DOMMouseMoveTracker_animationFrameID =
+	        requestAnimationFramePolyfill(this.$DOMMouseMoveTracker_didMouseMove);
+	    }
+
+	    this.$DOMMouseMoveTracker_x = x;
+	    this.$DOMMouseMoveTracker_y = y;
+	    event.preventDefault();
+	  };
+
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_didMouseMove=function() {
+	    this.$DOMMouseMoveTracker_animationFrameID = null;
+	    this.$DOMMouseMoveTracker_onMove(this.$DOMMouseMoveTracker_deltaX, this.$DOMMouseMoveTracker_deltaY);
+	    this.$DOMMouseMoveTracker_deltaX = 0;
+	    this.$DOMMouseMoveTracker_deltaY = 0;
+	  };
+
+	  /**
+	   * Calls onMoveEnd passed into constructor and updates internal state.
+	   */
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseUp=function() {
+	    if (this.$DOMMouseMoveTracker_animationFrameID) {
+	      this.$DOMMouseMoveTracker_didMouseMove();
+	    }
+	    this.$DOMMouseMoveTracker_onMoveEnd();
+	  };
+
+
+	module.exports = DOMMouseMoveTracker;
+
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule clamp
+	 * @typechecks
+	 */
+
+	 /**
+	  * @param {number} min
+	  * @param {number} value
+	  * @param {number} max
+	  * @return {number}
+	  */
+	function clamp(min, value, max) {
+	  if (value < min) {
+	    return min;
+	  }
+	  if (value > max) {
+	    return max;
+	  }
+	  return value;
+	}
+
+	module.exports = clamp;
+
+
+/***/ },
+/* 59 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Keys
+	 */
+
+	module.exports = {
+	  BACKSPACE:  8,
+	  TAB:        9,
+	  RETURN:    13,
+	  ALT:       18,
+	  ESC:       27,
+	  SPACE:     32,
+	  PAGE_UP:   33,
+	  PAGE_DOWN: 34,
+	  END:       35,
+	  HOME:      36,
+	  LEFT:      37,
+	  UP:        38,
+	  RIGHT:     39,
+	  DOWN:      40,
+	  DELETE:    46,
+	  COMMA:    188,
+	  PERIOD:   190,
+	  A:         65,
+	  Z:         90,
+	  ZERO:      48,
+	  NUMPAD_0:  96,
+	  NUMPAD_9: 105
+	};
+
+
+/***/ },
+/* 60 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule cssVar
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var CSS_VARS = {
+	  'scrollbar-face-active-color': '#7d7d7d',
+	  'scrollbar-face-color': '#c2c2c2',
+	  'scrollbar-face-margin': '4px',
+	  'scrollbar-face-radius': '6px',
+	  'scrollbar-size': '15px',
+	  'scrollbar-size-large': '17px',
+	  'scrollbar-track-color': 'rgba(255, 255, 255, 0.8)',
+	};
+
+	/**
+	 * @param {string} name
+	 */
+	function cssVar(name) {
+	  if (CSS_VARS.hasOwnProperty(name)) {
+	    return CSS_VARS[name];
+	  }
+
+	  throw new Error(
+	    'cssVar' + '("' + name + '"): Unexpected class transformation.'
+	  );
+	}
+
+	cssVar.CSS_VARS = CSS_VARS;
+
+	module.exports = cssVar;
+
+
+/***/ },
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -6739,9 +7284,9 @@
 
 	"use strict";
 
-	var UserAgent_DEPRECATED = __webpack_require__(67);
+	var UserAgent_DEPRECATED = __webpack_require__(72);
 
-	var isEventSupported = __webpack_require__(68);
+	var isEventSupported = __webpack_require__(73);
 
 
 	// Reasonable defaults
@@ -6909,7 +7454,7 @@
 
 
 /***/ },
-/* 54 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -6923,8 +7468,8 @@
 	 * @providesModule requestAnimationFramePolyfill
 	 */
 
-	var emptyFunction = __webpack_require__(49);
-	var nativeRequestAnimationFrame = __webpack_require__(69);
+	var emptyFunction = __webpack_require__(51);
+	var nativeRequestAnimationFrame = __webpack_require__(74);
 
 	var lastTime = 0;
 
@@ -6951,10 +7496,10 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 55 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
+	/* WEBPACK VAR INJECTION */(function(global) {/**
 	 * Copyright (c) 2015, Facebook, Inc.
 	 * All rights reserved.
 	 *
@@ -6962,473 +7507,159 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule DOMMouseMoveTracker
+	 * @providesModule PrefixIntervalTree
 	 * @typechecks
 	 */
 
 	"use strict";
 
-	var EventListener = __webpack_require__(70);
+	/**
+	 * An interval tree that allows to set a number at index and given the value
+	 * find the largest index for which prefix sum is greater than or equal to value
+	 * (lower bound) or greater than value (upper bound)
+	 * Complexity:
+	 *   construct: O(n)
+	 *   query: O(log(n))
+	 *   memory: O(log(n)),
+	 * where n is leafCount from the constructor
+	 */
 
-	var cancelAnimationFramePolyfill = __webpack_require__(71);
-	var requestAnimationFramePolyfill = __webpack_require__(54);
+	  function PrefixIntervalTree(leafCount, /*?number*/ initialLeafValue) {
+	    var internalLeafCount = this.getInternalLeafCount(leafCount);
+	    this.$PrefixIntervalTree_leafCount = leafCount;
+	    this.$PrefixIntervalTree_internalLeafCount = internalLeafCount;
+	    var nodeCount = 2 * internalLeafCount;
+	    var Int32Array = global.Int32Array || Array;
+	    this.$PrefixIntervalTree_value = new Int32Array(nodeCount);
+	    this.$PrefixIntervalTree_initTables(initialLeafValue || 0);
 
-
-	  /**
-	   * onMove is the callback that will be called on every mouse move.
-	   * onMoveEnd is called on mouse up when movement has ended.
-	   */
-	  function DOMMouseMoveTracker(
-	onMove,
-	    /*function*/ onMoveEnd,
-	    /*DOMElement*/ domNode) {
-	    this.$DOMMouseMoveTracker_isDragging = false;
-	    this.$DOMMouseMoveTracker_animationFrameID = null;
-	    this.$DOMMouseMoveTracker_domNode = domNode;
-	    this.$DOMMouseMoveTracker_onMove = onMove;
-	    this.$DOMMouseMoveTracker_onMoveEnd = onMoveEnd;
-	    this.$DOMMouseMoveTracker_onMouseMove = this.$DOMMouseMoveTracker_onMouseMove.bind(this);
-	    this.$DOMMouseMoveTracker_onMouseUp = this.$DOMMouseMoveTracker_onMouseUp.bind(this);
-	    this.$DOMMouseMoveTracker_didMouseMove = this.$DOMMouseMoveTracker_didMouseMove.bind(this);
+	    this.get = this.get.bind(this);
+	    this.set = this.set.bind(this);
+	    this.lowerBound = this.lowerBound.bind(this);
+	    this.upperBound = this.upperBound.bind(this);
 	  }
 
-	  /**
-	   * This is to set up the listeners for listening to mouse move
-	   * and mouse up signaling the movement has ended. Please note that these
-	   * listeners are added at the document.body level. It takes in an event
-	   * in order to grab inital state.
-	   */
-	  DOMMouseMoveTracker.prototype.captureMouseMoves=function(event) {
-	    if (!this.$DOMMouseMoveTracker_eventMoveToken && !this.$DOMMouseMoveTracker_eventUpToken) {
-	      this.$DOMMouseMoveTracker_eventMoveToken = EventListener.listen(
-	        this.$DOMMouseMoveTracker_domNode,
-	        'mousemove',
-	        this.$DOMMouseMoveTracker_onMouseMove
-	      );
-	      this.$DOMMouseMoveTracker_eventUpToken = EventListener.listen(
-	        this.$DOMMouseMoveTracker_domNode,
-	        'mouseup',
-	        this.$DOMMouseMoveTracker_onMouseUp
-	      );
+	  PrefixIntervalTree.prototype.getInternalLeafCount=function(leafCount)  {
+	    var internalLeafCount = 1;
+	    while (internalLeafCount < leafCount) {
+	      internalLeafCount *= 2;
 	    }
-
-	    if (!this.$DOMMouseMoveTracker_isDragging) {
-	      this.$DOMMouseMoveTracker_deltaX = 0;
-	      this.$DOMMouseMoveTracker_deltaY = 0;
-	      this.$DOMMouseMoveTracker_isDragging = true;
-	      this.$DOMMouseMoveTracker_x = event.clientX;
-	      this.$DOMMouseMoveTracker_y = event.clientY;
-	    }
-	    event.preventDefault();
+	    return internalLeafCount;
 	  };
 
-	  /**
-	   * These releases all of the listeners on document.body.
-	   */
-	  DOMMouseMoveTracker.prototype.releaseMouseMoves=function() {
-	    if (this.$DOMMouseMoveTracker_eventMoveToken && this.$DOMMouseMoveTracker_eventUpToken) {
-	      this.$DOMMouseMoveTracker_eventMoveToken.remove();
-	      this.$DOMMouseMoveTracker_eventMoveToken = null;
-	      this.$DOMMouseMoveTracker_eventUpToken.remove();
-	      this.$DOMMouseMoveTracker_eventUpToken = null;
+	  PrefixIntervalTree.prototype.$PrefixIntervalTree_initTables=function(initialLeafValue) {
+	    var firstLeaf = this.$PrefixIntervalTree_internalLeafCount;
+	    var lastLeaf = this.$PrefixIntervalTree_internalLeafCount + this.$PrefixIntervalTree_leafCount - 1;
+	    var i;
+	    for (i = firstLeaf; i <= lastLeaf; ++i) {
+	      this.$PrefixIntervalTree_value[i] = initialLeafValue;
 	    }
-
-	    if (this.$DOMMouseMoveTracker_animationFrameID !== null) {
-	      cancelAnimationFramePolyfill(this.$DOMMouseMoveTracker_animationFrameID);
-	      this.$DOMMouseMoveTracker_animationFrameID = null;
+	    var lastInternalNode = this.$PrefixIntervalTree_internalLeafCount - 1;
+	    for (i = lastInternalNode; i > 0; --i) {
+	      this.$PrefixIntervalTree_value[i] =  this.$PrefixIntervalTree_value[2 * i] + this.$PrefixIntervalTree_value[2 * i + 1];
 	    }
+	  };
 
-	    if (this.$DOMMouseMoveTracker_isDragging) {
-	      this.$DOMMouseMoveTracker_isDragging = false;
-	      this.$DOMMouseMoveTracker_x = null;
-	      this.$DOMMouseMoveTracker_y = null;
+	  PrefixIntervalTree.prototype.set=function(position, /*number*/ value) {
+	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
+	    this.$PrefixIntervalTree_value[nodeIndex] = value;
+	    nodeIndex = Math.floor(nodeIndex / 2);
+	    while (nodeIndex !== 0) {
+	      this.$PrefixIntervalTree_value[nodeIndex] =
+	        this.$PrefixIntervalTree_value[2 * nodeIndex] + this.$PrefixIntervalTree_value[2 * nodeIndex + 1];
+	      nodeIndex = Math.floor(nodeIndex / 2);
 	    }
 	  };
 
 	  /**
-	   * Returns whether or not if the mouse movement is being tracked.
+	   * Returns an object {index, value} for given position (including value at
+	   * specified position), or the same for last position if provided position
+	   * is out of range
 	   */
-	  DOMMouseMoveTracker.prototype.isDragging=function() {
-	    return this.$DOMMouseMoveTracker_isDragging;
+	  PrefixIntervalTree.prototype.get=function(position)  {
+	    position = Math.min(position, this.$PrefixIntervalTree_leafCount);
+	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
+	    var result = this.$PrefixIntervalTree_value[nodeIndex];
+	    while (nodeIndex > 1) {
+	      if (nodeIndex % 2 === 1) {
+	        result = this.$PrefixIntervalTree_value[nodeIndex - 1] + result;
+	      }
+	      nodeIndex = Math.floor(nodeIndex / 2);
+	    }
+	    return {index: position, value: result};
 	  };
 
 	  /**
-	   * Calls onMove passed into constructor and updates internal state.
+	   * Returns an object {index, value} where index is index of leaf that was
+	   * found by upper bound algorithm. Upper bound finds first element for which
+	   * value is greater than argument
 	   */
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseMove=function(event) {
-	    var x = event.clientX;
-	    var y = event.clientY;
-
-	    this.$DOMMouseMoveTracker_deltaX += (x - this.$DOMMouseMoveTracker_x);
-	    this.$DOMMouseMoveTracker_deltaY += (y - this.$DOMMouseMoveTracker_y);
-
-	    if (this.$DOMMouseMoveTracker_animationFrameID === null) {
-	      // The mouse may move faster then the animation frame does.
-	      // Use `requestAnimationFramePolyfill` to avoid over-updating.
-	      this.$DOMMouseMoveTracker_animationFrameID =
-	        requestAnimationFramePolyfill(this.$DOMMouseMoveTracker_didMouseMove);
+	  PrefixIntervalTree.prototype.upperBound=function(value)  {
+	    var result = this.$PrefixIntervalTree_upperBoundImpl(1, 0, this.$PrefixIntervalTree_internalLeafCount - 1, value);
+	    if (result.index > this.$PrefixIntervalTree_leafCount - 1) {
+	      result.index = this.$PrefixIntervalTree_leafCount - 1;
 	    }
-
-	    this.$DOMMouseMoveTracker_x = x;
-	    this.$DOMMouseMoveTracker_y = y;
-	    event.preventDefault();
-	  };
-
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_didMouseMove=function() {
-	    this.$DOMMouseMoveTracker_animationFrameID = null;
-	    this.$DOMMouseMoveTracker_onMove(this.$DOMMouseMoveTracker_deltaX, this.$DOMMouseMoveTracker_deltaY);
-	    this.$DOMMouseMoveTracker_deltaX = 0;
-	    this.$DOMMouseMoveTracker_deltaY = 0;
+	    return result;
 	  };
 
 	  /**
-	   * Calls onMoveEnd passed into constructor and updates internal state.
+	   * Returns result in the same format as upperBound, but finds first element
+	   * for which value is greater than or equal to argument
 	   */
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseUp=function() {
-	    if (this.$DOMMouseMoveTracker_animationFrameID) {
-	      this.$DOMMouseMoveTracker_didMouseMove();
+	  PrefixIntervalTree.prototype.lowerBound=function(value)  {
+	    var result = this.upperBound(value);
+	    if (result.value > value && result.index > 0) {
+	      var previousValue =
+	        result.value - this.$PrefixIntervalTree_value[this.$PrefixIntervalTree_internalLeafCount + result.index];
+	      if (previousValue === value) {
+	        result.value = previousValue;
+	        result.index--;
+	      }
 	    }
-	    this.$DOMMouseMoveTracker_onMoveEnd();
+	    return result;
 	  };
 
-
-	module.exports = DOMMouseMoveTracker;
-
-
-/***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Keys
-	 */
-
-	module.exports = {
-	  BACKSPACE:  8,
-	  TAB:        9,
-	  RETURN:    13,
-	  ALT:       18,
-	  ESC:       27,
-	  SPACE:     32,
-	  PAGE_UP:   33,
-	  PAGE_DOWN: 34,
-	  END:       35,
-	  HOME:      36,
-	  LEFT:      37,
-	  UP:        38,
-	  RIGHT:     39,
-	  DOWN:      40,
-	  DELETE:    46,
-	  COMMA:    188,
-	  PERIOD:   190,
-	  A:         65,
-	  Z:         90,
-	  ZERO:      48,
-	  NUMPAD_0:  96,
-	  NUMPAD_9: 105
-	};
-
-
-/***/ },
-/* 57 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule cssVar
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var CSS_VARS = {
-	  'scrollbar-face-active-color': '#7d7d7d',
-	  'scrollbar-face-color': '#c2c2c2',
-	  'scrollbar-face-margin': '4px',
-	  'scrollbar-face-radius': '6px',
-	  'scrollbar-size': '15px',
-	  'scrollbar-size-large': '17px',
-	  'scrollbar-track-color': 'rgba(255, 255, 255, 0.8)',
-	};
-
-	/**
-	 * @param {string} name
-	 */
-	function cssVar(name) {
-	  if (CSS_VARS.hasOwnProperty(name)) {
-	    return CSS_VARS[name];
-	  }
-
-	  throw new Error(
-	    'cssVar' + '("' + name + '"): Unexpected class transformation.'
-	  );
-	}
-
-	cssVar.CSS_VARS = CSS_VARS;
-
-	module.exports = cssVar;
-
-
-/***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableRowBuffer
-	 * @typechecks
-	 */
-	'use strict';
-
-	var IntegerBufferSet = __webpack_require__(72);
-
-	var clamp = __webpack_require__(60);
-	var invariant = __webpack_require__(50);
-	var MIN_BUFFER_ROWS = 5;
-	var MAX_BUFFER_ROWS = 15;
-
-	// FixedDataTableRowBuffer is a helper class that executes row buffering
-	// logic for FixedDataTable. It figures out which rows should be rendered
-	// and in which positions.
-
-	  function FixedDataTableRowBuffer(
-	rowsCount,
-	    /*number*/  defaultRowHeight,
-	    /*number*/ viewportHeight,
-	    /*?function*/ rowHeightGetter)
-	   {
-	    invariant(
-	      defaultRowHeight !== 0,
-	      "defaultRowHeight musn't be equal 0 in FixedDataTableRowBuffer"
-	    );
-
-	    this.$FixedDataTableRowBuffer_bufferSet = new IntegerBufferSet();
-	    this.$FixedDataTableRowBuffer_defaultRowHeight = defaultRowHeight;
-	    this.$FixedDataTableRowBuffer_viewportRowsBegin = 0;
-	    this.$FixedDataTableRowBuffer_viewportRowsEnd = 0;
-	    this.$FixedDataTableRowBuffer_maxVisibleRowCount = Math.ceil(viewportHeight / defaultRowHeight) + 1;
-	    this.$FixedDataTableRowBuffer_bufferRowsCount = clamp(
-	      MIN_BUFFER_ROWS,
-	      Math.floor(this.$FixedDataTableRowBuffer_maxVisibleRowCount/2),
-	      MAX_BUFFER_ROWS
-	    );
-	    this.$FixedDataTableRowBuffer_rowsCount = rowsCount;
-	    this.$FixedDataTableRowBuffer_rowHeightGetter = rowHeightGetter;
-	    this.$FixedDataTableRowBuffer_rows = [];
-	    this.$FixedDataTableRowBuffer_viewportHeight = viewportHeight;
-
-	    this.getRows = this.getRows.bind(this);
-	    this.getRowsWithUpdatedBuffer = this.getRowsWithUpdatedBuffer.bind(this);
-	  }
-
-	  FixedDataTableRowBuffer.prototype.getRowsWithUpdatedBuffer=function()  {
-	    var remainingBufferRows = 2 * this.$FixedDataTableRowBuffer_bufferRowsCount;
-	    var bufferRowIndex =
-	      Math.max(this.$FixedDataTableRowBuffer_viewportRowsBegin - this.$FixedDataTableRowBuffer_bufferRowsCount, 0);
-	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_viewportRowsBegin) {
-	      this.$FixedDataTableRowBuffer_addRowToBuffer(
-	        bufferRowIndex,
-	        this.$FixedDataTableRowBuffer_viewportHeight,
-	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
-	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
-	      );
-	      bufferRowIndex++;
-	      remainingBufferRows--;
-	    }
-	    bufferRowIndex = this.$FixedDataTableRowBuffer_viewportRowsEnd;
-	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_rowsCount && remainingBufferRows > 0) {
-	      this.$FixedDataTableRowBuffer_addRowToBuffer(
-	        bufferRowIndex,
-	        this.$FixedDataTableRowBuffer_viewportHeight,
-	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
-	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
-	      );
-	      bufferRowIndex++;
-	      remainingBufferRows--;
-	    }
-	    return this.$FixedDataTableRowBuffer_rows;
-	  };
-
-	  FixedDataTableRowBuffer.prototype.getRows=function(
-	firstRowIndex,
-	    /*number*/ firstRowOffset)
+	  PrefixIntervalTree.prototype.$PrefixIntervalTree_upperBoundImpl=function(
+	nodeIndex,
+	    /*number*/ nodeIntervalBegin,
+	    /*number*/ nodeIntervalEnd,
+	    /*number*/ value)
 	    {
-	    // Update offsets of all rows to move them outside of viewport. Later we
-	    // will bring rows that we should show to their right offsets.
-	    this.$FixedDataTableRowBuffer_hideAllRows();
+	    if (nodeIntervalBegin === nodeIntervalEnd) {
+	      return {
+	        index: nodeIndex - this.$PrefixIntervalTree_internalLeafCount,
+	        value: this.$PrefixIntervalTree_value[nodeIndex],
+	      };
+	    }
 
-	    var top = firstRowOffset;
-	    var totalHeight = top;
-	    var rowIndex = firstRowIndex;
-	    var endIndex =
-	      Math.min(firstRowIndex + this.$FixedDataTableRowBuffer_maxVisibleRowCount, this.$FixedDataTableRowBuffer_rowsCount);
-
-	    this.$FixedDataTableRowBuffer_viewportRowsBegin = firstRowIndex;
-	    while (rowIndex < endIndex ||
-	        (totalHeight < this.$FixedDataTableRowBuffer_viewportHeight && rowIndex < this.$FixedDataTableRowBuffer_rowsCount)) {
-	      this.$FixedDataTableRowBuffer_addRowToBuffer(
-	        rowIndex,
-	        totalHeight,
-	        firstRowIndex,
-	        endIndex - 1
+	    var nodeIntervalMidpoint =
+	      Math.floor((nodeIntervalBegin + nodeIntervalEnd + 1) / 2);
+	    if (value < this.$PrefixIntervalTree_value[nodeIndex * 2]) {
+	      return this.$PrefixIntervalTree_upperBoundImpl(
+	        2 * nodeIndex,
+	        nodeIntervalBegin,
+	        nodeIntervalMidpoint - 1,
+	        value
 	      );
-	      totalHeight += this.$FixedDataTableRowBuffer_rowHeightGetter(rowIndex);
-	      ++rowIndex;
-	      // Store index after the last viewport row as end, to be able to
-	      // distinguish when there are no rows rendered in viewport
-	      this.$FixedDataTableRowBuffer_viewportRowsEnd = rowIndex;
-	    }
-
-	    return this.$FixedDataTableRowBuffer_rows;
-	  };
-
-	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_addRowToBuffer=function(
-	rowIndex,
-	    /*number*/ offsetTop,
-	    /*number*/ firstViewportRowIndex,
-	    /*number*/ lastViewportRowIndex)
-	   {
-	      var rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getValuePosition(rowIndex);
-	      var viewportRowsCount = lastViewportRowIndex - firstViewportRowIndex + 1;
-	      var allowedRowsCount = viewportRowsCount + this.$FixedDataTableRowBuffer_bufferRowsCount * 2;
-	      if (rowPosition === null &&
-	          this.$FixedDataTableRowBuffer_bufferSet.getSize() >= allowedRowsCount) {
-	        rowPosition =
-	          this.$FixedDataTableRowBuffer_bufferSet.replaceFurthestValuePosition(
-	            firstViewportRowIndex,
-	            lastViewportRowIndex,
-	            rowIndex
-	          );
-	      }
-	      if (rowPosition === null) {
-	        // We can't reuse any of existing positions for this row. We have to
-	        // create new position
-	        rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getNewPositionForValue(rowIndex);
-	        this.$FixedDataTableRowBuffer_rows[rowPosition] = {
-	          rowIndex:rowIndex,
-	          offsetTop:offsetTop,
-	        };
-	      } else {
-	        // This row already is in the table with rowPosition position or it
-	        // can replace row that is in that position
-	        this.$FixedDataTableRowBuffer_rows[rowPosition].rowIndex = rowIndex;
-	        this.$FixedDataTableRowBuffer_rows[rowPosition].offsetTop = offsetTop;
-	      }
-	  };
-
-	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_hideAllRows=function() {
-	    var i = this.$FixedDataTableRowBuffer_rows.length - 1;
-	    while (i > -1) {
-	      this.$FixedDataTableRowBuffer_rows[i].offsetTop = this.$FixedDataTableRowBuffer_viewportHeight;
-	      i--;
+	    } else {
+	      var result = this.$PrefixIntervalTree_upperBoundImpl(
+	        2 * nodeIndex + 1,
+	        nodeIntervalMidpoint,
+	        nodeIntervalEnd,
+	        value - this.$PrefixIntervalTree_value[2 * nodeIndex]
+	      );
+	      result.value += this.$PrefixIntervalTree_value[2 * nodeIndex];
+	      return result;
 	    }
 	  };
 
 
-	module.exports = FixedDataTableRowBuffer;
+	module.exports = PrefixIntervalTree;
 
-
-/***/ },
-/* 59 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule joinClasses
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	/**
-	 * Combines multiple className strings into one.
-	 * http://jsperf.com/joinclasses-args-vs-array
-	 *
-	 * @param {...?string} classes
-	 * @return {string}
-	 */
-	function joinClasses(className/*, ... */) {
-	  if (!className) {
-	    className = '';
-	  }
-	  var nextClass;
-	  var argLength = arguments.length;
-	  if (argLength > 1) {
-	    for (var ii = 1; ii < argLength; ii++) {
-	      nextClass = arguments[ii];
-	      if (nextClass) {
-	        className = (className ? className + ' ' : '') + nextClass;
-	      }
-	    }
-	  }
-	  return className;
-	}
-
-	module.exports = joinClasses;
-
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 60 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule clamp
-	 * @typechecks
-	 */
-
-	 /**
-	  * @param {number} min
-	  * @param {number} value
-	  * @param {number} max
-	  * @return {number}
-	  */
-	function clamp(min, value, max) {
-	  if (value < min) {
-	    return min;
-	  }
-	  if (value > max) {
-	    return max;
-	  }
-	  return value;
-	}
-
-	module.exports = clamp;
-
-
-/***/ },
-/* 61 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -7445,15 +7676,15 @@
 
 	"use strict";
 
-	var FixedDataTableHelper = __webpack_require__(35);
-	var ImmutableObject = __webpack_require__(73);
-	var React = __webpack_require__(37);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(38);
-	var FixedDataTableCell = __webpack_require__(74);
+	var FixedDataTableHelper = __webpack_require__(37);
+	var ImmutableObject = __webpack_require__(75);
+	var React = __webpack_require__(39);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(40);
+	var FixedDataTableCell = __webpack_require__(76);
 
-	var cx = __webpack_require__(47);
+	var cx = __webpack_require__(49);
 	var renderToString = FixedDataTableHelper.renderToString;
-	var translateDOMPositionXY = __webpack_require__(52);
+	var translateDOMPositionXY = __webpack_require__(54);
 
 	var PropTypes = React.PropTypes;
 
@@ -7642,170 +7873,7 @@
 
 
 /***/ },
-/* 62 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule PrefixIntervalTree
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	/**
-	 * An interval tree that allows to set a number at index and given the value
-	 * find the largest index for which prefix sum is greater than or equal to value
-	 * (lower bound) or greater than value (upper bound)
-	 * Complexity:
-	 *   construct: O(n)
-	 *   query: O(log(n))
-	 *   memory: O(log(n)),
-	 * where n is leafCount from the constructor
-	 */
-
-	  function PrefixIntervalTree(leafCount, /*?number*/ initialLeafValue) {
-	    var internalLeafCount = this.getInternalLeafCount(leafCount);
-	    this.$PrefixIntervalTree_leafCount = leafCount;
-	    this.$PrefixIntervalTree_internalLeafCount = internalLeafCount;
-	    var nodeCount = 2 * internalLeafCount;
-	    var Int32Array = global.Int32Array || Array;
-	    this.$PrefixIntervalTree_value = new Int32Array(nodeCount);
-	    this.$PrefixIntervalTree_initTables(initialLeafValue || 0);
-
-	    this.get = this.get.bind(this);
-	    this.set = this.set.bind(this);
-	    this.lowerBound = this.lowerBound.bind(this);
-	    this.upperBound = this.upperBound.bind(this);
-	  }
-
-	  PrefixIntervalTree.prototype.getInternalLeafCount=function(leafCount)  {
-	    var internalLeafCount = 1;
-	    while (internalLeafCount < leafCount) {
-	      internalLeafCount *= 2;
-	    }
-	    return internalLeafCount;
-	  };
-
-	  PrefixIntervalTree.prototype.$PrefixIntervalTree_initTables=function(initialLeafValue) {
-	    var firstLeaf = this.$PrefixIntervalTree_internalLeafCount;
-	    var lastLeaf = this.$PrefixIntervalTree_internalLeafCount + this.$PrefixIntervalTree_leafCount - 1;
-	    var i;
-	    for (i = firstLeaf; i <= lastLeaf; ++i) {
-	      this.$PrefixIntervalTree_value[i] = initialLeafValue;
-	    }
-	    var lastInternalNode = this.$PrefixIntervalTree_internalLeafCount - 1;
-	    for (i = lastInternalNode; i > 0; --i) {
-	      this.$PrefixIntervalTree_value[i] =  this.$PrefixIntervalTree_value[2 * i] + this.$PrefixIntervalTree_value[2 * i + 1];
-	    }
-	  };
-
-	  PrefixIntervalTree.prototype.set=function(position, /*number*/ value) {
-	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
-	    this.$PrefixIntervalTree_value[nodeIndex] = value;
-	    nodeIndex = Math.floor(nodeIndex / 2);
-	    while (nodeIndex !== 0) {
-	      this.$PrefixIntervalTree_value[nodeIndex] =
-	        this.$PrefixIntervalTree_value[2 * nodeIndex] + this.$PrefixIntervalTree_value[2 * nodeIndex + 1];
-	      nodeIndex = Math.floor(nodeIndex / 2);
-	    }
-	  };
-
-	  /**
-	   * Returns an object {index, value} for given position (including value at
-	   * specified position), or the same for last position if provided position
-	   * is out of range
-	   */
-	  PrefixIntervalTree.prototype.get=function(position)  {
-	    position = Math.min(position, this.$PrefixIntervalTree_leafCount);
-	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
-	    var result = this.$PrefixIntervalTree_value[nodeIndex];
-	    while (nodeIndex > 1) {
-	      if (nodeIndex % 2 === 1) {
-	        result = this.$PrefixIntervalTree_value[nodeIndex - 1] + result;
-	      }
-	      nodeIndex = Math.floor(nodeIndex / 2);
-	    }
-	    return {index: position, value: result};
-	  };
-
-	  /**
-	   * Returns an object {index, value} where index is index of leaf that was
-	   * found by upper bound algorithm. Upper bound finds first element for which
-	   * value is greater than argument
-	   */
-	  PrefixIntervalTree.prototype.upperBound=function(value)  {
-	    var result = this.$PrefixIntervalTree_upperBoundImpl(1, 0, this.$PrefixIntervalTree_internalLeafCount - 1, value);
-	    if (result.index > this.$PrefixIntervalTree_leafCount - 1) {
-	      result.index = this.$PrefixIntervalTree_leafCount - 1;
-	    }
-	    return result;
-	  };
-
-	  /**
-	   * Returns result in the same format as upperBound, but finds first element
-	   * for which value is greater than or equal to argument
-	   */
-	  PrefixIntervalTree.prototype.lowerBound=function(value)  {
-	    var result = this.upperBound(value);
-	    if (result.value > value && result.index > 0) {
-	      var previousValue =
-	        result.value - this.$PrefixIntervalTree_value[this.$PrefixIntervalTree_internalLeafCount + result.index];
-	      if (previousValue === value) {
-	        result.value = previousValue;
-	        result.index--;
-	      }
-	    }
-	    return result;
-	  };
-
-	  PrefixIntervalTree.prototype.$PrefixIntervalTree_upperBoundImpl=function(
-	nodeIndex,
-	    /*number*/ nodeIntervalBegin,
-	    /*number*/ nodeIntervalEnd,
-	    /*number*/ value)
-	    {
-	    if (nodeIntervalBegin === nodeIntervalEnd) {
-	      return {
-	        index: nodeIndex - this.$PrefixIntervalTree_internalLeafCount,
-	        value: this.$PrefixIntervalTree_value[nodeIndex],
-	      };
-	    }
-
-	    var nodeIntervalMidpoint =
-	      Math.floor((nodeIntervalBegin + nodeIntervalEnd + 1) / 2);
-	    if (value < this.$PrefixIntervalTree_value[nodeIndex * 2]) {
-	      return this.$PrefixIntervalTree_upperBoundImpl(
-	        2 * nodeIndex,
-	        nodeIntervalBegin,
-	        nodeIntervalMidpoint - 1,
-	        value
-	      );
-	    } else {
-	      var result = this.$PrefixIntervalTree_upperBoundImpl(
-	        2 * nodeIndex + 1,
-	        nodeIntervalMidpoint,
-	        nodeIntervalEnd,
-	        value - this.$PrefixIntervalTree_value[2 * nodeIndex]
-	      );
-	      result.value += this.$PrefixIntervalTree_value[2 * nodeIndex];
-	      return result;
-	    }
-	  };
-
-
-	module.exports = PrefixIntervalTree;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 63 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -7820,7 +7888,7 @@
 	 */
 
 
-	var getVendorPrefixedName = __webpack_require__(64);
+	var getVendorPrefixedName = __webpack_require__(66);
 
 	var BrowserSupportCore = {
 	  /**
@@ -7856,7 +7924,7 @@
 
 
 /***/ },
-/* 64 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -7871,10 +7939,10 @@
 	 * @typechecks
 	 */
 
-	var ExecutionEnvironment = __webpack_require__(25);
+	var ExecutionEnvironment = __webpack_require__(32);
 
-	var camelize = __webpack_require__(75);
-	var invariant = __webpack_require__(50);
+	var camelize = __webpack_require__(77);
+	var invariant = __webpack_require__(52);
 
 	var memoized = {};
 	var prefixes = ['Webkit', 'ms', 'Moz', 'O'];
@@ -7918,7 +7986,7 @@
 
 
 /***/ },
-/* 65 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -7934,7 +8002,7 @@
 
 	'use strict';
 
-	var shallowEqual = __webpack_require__(76);
+	var shallowEqual = __webpack_require__(78);
 
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -7971,7 +8039,7 @@
 
 
 /***/ },
-/* 66 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -7988,11 +8056,11 @@
 
 	'use strict';
 
-	var ReactElement = __webpack_require__(77);
-	var ReactPropTransferer = __webpack_require__(78);
+	var ReactElement = __webpack_require__(79);
+	var ReactPropTransferer = __webpack_require__(80);
 
-	var keyOf = __webpack_require__(79);
-	var warning = __webpack_require__(80);
+	var keyOf = __webpack_require__(81);
+	var warning = __webpack_require__(82);
 
 	var CHILDREN_PROP = keyOf({children: null});
 
@@ -8030,10 +8098,315 @@
 
 	module.exports = cloneWithProps;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 67 */
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule IntegerBufferSet
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var Heap = __webpack_require__(83);
+
+	var invariant = __webpack_require__(52);
+
+	// Data structure that allows to store values and assign positions to them
+	// in a way to minimize changing positions of stored values when new ones are
+	// added or when some values are replaced. Stored elements are alwasy assigned
+	// a consecutive set of positoins startin from 0 up to count of elements less 1
+	// Following actions can be executed
+	// * get position assigned to given value (null if value is not stored)
+	// * create new entry for new value and get assigned position back
+	// * replace value that is furthest from specified value range with new value
+	//   and get it's position back
+	// All operations take amortized log(n) time where n is number of elements in
+	// the set.
+
+	  function IntegerBufferSet() {
+	    this.$IntegerBufferSet_valueToPositionMap = {};
+	    this.$IntegerBufferSet_size = 0;
+	    this.$IntegerBufferSet_smallValues = new Heap(
+	      [], // Initial data in the heap
+	      this.$IntegerBufferSet_smallerComparator
+	    );
+	    this.$IntegerBufferSet_largeValues = new Heap(
+	      [], // Initial data in the heap
+	      this.$IntegerBufferSet_greaterComparator
+	    );
+
+	    this.getNewPositionForValue = this.getNewPositionForValue.bind(this);
+	    this.getValuePosition = this.getValuePosition.bind(this);
+	    this.getSize = this.getSize.bind(this);
+	    this.replaceFurthestValuePosition =
+	      this.replaceFurthestValuePosition.bind(this);
+	  }
+
+	  IntegerBufferSet.prototype.getSize=function()  {
+	    return this.$IntegerBufferSet_size;
+	  };
+
+	  IntegerBufferSet.prototype.getValuePosition=function(value)  {
+	    if (this.$IntegerBufferSet_valueToPositionMap[value] === undefined) {
+	      return null;
+	    }
+	    return this.$IntegerBufferSet_valueToPositionMap[value];
+	  };
+
+	  IntegerBufferSet.prototype.getNewPositionForValue=function(value)  {
+	    invariant(
+	      this.$IntegerBufferSet_valueToPositionMap[value] === undefined,
+	      "Shouldn't try to find new position for value already stored in BufferSet"
+	    );
+	    var newPosition = this.$IntegerBufferSet_size;
+	    this.$IntegerBufferSet_size++;
+	    this.$IntegerBufferSet_pushToHeaps(newPosition, value);
+	    this.$IntegerBufferSet_valueToPositionMap[value] = newPosition;
+	    return newPosition;
+	  };
+
+	  IntegerBufferSet.prototype.replaceFurthestValuePosition=function(
+	lowValue,
+	    /*number*/ highValue,
+	    /*number*/ newValue)
+	    {
+	    invariant(
+	      this.$IntegerBufferSet_valueToPositionMap[newValue] === undefined,
+	      "Shouldn't try to replace values with value already stored value in " +
+	      "BufferSet"
+	    );
+
+	    this.$IntegerBufferSet_cleanHeaps();
+	    if (this.$IntegerBufferSet_smallValues.empty() || this.$IntegerBufferSet_largeValues.empty()) {
+	      // Threre are currently no values stored. We will have to create new
+	      // position for this value.
+	      return null;
+	    }
+
+	    var minValue = this.$IntegerBufferSet_smallValues.peek().value;
+	    var maxValue = this.$IntegerBufferSet_largeValues.peek().value;
+	    if (minValue >= lowValue && maxValue <= highValue) {
+	      // All values currently stored are necessary, we can't reuse any of them.
+	      return null;
+	    }
+
+	    var valueToReplace;
+	    if (lowValue - minValue > maxValue - highValue) {
+	      // minValue is further from provided range. We will reuse it's position.
+	      valueToReplace = minValue;
+	      this.$IntegerBufferSet_smallValues.pop();
+	    } else {
+	      valueToReplace = maxValue;
+	      this.$IntegerBufferSet_largeValues.pop();
+	    }
+	    var position = this.$IntegerBufferSet_valueToPositionMap[valueToReplace];
+	    delete this.$IntegerBufferSet_valueToPositionMap[valueToReplace];
+	    this.$IntegerBufferSet_valueToPositionMap[newValue] = position;
+	    this.$IntegerBufferSet_pushToHeaps(position, newValue);
+
+	    return position;
+	  };
+
+	  IntegerBufferSet.prototype.$IntegerBufferSet_pushToHeaps=function(position, /*number*/ value) {
+	    var element = {
+	      position:position,
+	      value:value,
+	    };
+	    // We can reuse the same object in both heaps, because we don't mutate them
+	    this.$IntegerBufferSet_smallValues.push(element);
+	    this.$IntegerBufferSet_largeValues.push(element);
+	  };
+
+	  IntegerBufferSet.prototype.$IntegerBufferSet_cleanHeaps=function() {
+	    // We not usually only remove object from one heap while moving value.
+	    // Here we make sure that there is no stale data on top of heaps.
+	    this.$IntegerBufferSet_cleanHeap(this.$IntegerBufferSet_smallValues);
+	    this.$IntegerBufferSet_cleanHeap(this.$IntegerBufferSet_largeValues);
+	    var minHeapSize =
+	      Math.min(this.$IntegerBufferSet_smallValues.size(), this.$IntegerBufferSet_largeValues.size());
+	    var maxHeapSize =
+	      Math.max(this.$IntegerBufferSet_smallValues.size(), this.$IntegerBufferSet_largeValues.size());
+	    if (maxHeapSize > 10 * minHeapSize) {
+	      // There are many old values in one of heaps. We nned to get rid of them
+	      // to not use too avoid memory leaks
+	      this.$IntegerBufferSet_recreateHeaps();
+	    }
+	  };
+
+	  IntegerBufferSet.prototype.$IntegerBufferSet_recreateHeaps=function() {
+	    var sourceHeap = this.$IntegerBufferSet_smallValues.size() < this.$IntegerBufferSet_largeValues.size() ?
+	      this.$IntegerBufferSet_smallValues :
+	      this.$IntegerBufferSet_largeValues;
+	    var newSmallValues = new Heap(
+	      [], // Initial data in the heap
+	      this.$IntegerBufferSet_smallerComparator
+	    );
+	    var newLargeValues = new Heap(
+	      [], // Initial datat in the heap
+	      this.$IntegerBufferSet_greaterComparator
+	    );
+	    while (!sourceHeap.empty()) {
+	      var element = sourceHeap.pop();
+	      // Push all stil valid elements to new heaps
+	      if (this.$IntegerBufferSet_valueToPositionMap[element.value] !== undefined) {
+	        newSmallValues.push(element);
+	        newLargeValues.push(element);
+	      }
+	    }
+	    this.$IntegerBufferSet_smallValues = newSmallValues;
+	    this.$IntegerBufferSet_largeValues = newLargeValues;
+	  };
+
+	  IntegerBufferSet.prototype.$IntegerBufferSet_cleanHeap=function(heap) {
+	    while (!heap.empty() &&
+	        this.$IntegerBufferSet_valueToPositionMap[heap.peek().value] === undefined) {
+	      heap.pop();
+	    }
+	  };
+
+	  IntegerBufferSet.prototype.$IntegerBufferSet_smallerComparator=function(lhs, /*object*/ rhs)  {
+	    return lhs.value < rhs.value;
+	  };
+
+	  IntegerBufferSet.prototype.$IntegerBufferSet_greaterComparator=function(lhs, /*object*/ rhs)  {
+	    return lhs.value > rhs.value;
+	  };
+
+
+
+	module.exports = IntegerBufferSet;
+
+
+/***/ },
+/* 70 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule EventListener
+	 * @typechecks
+	 */
+
+	var emptyFunction = __webpack_require__(51);
+
+	/**
+	 * Upstream version of event listener. Does not take into account specific
+	 * nature of platform.
+	 */
+	var EventListener = {
+	  /**
+	   * Listen to DOM events during the bubble phase.
+	   *
+	   * @param {DOMEventTarget} target DOM element to register listener on.
+	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
+	   * @param {function} callback Callback function.
+	   * @return {object} Object with a `remove` method.
+	   */
+	  listen: function(target, eventType, callback) {
+	    if (target.addEventListener) {
+	      target.addEventListener(eventType, callback, false);
+	      return {
+	        remove: function() {
+	          target.removeEventListener(eventType, callback, false);
+	        }
+	      };
+	    } else if (target.attachEvent) {
+	      target.attachEvent('on' + eventType, callback);
+	      return {
+	        remove: function() {
+	          target.detachEvent('on' + eventType, callback);
+	        }
+	      };
+	    }
+	  },
+
+	  /**
+	   * Listen to DOM events during the capture phase.
+	   *
+	   * @param {DOMEventTarget} target DOM element to register listener on.
+	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
+	   * @param {function} callback Callback function.
+	   * @return {object} Object with a `remove` method.
+	   */
+	  capture: function(target, eventType, callback) {
+	    if (!target.addEventListener) {
+	      if (process.env.NODE_ENV !== 'production') {
+	        console.error(
+	          'Attempted to listen to events during the capture phase on a ' +
+	          'browser that does not support the capture phase. Your application ' +
+	          'will not receive some events.'
+	        );
+	      }
+	      return {
+	        remove: emptyFunction
+	      };
+	    } else {
+	      target.addEventListener(eventType, callback, true);
+	      return {
+	        remove: function() {
+	          target.removeEventListener(eventType, callback, true);
+	        }
+	      };
+	    }
+	  },
+
+	  registerDefault: function() {}
+	};
+
+	module.exports = EventListener;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
+
+/***/ },
+/* 71 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule cancelAnimationFramePolyfill
+	 */
+
+	/**
+	 * Here is the native and polyfill version of cancelAnimationFrame.
+	 * Please don't use it directly and use cancelAnimationFrame module instead.
+	 */
+	var cancelAnimationFrame =
+	  global.cancelAnimationFrame       ||
+	  global.webkitCancelAnimationFrame ||
+	  global.mozCancelAnimationFrame    ||
+	  global.oCancelAnimationFrame      ||
+	  global.msCancelAnimationFrame     ||
+	  global.clearTimeout;
+
+	module.exports = cancelAnimationFrame;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -8326,7 +8699,7 @@
 
 
 /***/ },
-/* 68 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -8342,7 +8715,7 @@
 
 	'use strict';
 
-	var ExecutionEnvironment = __webpack_require__(25);
+	var ExecutionEnvironment = __webpack_require__(32);
 
 	var useHasFeature;
 	if (ExecutionEnvironment.canUseDOM) {
@@ -8395,7 +8768,7 @@
 
 
 /***/ },
-/* 69 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -8421,312 +8794,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 70 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule EventListener
-	 * @typechecks
-	 */
-
-	var emptyFunction = __webpack_require__(49);
-
-	/**
-	 * Upstream version of event listener. Does not take into account specific
-	 * nature of platform.
-	 */
-	var EventListener = {
-	  /**
-	   * Listen to DOM events during the bubble phase.
-	   *
-	   * @param {DOMEventTarget} target DOM element to register listener on.
-	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
-	   * @param {function} callback Callback function.
-	   * @return {object} Object with a `remove` method.
-	   */
-	  listen: function(target, eventType, callback) {
-	    if (target.addEventListener) {
-	      target.addEventListener(eventType, callback, false);
-	      return {
-	        remove: function() {
-	          target.removeEventListener(eventType, callback, false);
-	        }
-	      };
-	    } else if (target.attachEvent) {
-	      target.attachEvent('on' + eventType, callback);
-	      return {
-	        remove: function() {
-	          target.detachEvent('on' + eventType, callback);
-	        }
-	      };
-	    }
-	  },
-
-	  /**
-	   * Listen to DOM events during the capture phase.
-	   *
-	   * @param {DOMEventTarget} target DOM element to register listener on.
-	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
-	   * @param {function} callback Callback function.
-	   * @return {object} Object with a `remove` method.
-	   */
-	  capture: function(target, eventType, callback) {
-	    if (!target.addEventListener) {
-	      if (process.env.NODE_ENV !== 'production') {
-	        console.error(
-	          'Attempted to listen to events during the capture phase on a ' +
-	          'browser that does not support the capture phase. Your application ' +
-	          'will not receive some events.'
-	        );
-	      }
-	      return {
-	        remove: emptyFunction
-	      };
-	    } else {
-	      target.addEventListener(eventType, callback, true);
-	      return {
-	        remove: function() {
-	          target.removeEventListener(eventType, callback, true);
-	        }
-	      };
-	    }
-	  },
-
-	  registerDefault: function() {}
-	};
-
-	module.exports = EventListener;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
-
-/***/ },
-/* 71 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule cancelAnimationFramePolyfill
-	 */
-
-	/**
-	 * Here is the native and polyfill version of cancelAnimationFrame.
-	 * Please don't use it directly and use cancelAnimationFrame module instead.
-	 */
-	var cancelAnimationFrame =
-	  global.cancelAnimationFrame       ||
-	  global.webkitCancelAnimationFrame ||
-	  global.mozCancelAnimationFrame    ||
-	  global.oCancelAnimationFrame      ||
-	  global.msCancelAnimationFrame     ||
-	  global.clearTimeout;
-
-	module.exports = cancelAnimationFrame;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 72 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule IntegerBufferSet
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var Heap = __webpack_require__(81);
-
-	var invariant = __webpack_require__(50);
-
-	// Data structure that allows to store values and assign positions to them
-	// in a way to minimize changing positions of stored values when new ones are
-	// added or when some values are replaced. Stored elements are alwasy assigned
-	// a consecutive set of positoins startin from 0 up to count of elements less 1
-	// Following actions can be executed
-	// * get position assigned to given value (null if value is not stored)
-	// * create new entry for new value and get assigned position back
-	// * replace value that is furthest from specified value range with new value
-	//   and get it's position back
-	// All operations take amortized log(n) time where n is number of elements in
-	// the set.
-
-	  function IntegerBufferSet() {
-	    this.$IntegerBufferSet_valueToPositionMap = {};
-	    this.$IntegerBufferSet_size = 0;
-	    this.$IntegerBufferSet_smallValues = new Heap(
-	      [], // Initial data in the heap
-	      this.$IntegerBufferSet_smallerComparator
-	    );
-	    this.$IntegerBufferSet_largeValues = new Heap(
-	      [], // Initial data in the heap
-	      this.$IntegerBufferSet_greaterComparator
-	    );
-
-	    this.getNewPositionForValue = this.getNewPositionForValue.bind(this);
-	    this.getValuePosition = this.getValuePosition.bind(this);
-	    this.getSize = this.getSize.bind(this);
-	    this.replaceFurthestValuePosition =
-	      this.replaceFurthestValuePosition.bind(this);
-	  }
-
-	  IntegerBufferSet.prototype.getSize=function()  {
-	    return this.$IntegerBufferSet_size;
-	  };
-
-	  IntegerBufferSet.prototype.getValuePosition=function(value)  {
-	    if (this.$IntegerBufferSet_valueToPositionMap[value] === undefined) {
-	      return null;
-	    }
-	    return this.$IntegerBufferSet_valueToPositionMap[value];
-	  };
-
-	  IntegerBufferSet.prototype.getNewPositionForValue=function(value)  {
-	    invariant(
-	      this.$IntegerBufferSet_valueToPositionMap[value] === undefined,
-	      "Shouldn't try to find new position for value already stored in BufferSet"
-	    );
-	    var newPosition = this.$IntegerBufferSet_size;
-	    this.$IntegerBufferSet_size++;
-	    this.$IntegerBufferSet_pushToHeaps(newPosition, value);
-	    this.$IntegerBufferSet_valueToPositionMap[value] = newPosition;
-	    return newPosition;
-	  };
-
-	  IntegerBufferSet.prototype.replaceFurthestValuePosition=function(
-	lowValue,
-	    /*number*/ highValue,
-	    /*number*/ newValue)
-	    {
-	    invariant(
-	      this.$IntegerBufferSet_valueToPositionMap[newValue] === undefined,
-	      "Shouldn't try to replace values with value already stored value in " +
-	      "BufferSet"
-	    );
-
-	    this.$IntegerBufferSet_cleanHeaps();
-	    if (this.$IntegerBufferSet_smallValues.empty() || this.$IntegerBufferSet_largeValues.empty()) {
-	      // Threre are currently no values stored. We will have to create new
-	      // position for this value.
-	      return null;
-	    }
-
-	    var minValue = this.$IntegerBufferSet_smallValues.peek().value;
-	    var maxValue = this.$IntegerBufferSet_largeValues.peek().value;
-	    if (minValue >= lowValue && maxValue <= highValue) {
-	      // All values currently stored are necessary, we can't reuse any of them.
-	      return null;
-	    }
-
-	    var valueToReplace;
-	    if (lowValue - minValue > maxValue - highValue) {
-	      // minValue is further from provided range. We will reuse it's position.
-	      valueToReplace = minValue;
-	      this.$IntegerBufferSet_smallValues.pop();
-	    } else {
-	      valueToReplace = maxValue;
-	      this.$IntegerBufferSet_largeValues.pop();
-	    }
-	    var position = this.$IntegerBufferSet_valueToPositionMap[valueToReplace];
-	    delete this.$IntegerBufferSet_valueToPositionMap[valueToReplace];
-	    this.$IntegerBufferSet_valueToPositionMap[newValue] = position;
-	    this.$IntegerBufferSet_pushToHeaps(position, newValue);
-
-	    return position;
-	  };
-
-	  IntegerBufferSet.prototype.$IntegerBufferSet_pushToHeaps=function(position, /*number*/ value) {
-	    var element = {
-	      position:position,
-	      value:value,
-	    };
-	    // We can reuse the same object in both heaps, because we don't mutate them
-	    this.$IntegerBufferSet_smallValues.push(element);
-	    this.$IntegerBufferSet_largeValues.push(element);
-	  };
-
-	  IntegerBufferSet.prototype.$IntegerBufferSet_cleanHeaps=function() {
-	    // We not usually only remove object from one heap while moving value.
-	    // Here we make sure that there is no stale data on top of heaps.
-	    this.$IntegerBufferSet_cleanHeap(this.$IntegerBufferSet_smallValues);
-	    this.$IntegerBufferSet_cleanHeap(this.$IntegerBufferSet_largeValues);
-	    var minHeapSize =
-	      Math.min(this.$IntegerBufferSet_smallValues.size(), this.$IntegerBufferSet_largeValues.size());
-	    var maxHeapSize =
-	      Math.max(this.$IntegerBufferSet_smallValues.size(), this.$IntegerBufferSet_largeValues.size());
-	    if (maxHeapSize > 10 * minHeapSize) {
-	      // There are many old values in one of heaps. We nned to get rid of them
-	      // to not use too avoid memory leaks
-	      this.$IntegerBufferSet_recreateHeaps();
-	    }
-	  };
-
-	  IntegerBufferSet.prototype.$IntegerBufferSet_recreateHeaps=function() {
-	    var sourceHeap = this.$IntegerBufferSet_smallValues.size() < this.$IntegerBufferSet_largeValues.size() ?
-	      this.$IntegerBufferSet_smallValues :
-	      this.$IntegerBufferSet_largeValues;
-	    var newSmallValues = new Heap(
-	      [], // Initial data in the heap
-	      this.$IntegerBufferSet_smallerComparator
-	    );
-	    var newLargeValues = new Heap(
-	      [], // Initial datat in the heap
-	      this.$IntegerBufferSet_greaterComparator
-	    );
-	    while (!sourceHeap.empty()) {
-	      var element = sourceHeap.pop();
-	      // Push all stil valid elements to new heaps
-	      if (this.$IntegerBufferSet_valueToPositionMap[element.value] !== undefined) {
-	        newSmallValues.push(element);
-	        newLargeValues.push(element);
-	      }
-	    }
-	    this.$IntegerBufferSet_smallValues = newSmallValues;
-	    this.$IntegerBufferSet_largeValues = newLargeValues;
-	  };
-
-	  IntegerBufferSet.prototype.$IntegerBufferSet_cleanHeap=function(heap) {
-	    while (!heap.empty() &&
-	        this.$IntegerBufferSet_valueToPositionMap[heap.peek().value] === undefined) {
-	      heap.pop();
-	    }
-	  };
-
-	  IntegerBufferSet.prototype.$IntegerBufferSet_smallerComparator=function(lhs, /*object*/ rhs)  {
-	    return lhs.value < rhs.value;
-	  };
-
-	  IntegerBufferSet.prototype.$IntegerBufferSet_greaterComparator=function(lhs, /*object*/ rhs)  {
-	    return lhs.value > rhs.value;
-	  };
-
-
-
-	module.exports = IntegerBufferSet;
-
-
-/***/ },
-/* 73 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -8743,11 +8811,11 @@
 
 	"use strict";
 
-	var ImmutableValue = __webpack_require__(82);
+	var ImmutableValue = __webpack_require__(84);
 
-	var invariant = __webpack_require__(50);
-	var keyOf = __webpack_require__(83);
-	var mergeHelpers = __webpack_require__(84);
+	var invariant = __webpack_require__(52);
+	var keyOf = __webpack_require__(85);
+	var mergeHelpers = __webpack_require__(86);
 
 	var checkMergeObjectArgs = mergeHelpers.checkMergeObjectArgs;
 	var isTerminal = mergeHelpers.isTerminal;
@@ -8910,10 +8978,10 @@
 
 	module.exports = ImmutableObject;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 74 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -8928,12 +8996,12 @@
 	 * @typechecks
 	 */
 
-	var ImmutableObject = __webpack_require__(73);
-	var React = __webpack_require__(37);
+	var ImmutableObject = __webpack_require__(75);
+	var React = __webpack_require__(39);
 
-	var cloneWithProps = __webpack_require__(46);
-	var cx = __webpack_require__(47);
-	var joinClasses = __webpack_require__(59);
+	var cloneWithProps = __webpack_require__(48);
+	var cx = __webpack_require__(49);
+	var joinClasses = __webpack_require__(56);
 
 	var PropTypes = React.PropTypes;
 
@@ -9135,7 +9203,7 @@
 
 
 /***/ },
-/* 75 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9171,7 +9239,7 @@
 
 
 /***/ },
-/* 76 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9219,7 +9287,7 @@
 
 
 /***/ },
-/* 77 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -9235,11 +9303,11 @@
 
 	'use strict';
 
-	var ReactContext = __webpack_require__(85);
-	var ReactCurrentOwner = __webpack_require__(86);
+	var ReactContext = __webpack_require__(87);
+	var ReactCurrentOwner = __webpack_require__(88);
 
-	var assign = __webpack_require__(87);
-	var warning = __webpack_require__(80);
+	var assign = __webpack_require__(89);
+	var warning = __webpack_require__(82);
 
 	var RESERVED_PROPS = {
 	  key: true,
@@ -9527,10 +9595,10 @@
 
 	module.exports = ReactElement;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 78 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9546,9 +9614,9 @@
 
 	'use strict';
 
-	var assign = __webpack_require__(87);
-	var emptyFunction = __webpack_require__(88);
-	var joinClasses = __webpack_require__(89);
+	var assign = __webpack_require__(89);
+	var emptyFunction = __webpack_require__(90);
+	var joinClasses = __webpack_require__(91);
 
 	/**
 	 * Creates a transfer strategy that will merge prop values using the supplied
@@ -9644,7 +9712,7 @@
 
 
 /***/ },
-/* 79 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9684,7 +9752,7 @@
 
 
 /***/ },
-/* 80 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -9700,7 +9768,7 @@
 
 	"use strict";
 
-	var emptyFunction = __webpack_require__(88);
+	var emptyFunction = __webpack_require__(90);
 
 	/**
 	 * Similar to invariant but only logs a warning if the condition is not met.
@@ -9747,10 +9815,10 @@
 
 	module.exports = warning;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 81 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9910,7 +9978,7 @@
 
 
 /***/ },
-/* 82 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -9927,9 +9995,9 @@
 
 	"use strict";
 
-	var invariant = __webpack_require__(50);
-	var isNode = __webpack_require__(90);
-	var keyOf = __webpack_require__(83);
+	var invariant = __webpack_require__(52);
+	var isNode = __webpack_require__(93);
+	var keyOf = __webpack_require__(85);
 
 	var SECRET_KEY = keyOf({_DONT_EVER_TYPE_THIS_SECRET_KEY: null});
 
@@ -10043,7 +10111,7 @@
 
 
 /***/ },
-/* 83 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10083,7 +10151,7 @@
 
 
 /***/ },
-/* 84 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10101,8 +10169,8 @@
 
 	"use strict";
 
-	var invariant = __webpack_require__(50);
-	var keyMirror = __webpack_require__(91);
+	var invariant = __webpack_require__(52);
+	var keyMirror = __webpack_require__(92);
 
 	/**
 	 * Maximum number of levels to traverse. Will catch circular structures.
@@ -10229,7 +10297,7 @@
 
 
 /***/ },
-/* 85 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -10245,9 +10313,9 @@
 
 	'use strict';
 
-	var assign = __webpack_require__(87);
-	var emptyObject = __webpack_require__(92);
-	var warning = __webpack_require__(80);
+	var assign = __webpack_require__(89);
+	var emptyObject = __webpack_require__(94);
+	var warning = __webpack_require__(82);
 
 	var didWarn = false;
 
@@ -10307,10 +10375,10 @@
 
 	module.exports = ReactContext;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 86 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10348,7 +10416,7 @@
 
 
 /***/ },
-/* 87 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10401,7 +10469,7 @@
 
 
 /***/ },
-/* 88 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10439,7 +10507,7 @@
 
 
 /***/ },
-/* 89 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10484,39 +10552,7 @@
 
 
 /***/ },
-/* 90 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule isNode
-	 * @typechecks
-	 */
-
-	/**
-	 * @param {*} object The object to check.
-	 * @return {boolean} Whether or not the object is a DOM node.
-	 */
-	function isNode(object) {
-	  return !!(object && (
-	    typeof Node === 'function' ? object instanceof Node :
-	      typeof object === 'object' &&
-	      typeof object.nodeType === 'number' &&
-	      typeof object.nodeName === 'string'
-	  ));
-	}
-
-	module.exports = isNode;
-
-
-/***/ },
-/* 91 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -10533,7 +10569,7 @@
 
 	'use strict';
 
-	var invariant = __webpack_require__(50);
+	var invariant = __webpack_require__(52);
 
 	/**
 	 * Constructs an enumeration with keys equal to their value.
@@ -10573,7 +10609,39 @@
 
 
 /***/ },
-/* 92 */
+/* 93 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule isNode
+	 * @typechecks
+	 */
+
+	/**
+	 * @param {*} object The object to check.
+	 * @return {boolean} Whether or not the object is a DOM node.
+	 */
+	function isNode(object) {
+	  return !!(object && (
+	    typeof Node === 'function' ? object instanceof Node :
+	      typeof object === 'object' &&
+	      typeof object.nodeType === 'number' &&
+	      typeof object.nodeName === 'string'
+	  ));
+	}
+
+	module.exports = isNode;
+
+
+/***/ },
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -10597,73 +10665,21 @@
 
 	module.exports = emptyObject;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(33)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(36)))
 
 /***/ },
-/* 93 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = _;
-
-/***/ },
-/* 94 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
 	var React = __webpack_require__(1);
-	var FixedDataTable = __webpack_require__(6);
-	var _ = __webpack_require__(93);
-
-	var Table = FixedDataTable.Table;
-	var Column = FixedDataTable.Column;
-
 
 	module.exports = React.createClass({displayName: "exports",
-	    getInitialState: function() {
-		var initialColumnWith = Math.round(this.props.tableWidth / this.props.columnNames.length);
-		var columnWidths = {};
-		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
-		return {"columnWidths": columnWidths};
-	    },
-	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
-		this.state.columnWidths[dataKey] = newColumnWidth;
-	//	isColumnResizing = false;
-	    },
 	    render: function(){
-		var columnNames = this.props.columnNames;
-		var columnWidths = this.state.columnWidths
-
-		return (
-		    React.createElement(Table, {
-			    rowHeight: 50, 
-			    rowGetter: this.props.rowGetter, 
-			    rowsCount: this.props.rowsCount, 
-			    width: this.props.tableWidth, 
-			    height: this.props.tableHeight, 
-			    headerHeight: 50, 
-			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
-
-		      
-			  this.props.columnNames.map(function(name){
-
-			      return (
-				  React.createElement(Column, {
-				  label: name, 
-				  width: columnWidths[name], 			  
-				  dataKey: name, 
-				  isResizable: false}
-				  )
-			      );
-			  })
-		       
-		    )
-		);
+		return React.createElement("img", {src: "assets/person_bar.svg"});
 	    }
 	});
-
-
-
 
 
 /***/ }
