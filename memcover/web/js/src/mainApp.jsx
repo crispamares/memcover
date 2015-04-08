@@ -58,9 +58,9 @@ module.exports = React.createClass({
 
 	return (
 	    <ReactGridLayout className="layout" layout={layout} cols={12} rowHeight={50}>
-	      <div key={1}><SimpleVis data={[{value:25, label:"P1"},{value:45, label:"P2"}]}/></div>
+	      <div key={1}><SimpleVis table={this.props.measuresTable}/></div>
 	      <div key={2}>
-		<BrainRegions width={"40%"}></BrainRegions>
+		<BrainRegions width={"60%"}></BrainRegions>
 	      </div>
 	      <div key={"table"}>
 		<DataTable 			  
