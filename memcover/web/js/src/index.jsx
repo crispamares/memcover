@@ -26,7 +26,7 @@ var totalItems = null;
 rpc.call('init', [])
     .then(function(names){
 	var props = {
-	    measuresTable: names["table"]
+	    morphoTable: names["main_table"]
 	};
 	React.render( <App {...props}></App>, document.getElementById('content'));
 

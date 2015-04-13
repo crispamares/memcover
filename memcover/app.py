@@ -18,16 +18,16 @@ class App(MetaApp):
         '''
         This method loads the data in a table
         '''
-        table_name = 'fragmentator'
+        table_name = 'morpho'  # clinic is the otherone
         table = init_table(table_name, 'schema')
-        definition_dselect = DynSelect('definition_dselect', table, setop='AND')
+        morpho_dselect = DynSelect('morpho_dselect', table, setop='AND')
         Front.instance().get_method('TableSrv.expose_table')(table)
-        Front.instance().get_method('DynSelectSrv.expose_dselect')(definition_dselect)
+        Front.instance().get_method('DynSelectSrv.expose_dselect')(morpho_dselect)
 
         xlsx_exporter.expose_methods()
         dist_vis.expose_methods()
 
-        return {'table': table_name}
+        return {'main_table': table_name, 'main_selection': 'morpho_dselect'}
 
 
 def main():

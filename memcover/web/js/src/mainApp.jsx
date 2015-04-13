@@ -6,15 +6,18 @@ var ReactGridLayout = require('react-grid-layout');
 
 var Context = require('context');
 
+var reactify = require('./reactify');
 var DataTable = require('./dataTable');
 var BrainRegions = require('./brainRegions');
 var SimpleVis = require('./simpleVis');
+
+var PCPChart = reactify(require('./pcpChart'));
 
 module.exports = React.createClass({
     getInitialState: function() {
 	return {
 	    "schema": {attributes:{}},
-	    "measuresTable": this.props.measuresTable,
+	    "morphoTable": this.props.morphoTable,
 	    "measuresData": []
 	};
     },
@@ -22,8 +25,9 @@ module.exports = React.createClass({
 	var rpc = Context.instance().rpc;
 	var self = this;
 
-	rpc.call("TableSrv.schema", [this.props.measuresTable])
+	rpc.call("TableSrv.schema", [this.props.morphoTable])
 	    .then(function(schema){
+		console.log('***', schema);
 		schema.attributes = _.mapValues(schema.attributes, function(v,k){v.name = k; return v;});
 		schema.quantitative_attrs = getQuantitativeAttrs(schema);
 
@@ -39,7 +43,7 @@ module.exports = React.createClass({
 	    .catch(function(e){console.error(e);});
  
 
-	rpc.call("TableSrv.get_data", [this.props.measuresTable, "rows"])
+	rpc.call("TableSrv.get_data", [this.props.morphoTable, "rows"])
 	    .then(function(rows){self.setState({"measuresData": rows});})
 	    .catch(function(e){console.error(e);});
 
@@ -53,14 +57,23 @@ module.exports = React.createClass({
 
 	var layout = [{x: 0, y: 0, w: 6, h: 6, i:1}, 
 	    {x: 6, y: 0, w: 6, h: 6, i:2}, 
-	    {x: 0, y: 1, w: 12, h: 10, i:"table"}
+	    {x: 0, y: 1, w: 12, h: 6, i:3}, 
+	    {x: 0, y: 2, w: 12, h: 10, i:"table"}
 	];
 
 	return (
 	    <ReactGridLayout className="layout" layout={layout} cols={12} rowHeight={50}>
-	      <div key={1}><SimpleVis table={this.props.measuresTable}/></div>
+	      <div key={1}><SimpleVis table={this.props.morphoTable}/></div>
 	      <div key={2}>
 		<BrainRegions width={"60%"}></BrainRegions>
+	      </div>
+	      <div key={3}>
+		<PCPChart 
+			width={600} height={500} 
+			attributes={_.values(this.state.schema.attributes)}
+			data={this.state.measuresData}
+			>
+		</PCPChart>
 	      </div>
 	      <div key={"table"}>
 		<DataTable 			  
