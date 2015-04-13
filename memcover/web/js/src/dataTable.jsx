@@ -1,6 +1,7 @@
 'use strict'
 
 var React = require('react');
+Object.assign = Object.assign || require('object-assign');
 var FixedDataTable = require('fixed-data-table');
 var _ = require('lodash');
 
@@ -10,7 +11,7 @@ var Column = FixedDataTable.Column;
 
 module.exports = React.createClass({
     getInitialState: function() {
-	
+	 
 	var initialColumnWith = (this.props.columnNames.length) ?
 				Math.round(this.props.tableWidth / this.props.columnNames.length)
 	                        : 0;

@@ -1,0 +1,32 @@
+
+svg.pcp {
+  font-size: 14px;
+}
+
+svg.pcp .foreground path {
+  fill: none;
+  stroke: rgb(49, 130, 189);
+  stroke-opacity: .5;
+  stroke-width: 1px;
+}
+
+svg.pcp .foreground path.fade {
+  stroke: #000;
+  stroke-opacity: .05;
+}
+
+
+svg.pcp .axis line, .axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+svg.pcp .axis text {
+  text-shadow: 0 1px 0 #fff;
+  cursor: move;
+}
+
+svg.pcp .hide {
+     display: none;
+}

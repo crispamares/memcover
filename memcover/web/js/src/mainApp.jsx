@@ -57,7 +57,7 @@ module.exports = React.createClass({
 
 	var layout = [{x: 0, y: 0, w: 6, h: 6, i:1}, 
 	    {x: 6, y: 0, w: 6, h: 6, i:2}, 
-	    {x: 0, y: 1, w: 12, h: 6, i:3}, 
+	    {x: 0, y: 1, w: 12, h: 6, i:3, isDraggable:false}, 
 	    {x: 0, y: 2, w: 12, h: 10, i:"table"}
 	];
 
@@ -69,7 +69,7 @@ module.exports = React.createClass({
 	      </div>
 	      <div key={3}>
 		<PCPChart 
-			width={600} height={500} 
+			width={contentWidth} height={300} 
 			attributes={_.values(this.state.schema.attributes)}
 			data={this.state.measuresData}
 			>
