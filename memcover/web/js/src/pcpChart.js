@@ -26,7 +26,6 @@ module.exports = {
 	var height = props.height - margin.top - margin.bottom;
 
 	var scales = this._scales(width, height, props.data, props.attributes);
-	console.log(scales);
 
     },
 
@@ -37,18 +36,19 @@ module.exports = {
 	var y = {};
 
 	attributes.forEach(function(d) {
+	    var name = d.name;
 	    if (d.attribute_type === 'QUANTITATIVE') {
-		y[d] = d3.scale.linear()
-		    .domain(d3.extent(data, function(p) { return p[d]; }))
+		y[name] = d3.scale.linear()
+		    .domain(d3.extent(data, function(p) { return p[name]; }))
 		    .range([height, 0]);
 	    }
 	    else if (d.attribute_type === 'CATEGORICAL') {
-		y[d] = d3.scale.ordinal()
-		    .domain(d3.set(_.pluck(data, d)).values())
+		y[name] = d3.scale.ordinal()
+		    .domain(d3.set(_.pluck(data, name)).values())
 		    .rangePoints([height, 0]);
 	    }
-	    y[d].brush = d3.svg.brush()
-		.y(y[d])
+	    y[name].brush = d3.svg.brush()
+		.y(y[name])
 		.on("brush", self._brush);
 	});
 
