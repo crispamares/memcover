@@ -3,10 +3,6 @@
 var React = require('react');
 
 module.exports = {
-    getInitialState: function() {
-	return {};
-    },
-
     getDefaultProps: function() {
 	var margin = {top: 20, right: 10, bottom: 20, left: 10};
 	return {
@@ -27,7 +23,7 @@ module.exports = {
     shouldComponentUpdate: function(nextProps, nextState) {
 	var container = this.refs.container.getDOMNode();
 	this.update(container, nextProps, nextState);
-	// render is not called again so he container is ther until
+	// render is not called again so the container is there until
 	// the end.
 	return false;
     },
