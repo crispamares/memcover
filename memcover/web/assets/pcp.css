@@ -30,3 +30,9 @@ svg.pcp .axis text {
 svg.pcp .hide {
      display: none;
 }
+
+svg.pcp .brush .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}

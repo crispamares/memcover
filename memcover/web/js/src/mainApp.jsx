@@ -72,6 +72,7 @@ module.exports = React.createClass({
 			width={contentWidth} height={300} 
 			attributes={_.values(this.state.schema.attributes)}
 			data={this.state.measuresData}
+			onBrush={function(extent){/*console.log(extent);*/}}
 			>
 		</PCPChart>
 	      </div>

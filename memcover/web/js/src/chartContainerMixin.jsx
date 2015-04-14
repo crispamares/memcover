@@ -3,6 +3,10 @@
 var React = require('react');
 
 module.exports = {
+    getInitialState: function() {
+	return {};
+    },
+
     getDefaultProps: function() {
 	var margin = {top: 20, right: 10, bottom: 20, left: 10};
 	return {
