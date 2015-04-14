@@ -168,7 +168,11 @@
 		      React.createElement("div", {key: 3}, 
 			React.createElement(PCPChart, {
 				width: contentWidth, height: 300, 
-				attributes: _.values(this.state.schema.attributes), 
+				attributes: 
+				    _.chain(this.state.schema.attributes).values()
+					.filter(function(d){return !_.include(["measure_id"], d.name); })
+					.value(), 
+				
 				data: this.state.measuresData, 
 				onBrush: function(extent){/*console.log(extent);*/}
 				}
