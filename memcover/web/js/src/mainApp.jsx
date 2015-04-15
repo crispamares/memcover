@@ -18,7 +18,9 @@ module.exports = React.createClass({
 	return {
 	    "schema": {attributes:{}},
 	    "morphoTable": this.props.morphoTable,
-	    "measuresData": []
+	    "measuresData": [],
+	    "regionsCondition": null,
+	    "includedRegions": []
 	};
     },
     componentDidMount: function() {
@@ -47,12 +49,21 @@ module.exports = React.createClass({
 	    .then(function(rows){self.setState({"measuresData": rows});})
 	    .catch(function(e){console.error(e);});
 
+	rpc.call('DynSelectSrv.new_categorical_condition', [this.props.morphoSelection, "region"])
+	    .then(function(condition){
+		return rpc.call('ConditionSrv.include_all', [condition])
+		    .then(function(){return rpc.call('ConditionSrv.included_categories', [condition]);})
+		    .then(function(categories) {
+			self.setState({"regionsCondition": condition, "includedRegions": categories});
+		    });
+	    })
+	    .catch(function(e){console.error(e);});
     },
     render: function(){
 
 	var columnNames = _.keys(this.state.schema.attributes);
 
-	console.log("******", columnNames);
+	console.log("******", this.state);
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
 
 	var layout = [{x: 0, y: 0, w: 6, h: 6, i:1}, 
@@ -65,7 +76,7 @@ module.exports = React.createClass({
 	    <ReactGridLayout className="layout" layout={layout} cols={12} rowHeight={50}>
 	      <div key={1}><SimpleVis table={this.props.morphoTable}/></div>
 	      <div key={2}>
-		<BrainRegions width={"60%"}></BrainRegions>
+		<BrainRegions width={"60%"} includedRegions={this.state.includedRegions}></BrainRegions>
 	      </div>
 	      <div key={3}>
 		<PCPChart 

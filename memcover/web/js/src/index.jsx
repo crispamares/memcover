@@ -20,13 +20,11 @@ window.onunload = function() {context.closeSession();};
 var rpc = context.rpc;
 var hub = context.hub;
 
-var quantitative_attrs = null;
-var totalItems = null;
-
 rpc.call('init', [])
     .then(function(names){
 	var props = {
-	    morphoTable: names["main_table"]
+	    morphoTable: names["main_table"],
+	    morphoSelection: names["main_selection"]
 	};
 	React.render( <App {...props}></App>, document.getElementById('content'));
 

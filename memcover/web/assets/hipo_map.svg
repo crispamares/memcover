@@ -57,11 +57,15 @@
      transform="translate(62.165265,-125.00996)">
     <path
        id="regionSub"
+       class="region SUB"
+       data-region="SUB"
        d="M 329.70097,497.92712 C 313.7557,486.80286 290.86295,469.87301 277.0225,456.51336 237.46761,418.33253 205.84421,372.18417 178.35512,324.70722 141.49344,275.62995 73.084098,227.43093 10.714968,258.71091 c -72.51219,47.66455 -81.26415,147.54992 -62.71168,225.57983 17.39161,74.21385 47.6519444,153.82062 89.579384,218.09943 z"
        style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0" />
     <path
        id="regionCA1"
+       class="region CA1"
+       data-region="CA1"
        d="M 483.87499,555.18996 C 426.59175,554.61506 381.28695,533.35246 334.4433,502.13409 L 40.860168,707.99768 c 25.64333,37.14678 56.6634,70.34267 94.257702,97.21504 56.15177,43.20402 127.21256,58.57365 196.68194,61.01135 45.88663,3.25296 91.89549,5.61062 137.88629,8.00908 z"
        style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0" />
@@ -72,16 +76,21 @@
        inkscape:connector-curvature="0" />
     <path
        id="regionCA3"
+       class="region CA3"
+       data-region="CA3"
        d="m 597.47034,500.40222 395.6985,-21.78104 c 11.15966,-82.26315 8.78976,-185.23241 -28.7772,-226.2305 -39.97586,-43.62704 -107.17185,-35.96663 -202.30018,-42.60637 z"
        style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0" />
     <path
        id="regionDG"
+       class="region DG"
+       data-region="DG"
        d="M 753.67369,207.98506 C 681.11224,186.95559 607.7017,168.32899 537.18926,140.91304 448.86901,106.57323 335.78131,138.0233 260.66981,203.07351 c -41.61804,36.28017 -61.10842,96.54554 -39.39365,149.04316 36.42541,94.81988 177.81635,151.23342 217.17793,161.58463 7.81192,2.05436 34.19912,-3.8488 80.91192,-7.41047 17.33176,-1.32148 51.02128,-9.69184 69.60442,-6.89924 z"
        style="fill:none;fill-rule:evenodd;stroke:#a40000;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        inkscape:connector-curvature="0" />
     <text
        id="text4198"
+       class="DG"
        y="359.11636"
        x="390.61215"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
@@ -91,6 +100,7 @@
          x="390.61215"
          id="tspan4200">DG</tspan></text>
     <text
+       class="CA3"
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
        x="760.328"
@@ -101,6 +111,7 @@
          x="760.328"
          y="397.50217">CA3</tspan></text>
     <text
+       class="CA1"
        id="text4206"
        y="706.60883"
        x="237.06897"
@@ -111,6 +122,7 @@
          x="237.06897"
          id="tspan4208">CA1</tspan></text>
     <text
+       class="SUB"
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
        x="35.038471"

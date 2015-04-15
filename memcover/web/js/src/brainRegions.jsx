@@ -8,45 +8,45 @@ module.exports = React.createClass({
 
     getDefaultProps: function() {
 	return {
-	    includedRegions: ["SUB", "DB", "CA3", "CA1"]
+	    includedRegions: ["SUB", "DG", "CA3", "CA1"]
 	};
     },
 
     componentDidMount: function() {
-	this.update();
-    },
-
-    componentDidUpdate: function() {
-	this.update();
-    },
-
-    update: function() {
 	var container = this.refs.container.getDOMNode();
-	var svg = d3.select(container);
 
-	console.log("chop", svg);
+	container.addEventListener("load", function(){
+	    var svg = d3.select(container.contentDocument);
 
-d3.xml("http://upload.wikimedia.org/wikipedia/commons/a/a0/Circle_-_black_simple.svg", 
-        function(error, documentFragment) {
+	    this.update(svg, this.props, this.state);
+	}.bind(this));
+    },
 
-    if (error) {console.log(error); return;}
+    shouldComponentUpdate: function(nextProps, nextState) {
+	var container = this.refs.container.getDOMNode();
+	var svg = d3.select(container.contentDocument);
 
-    var svgNode = documentFragment
-                .getElementsByTagName("svg")[0];
-    //use plain Javascript to extract the node
+	this.update(svg, nextProps, nextState);
+	// render is not called again so the container is there until
+	// the end.
+	return false;
+    },
 
-    main_chart_svg.node().appendChild(svgNode);
-    //d3's selection.node() returns the DOM node, so we
-    //can use plain Javascript to append content
+    update: function(svg, props, state) {
+	var self = this;
 
-    var innerSVG = main_chart_svg.select("svg");
+	svg.selectAll("path.region")
+	    .datum(function() { return this.dataset; })
+	    .style("cursor", function(){(props.onClickRegion) ? "pointer" : null})
+	    .on("click", function(d){if (props.onClickRegion) props.onClickRegion(d.region);})
+	    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "none";});
 
-    innerSVG.transition().duration(1000).delay(1000)
-          .select("circle")
-          .attr("r", 100);
+	props.includedRegions.forEach(function(region){
+	    svg.selectAll("text."+region)
+		.style("fill", "white");
+	});
+;
 
-});
-	
     },
 
     render: function(){
@@ -54,7 +54,7 @@ d3.xml("http://upload.wikimedia.org/wikipedia/commons/a/a0/Circle_-_black_simple
             <div>
 	      <object ref="container" id="svgobject" 
 		      type="image/svg+xml"
-8		      width={this.props.width} 
+		      width={this.props.width} 
 		      height={this.props.heght}
 		      data="assets/hipo_map.svg">
 	      </object>
