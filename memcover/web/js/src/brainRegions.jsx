@@ -37,10 +37,14 @@ module.exports = React.createClass({
 
 	svg.selectAll("path.region")
 	    .datum(function() { return this.dataset; })
-	    .style("cursor", function(){(props.onClickRegion) ? "pointer" : null})
-	    .on("click", function(d){if (props.onClickRegion) props.onClickRegion(d.region);})
-	    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "none";});
+	    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
+	    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d.region);};})
+	    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "#EEE";});
 
+	svg.selectAll("text")
+	    .datum(function() { return this.className; })
+	    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
+	
 	props.includedRegions.forEach(function(region){
 	    svg.selectAll("text."+region)
 		.style("fill", "white");

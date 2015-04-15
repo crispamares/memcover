@@ -15,8 +15,6 @@ module.exports = {
 	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	svg.append("g").attr("class", "foreground");
-
-	this.update(container, props, state);
     },
 
     cleanChart: function(container, props, state){
@@ -24,7 +22,11 @@ module.exports = {
     },
 
     update: function(container, props, state) {
-	if ( !(props.attributes.length && props.data.length)) return null;
+	if ( !(props.attributes.length && props.data.length)) {
+	    d3.select(container).html('');
+	    this.createChart(container, props, state);
+	    return null
+	};
 	console.log("UPDATE"); 
 	var self = this;
 	var margin = props.margin;

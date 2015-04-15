@@ -13,6 +13,7 @@ module.exports = {
     componentDidMount: function() {
 	var container = this.refs.container.getDOMNode();
 	this.createChart(container, this.props, this.state);
+	this.update(container, this.props, this.state);
     },
 
     componentWillUnmount: function() {
