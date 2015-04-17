@@ -60,7 +60,7 @@ module.exports = React.createClass({
 		      type="image/svg+xml"
 		      width={this.props.width} 
 		      height={this.props.heght}
-		      data="assets/hipo_map.svg">
+		      data="assets/hipo_foto.svg">
 	      </object>
             </div>
 	);
