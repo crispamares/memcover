@@ -16,8 +16,8 @@ module.exports = React.createClass({
 	var rpc = Context.instance().rpc;
 	var self = this;
 	var pipeline = [
-	    {$match : {"tint": "NISSL"}},
-	    {$group : {_id: "$patient", value: {$sum: "$cells/volume (mm3)"} } },
+//	    {$match : {"tint": "NISSL"}},
+	    {$group : {_id: "$region", value: {$avg: "$cells/volume (mm3)"} } },
 	    {$project : { label: "$_id", value:1 , _id: 0}},
 	    {$sort : { value: -1 } }
 	];
@@ -34,11 +34,11 @@ module.exports = React.createClass({
 	return (
 	    <BarChart
 		    data={this.state.data}
-		    width={600}
-		    height={200}
+		    width={500}
+		    height={240}
 		    margins={{top: 20, right: 30, bottom: 30, left: 60}}
 		    fill={'#3182bd'}
-		    title='Cells/Vol - NISSL'>
+		    title='Avg Cells/Vol per Region'>
 	    </BarChart>	
 	);
     }

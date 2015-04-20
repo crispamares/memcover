@@ -12,6 +12,7 @@ var BrainRegions = require('./brainRegions');
 var SimpleVis = require('./simpleVis');
 
 var PCPChart = reactify(require('./pcpChart'));
+var ScatterChart = require('react-d3/scatterchart').ScatterChart;
 
 module.exports = React.createClass({
     getInitialState: function() {
@@ -112,25 +113,55 @@ module.exports = React.createClass({
 	console.log("******", this.state);
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
 
-	var layout = [{x: 0, y: 0, w: 6, h: 6, i:1}, 
-	    {x: 6, y: 0, w: 3, h: 6, i:2}, 
+	var layout = [
+	    {x: 0, y: 0, w: 4, h: 6, i:0}, 
+	    {x: 4, y: 0, w: 5, h: 6, i:1}, 
+	    {x: 10, y: 0, w: 3, h: 6, i:2}, 
 	    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
 	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
 
+
+
+
+
+
+	var scatterData = [
+	    {
+		name: "series1",
+		values: [ 
+		    { x: 4.5, y:	10093.0355127938 },
+		    { x: 2, y:	9053.6006591816 },
+		    { x: 5.5, y:	9709.7132826258 },
+		    { x: 5.5, y:	4411.9646756317 },
+		    { x: 4, y:	11871.6073443496 },
+		    { x: 5, y:	8503.093763325 },
+		    { x: 4.25, y:	9717.1988192271 },
+		    { x: 4.75, y:	9739.9604497065 },
+		    { x: 5, y:	7204.7118005418 },
+		    { x: 5, y:	9935.2958133543 } 
+		]
+	    },
+	];
 	return (
 	    <ReactGridLayout className="layout" layout={layout} cols={12} rowHeight={50}>
+	      <div key={0}><ScatterChart 
+				   data={scatterData}
+				   width={400}
+				   height={260}
+				   title="Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"
+				   /></div>
 	      <div key={1}><SimpleVis table={this.props.morphoTable}/></div>
 	      <div key={2}>
 		<BrainRegions 
-			width={350} 
+			width={340} 
 			includedRegions={this.state.includedRegions}
 			onClickRegion={this.toggleRegion}></BrainRegions>
 	      </div>
 	      <div key={3}>
 		<PCPChart 
 			width={contentWidth} height={450} 
-			margin={{top: 50, right: 10, bottom: 40, left: 50}}
+			margin={{top: 50, right: 40, bottom: 40, left: 40}}
 			attributes={
 			    _.chain(this.state.schema.attributes).values()
 				.filter(function(d){return !_.include(["measure_id"], d.name); })
@@ -144,8 +175,8 @@ module.exports = React.createClass({
 	      <div key={"table"}>
 		<DataTable 			  
 			rows={this.state.measuresData}
-			tableWidth={contentWidth}
-			tableHeight={500}
+			tableWidth={contentWidth -10}
+			tableHeight={480}
 			columnNames={columnNames}
 			>
 		</DataTable>
