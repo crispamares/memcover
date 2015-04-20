@@ -146,8 +146,9 @@ module.exports = React.createClass({
 	return (
 	    <ReactGridLayout className="layout" layout={layout} cols={12} rowHeight={50}>
 	      <div key={0}><ScatterChart 
+				   margins={{top: 20, right: 60, bottom: 60, left: 60}}
 				   data={scatterData}
-				   width={400}
+				   width={450}
 				   height={260}
 				   title="Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"
 				   /></div>
