@@ -74,7 +74,8 @@ module.exports = {
 		      .append("text")
 			.attr("text-anchor", "middle")
 			.attr("y", -9)
-			.text(String);})
+			.attr("class", "dimension")
+			.text(function(d){return _.capitalize(String(d));});})
 		.call(function(g) {
 		    // Add a brush for each axis.
 		    g.append("g")

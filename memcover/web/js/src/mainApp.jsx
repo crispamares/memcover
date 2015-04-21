@@ -114,17 +114,12 @@ module.exports = React.createClass({
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
 
 	var layout = [
-	    {x: 0, y: 0, w: 4, h: 6, i:0}, 
-	    {x: 4, y: 0, w: 5, h: 6, i:1}, 
-	    {x: 10, y: 0, w: 3, h: 6, i:2}, 
+	    {x: 8, y: 0, w: 4, h: 6, i:0}, 
+	    {x: 3, y: 0, w: 5, h: 6, i:1}, 
+	    {x: 0, y: 0, w: 3, h: 6, i:2}, 
 	    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
 	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
-
-
-
-
-
 
 	var scatterData = [
 	    {
@@ -148,11 +143,14 @@ module.exports = React.createClass({
 	      <div key={0}><ScatterChart 
 				   margins={{top: 20, right: 60, bottom: 60, left: 60}}
 				   data={scatterData}
-				   width={450}
+				   width={(contentWidth/12) * layout[0].w - 50}
 				   height={260}
 				   title="Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"
 				   /></div>
-	      <div key={1}><SimpleVis table={this.props.morphoTable}/></div>
+	      <div key={1}>
+                <h4>Cells/Vol per region</h4>
+		<img src="assets/boxplot.png" width="460px"/>
+	      </div>
 	      <div key={2}>
 		<BrainRegions 
 			width={340} 

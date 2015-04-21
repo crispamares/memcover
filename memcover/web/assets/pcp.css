@@ -36,3 +36,7 @@ svg.pcp .brush .extent {
   stroke: #fff;
   shape-rendering: crispEdges;
 }
+
+svg.pcp .dimension {
+     font-weight: 600;
+}
