@@ -123,6 +123,13 @@ module.exports = {
 	var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
 	var y = {};
 
+	function sortRegions (rows) {
+	    return rows.sort(function(a,b){
+		var order = ["DG", "CA3", "CA1", "SUB"];
+		return d3.descending(order.indexOf(a), order.indexOf(b)); 
+	    })
+	}
+
 	attributes.forEach(function(d) {
 	    var name = d.name;
 	    if (d.attribute_type === 'QUANTITATIVE') {
@@ -132,14 +139,17 @@ module.exports = {
 		    .range([height, 0]);
 	    }
 	    else if (d.attribute_type === 'CATEGORICAL') {
+		var domain = d3.set(_.pluck(data, name)).values();
+		//domain = (d.name == "region") ? sortRegions(domain) : domain;
 		y[name] = d3.scale.ordinal()
-		    .domain(d3.set(_.pluck(data, name)).values())
+		    .domain(domain)
 		    .rangePoints([height, 0]);
 	    }
 	});
 
 	return {x: x, y: y};
     },
+
 
     _brushes: function(scales, attributes, onBrush, foreground) {
 	if (_.isUndefined(onBrush)) return {};
