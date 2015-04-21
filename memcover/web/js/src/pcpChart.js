@@ -140,7 +140,7 @@ module.exports = {
 	    }
 	    else if (d.attribute_type === 'CATEGORICAL') {
 		var domain = d3.set(_.pluck(data, name)).values();
-		//domain = (d.name == "region") ? sortRegions(domain) : domain;
+		domain = (d.name == "region") ? sortRegions(domain) : domain;
 		y[name] = d3.scale.ordinal()
 		    .domain(domain)
 		    .rangePoints([height, 0]);
