@@ -148,7 +148,7 @@ module.exports = React.createClass({
 				   title="Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"
 				   /></div>
 	      <div key={1}>
-                <h4>Cells/Vol per region</h4>
+                <h4>AT8 Cells/Vol per region</h4>
 		<img src="assets/boxplot.png" width="460px"/>
 	      </div>
 	      <div key={2}>
