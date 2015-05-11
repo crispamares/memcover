@@ -1,10 +1,31 @@
 {
  "index": "measure_id", 
  "attributes": {
+  "total population by optical fractionator": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "avg volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
   "measure_id": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": true, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "tint": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
    "shape": [], 
    "continuous": false
   }, 
@@ -15,20 +36,13 @@
    "shape": [], 
    "continuous": false
   }, 
-  "region": {
-   "attribute_type": "CATEGORICAL", 
+  "total markers counted": {
+   "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": false
   }, 
-  "estimated volume (mm3)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  },
   "cells/volume (mm3)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
@@ -36,7 +50,7 @@
    "shape": [], 
    "continuous": true
   }, 
-  "tint": {
+  "region": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -50,7 +64,28 @@
    "shape": [], 
    "continuous": true
   }, 
-  "avg volume (mm3)": {
+  "total nucleators counted": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "CE Schaeffer": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "estimated volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "CE Gundersen": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 

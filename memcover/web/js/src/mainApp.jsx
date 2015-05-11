@@ -10,6 +10,7 @@ var reactify = require('./reactify');
 var DataTable = require('./dataTable');
 var BrainRegions = require('./brainRegions');
 var SimpleVis = require('./simpleVis');
+var Card = require('./card');
 
 var PCPChart = reactify(require('./pcpChart'));
 var ScatterChart = require('react-d3/scatterchart').ScatterChart;
@@ -114,7 +115,7 @@ module.exports = React.createClass({
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
 
 	var layout = [
-	    {x: 8, y: 0, w: 4, h: 6, i:0}, 
+	    {x: 8, y: 0, w: 4, h: 6, i:0, handle:".card-title"}, 
 	    {x: 3, y: 0, w: 5, h: 6, i:1}, 
 	    {x: 0, y: 0, w: 3, h: 6, i:2}, 
 	    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
@@ -139,14 +140,24 @@ module.exports = React.createClass({
 	    },
 	];
 	return (
-	    <ReactGridLayout className="layout" layout={layout} cols={12} rowHeight={50}>
-	      <div key={0}><ScatterChart 
-				   margins={{top: 20, right: 60, bottom: 60, left: 60}}
-				   data={scatterData}
-				   width={(contentWidth/12) * layout[0].w - 50}
-				   height={260}
-				   title="Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"
-				   /></div>
+	    <ReactGridLayout className="layout" 
+		    layout={layout} 
+		    cols={12} 
+		    rowHeight={50} 
+		    useCSSTransforms={true} 
+		    onLayoutChange={function(layout){/* console.log(layout); */}}
+		    >
+	      <div key={0}>
+		<Card>
+		  <ScatterChart 
+			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
+			  data={scatterData}
+			  width={(contentWidth/12) * layout[0].w - 50}
+			  height={260}
+			  title="Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"
+			  />
+		</Card>
+	      </div>
 	      <div key={1}>
                 <h4>AT8 Cells/Vol per region</h4>
 		<img src="assets/boxplot.png" width="460px"/>
