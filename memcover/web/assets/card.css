@@ -1,4 +1,9 @@
 .card .card-title {
     cursor: all-scroll;
+    border: 1px solid rgb(238, 238, 238);
+}
+
+.card .card-title:hover {
+    border: 1px solid #BBB;
 }
 

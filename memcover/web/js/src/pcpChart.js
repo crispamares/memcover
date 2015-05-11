@@ -40,14 +40,19 @@ module.exports = {
 	var dragState = {};
 
 
-	var svg = d3.select(container).select("svg > g");
+	var realSvg = d3.select(container).select("svg");
+	realSvg.attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom);
+
+	var svg = d3.select(container).select("svg > g")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	// Add foreground lines.
 	var foreground = svg.select("g.foreground");
 	var foregroundLines = foreground.selectAll("path")
 	  .data(props.data, function(d){return d.measure_id;});
-	foregroundLines.enter().append("path")
-	    .attr("d", path)
+	foregroundLines.enter().append("path");
+	foregroundLines.attr("d", path)
 	    .attr("class", function(d) {return d.patient;})
 	    .attr("title", function(d) {return d.measure_id;});
 	foregroundLines.exit().remove();
@@ -57,8 +62,8 @@ module.exports = {
 	// Add a group element for each trait.
 	var coordinates = svg.selectAll(".coordinate")
 		.data(_.pluck(props.attributes, "name"), function(d){return d;});
-	coordinates.enter().append("g")
-		.attr("class", "coordinate")
+	coordinates.enter().append("g");
+	coordinates.attr("class", "coordinate")
 		.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
 		.call(d3.behavior.drag()
 		      .origin(function(d) { return {x: scales.x(d)}; })

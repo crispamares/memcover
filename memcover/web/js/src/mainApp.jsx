@@ -17,12 +17,22 @@ var ScatterChart = require('react-d3/scatterchart').ScatterChart;
 
 module.exports = React.createClass({
     getInitialState: function() {
+
+	var layout = [
+	    {x: 8, y: 0, w: 4, h: 6, i:0, handle:".card-title"}, 
+	    {x: 3, y: 0, w: 5, h: 6, i:1}, 
+	    {x: 0, y: 0, w: 3, h: 6, i:2}, 
+	    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
+	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
+	];
+
 	return {
 	    "schema": {attributes:{}},
 	    "morphoTable": this.props.morphoTable,
 	    "measuresData": [],
 	    "regionsCondition": null,
-	    "includedRegions": []
+	    "includedRegions": [],
+	    "layout": layout
 	};
     },
     componentDidMount: function() {
@@ -108,19 +118,11 @@ module.exports = React.createClass({
     },
 
     render: function(){
-
+	var self = this;
 	var columnNames = _.keys(this.state.schema.attributes);
 
 	console.log("******", this.state);
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
-
-	var layout = [
-	    {x: 8, y: 0, w: 4, h: 6, i:0, handle:".card-title"}, 
-	    {x: 3, y: 0, w: 5, h: 6, i:1}, 
-	    {x: 0, y: 0, w: 3, h: 6, i:2}, 
-	    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
-	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
-	];
 
 	var scatterData = [
 	    {
@@ -139,16 +141,19 @@ module.exports = React.createClass({
 		]
 	    },
 	];
+	
+	var layout = this.state.layout;
 	return (
 	    <ReactGridLayout className="layout" 
 		    layout={layout} 
 		    cols={12} 
 		    rowHeight={50} 
 		    useCSSTransforms={true} 
-		    onLayoutChange={function(layout){/* console.log(layout); */}}
+		    onLayoutChange={function(layout){self.setState({"layout":layout});}}
+		    onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
 		    >
 	      <div key={0}>
-		<Card>
+		<Card title={"chop chop"}>
 		  <ScatterChart 
 			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
 			  data={scatterData}
@@ -160,17 +165,17 @@ module.exports = React.createClass({
 	      </div>
 	      <div key={1}>
                 <h4>AT8 Cells/Vol per region</h4>
-		<img src="assets/boxplot.png" width="460px"/>
+		<img src="assets/boxplot.png" width={(contentWidth/12) * layout[1].w - 50}/>
 	      </div>
 	      <div key={2}>
 		<BrainRegions 
-			width={340} 
+			width={(contentWidth/12) * layout[2].w - 50} 
 			includedRegions={this.state.includedRegions}
 			onClickRegion={this.toggleRegion}></BrainRegions>
 	      </div>
 	      <div key={3}>
 		<PCPChart 
-			width={contentWidth} height={450} 
+			width={(contentWidth/12) * layout[3].w - 50} height={450} 
 			margin={{top: 50, right: 40, bottom: 40, left: 40}}
 			attributes={
 			    _.chain(this.state.schema.attributes).values()

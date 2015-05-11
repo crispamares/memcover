@@ -2,7 +2,7 @@
   background: #EEE;
   border: 1px solid #BBB;
   text-align: center;
-  padding: 5px;
+  padding: 0px 5px 5px 5px;
 }
 .react-grid-item.resizing {
   opacity: 0.9;
