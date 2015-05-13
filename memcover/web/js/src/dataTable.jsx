@@ -13,7 +13,7 @@ module.exports = React.createClass({
     getInitialState: function() {
 	 
 	var initialColumnWith = (this.props.columnNames.length) ?
-				Math.round(this.props.tableWidth / this.props.columnNames.length)
+				Math.round(this.props.width / this.props.columnNames.length)
 	                        : 0;
 	var columnWidths = {};
 	_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
@@ -35,7 +35,7 @@ module.exports = React.createClass({
     render: function(){
 	var columnNames = this.props.columnNames;
 	var initialColumnWith = (this.props.columnNames.length) ?
-				Math.round(this.props.tableWidth / this.props.columnNames.length)
+				Math.round(this.props.width / this.props.columnNames.length)
 	                        : 0;
 	var columnWidths = {};
 	_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
@@ -47,8 +47,8 @@ module.exports = React.createClass({
 		    rowHeight={50}
 		    rowGetter={this._rowGetter}
 		    rowsCount={this.props.rows.length}
-		    width={this.props.tableWidth}
-		    height={this.props.tableHeight}
+		    width={this.props.width}
+		    height={this.props.height}
 		    headerHeight={50}
 		    onColumnResizeEndCallback={this._onColumnResizeEndCallback}>
 

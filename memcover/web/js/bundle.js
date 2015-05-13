@@ -98,18 +98,18 @@
 
 	var React = __webpack_require__(1);
 	var _ = __webpack_require__(2);
-	var ReactGridLayout = __webpack_require__(15);
+	var ReactGridLayout = __webpack_require__(35);
 
 	var Context = __webpack_require__(4);
 
-	var reactify = __webpack_require__(6);
-	var DataTable = __webpack_require__(7);
-	var BrainRegions = __webpack_require__(8);
-	var SimpleVis = __webpack_require__(9);
-	var Card = __webpack_require__(10);
+	var reactify = __webpack_require__(29);
+	var DataTable = __webpack_require__(30);
+	var BrainRegions = __webpack_require__(31);
+	var SimpleVis = __webpack_require__(32);
+	var Card = __webpack_require__(33);
 
-	var PCPChart = reactify(__webpack_require__(11));
-	var ScatterChart = __webpack_require__(17).ScatterChart;
+	var PCPChart = reactify(__webpack_require__(34));
+	var ScatterChart = __webpack_require__(37).ScatterChart;
 
 	module.exports = React.createClass({displayName: "exports",
 	    getInitialState: function() {
@@ -121,6 +121,10 @@
 		    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
 		    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 		];
+
+		var cards = {
+		    0: {i:0, grid: layout[0], constructor: ScatterChart, config:{title: "Scatter Chart"}}
+		};
 
 		return {
 		    "schema": {attributes:{}},
@@ -219,7 +223,7 @@
 
 		console.log("******", this.state);
 		var contentWidth = document.getElementById('content').offsetWidth - 20;
-
+		var rowHeight = 50;
 		var scatterData = [
 		    {
 			name: "series1",
@@ -239,26 +243,28 @@
 		];
 		
 		var layout = this.state.layout;
-		var cardHeight
+		var scatterCh = [];
 		return (
 		    React.createElement(ReactGridLayout, {className: "layout", 
 			    layout: layout, 
 			    cols: 12, 
-			    rowHeight: 50, 
+			    rowHeight: rowHeight, 
 			    useCSSTransforms: true, 
 			    onLayoutChange: function(layout){self.setState({"layout":layout});}, 
 			    onResizeStop: function(layout, oldL, l, _, ev){/* console.log(ev);*/}
 			    }, 
+		      
 		      React.createElement("div", {key: 0}, 
 			React.createElement(Card, {key: 0, title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}, 
 			  React.createElement(ScatterChart, {
 				  margins: {top: 20, right: 60, bottom: 60, left: 60}, 
 				  data: scatterData, 
 				  width: (contentWidth/12) * layout[0].w - 50, 
-				  height: 260}
+				  height: rowHeight * layout[0].h - 20}
 				  )
 			)
 		      ), 
+		    
 		      React.createElement("div", {key: 1}, 
 			React.createElement(Card, {title: "AT8 Cells/Vol per region"}, 
 			  React.createElement("img", {src: "assets/boxplot.png", width: (contentWidth/12) * layout[1].w - 50})
@@ -289,8 +295,8 @@
 		      React.createElement("div", {key: "table"}, 
 			React.createElement(DataTable, {			  
 				rows: this.state.measuresData, 
-				tableWidth: contentWidth -10, 
-				tableHeight: 480, 
+				width: contentWidth -10, 
+				height: 480, 
 				columnNames: columnNames
 				}
 			)
@@ -306,7 +312,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(12), __webpack_require__(13), __webpack_require__(14)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
 
 	    var Context = function(server, path, port){
 		var self = this;
@@ -467,24 +473,24 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var timed = __webpack_require__(18);
-		var array = __webpack_require__(19);
-		var flow = __webpack_require__(20);
-		var fold = __webpack_require__(21);
-		var inspect = __webpack_require__(22);
-		var generate = __webpack_require__(23);
-		var progress = __webpack_require__(24);
-		var withThis = __webpack_require__(25);
-		var unhandledRejection = __webpack_require__(26);
-		var TimeoutError = __webpack_require__(27);
+		var timed = __webpack_require__(9);
+		var array = __webpack_require__(10);
+		var flow = __webpack_require__(11);
+		var fold = __webpack_require__(12);
+		var inspect = __webpack_require__(13);
+		var generate = __webpack_require__(14);
+		var progress = __webpack_require__(15);
+		var withThis = __webpack_require__(16);
+		var unhandledRejection = __webpack_require__(17);
+		var TimeoutError = __webpack_require__(18);
 
 		var Promise = [array, flow, fold, generate, progress,
 			inspect, withThis, timed, unhandledRejection]
 			.reduce(function(Promise, feature) {
 				return feature(Promise);
-			}, __webpack_require__(28));
+			}, __webpack_require__(19));
 
-		var apply = __webpack_require__(29)(Promise);
+		var apply = __webpack_require__(20)(Promise);
 
 		// Public API
 
@@ -683,478 +689,11 @@
 
 		return when;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(33));
+	})(__webpack_require__(21));
 
 
 /***/ },
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ChartContainerMixin = __webpack_require__(30);
-
-	module.exports = function(chart){
-	    return React.createClass({mixins : [ChartContainerMixin, chart]});
-	};
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	Object.assign = Object.assign || __webpack_require__(32);
-	var FixedDataTable = __webpack_require__(36);
-	var _ = __webpack_require__(2);
-
-	var Table = FixedDataTable.Table;
-	var Column = FixedDataTable.Column;
-
-
-	module.exports = React.createClass({displayName: "exports",
-	    getInitialState: function() {
-		 
-		var initialColumnWith = (this.props.columnNames.length) ?
-					Math.round(this.props.tableWidth / this.props.columnNames.length)
-		                        : 0;
-		var columnWidths = {};
-		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
-		return {
-		    "columnWidths": columnWidths
-		};
-	    },
-	    getDefaultProps: function(){
-		return {
-		    rows: [],
-		    columnNames: []
-		}
-	    },
-	    _rowGetter: function(i) {return this.props.rows[i];},
-	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
-		this.state.columnWidths[dataKey] = newColumnWidth;
-	//	isColumnResizing = false;
-	    },
-	    render: function(){
-		var columnNames = this.props.columnNames;
-		var initialColumnWith = (this.props.columnNames.length) ?
-					Math.round(this.props.tableWidth / this.props.columnNames.length)
-		                        : 0;
-		var columnWidths = {};
-		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
-
-		if (this.props.rows.length == 0) return (React.createElement("div", null));
-
-		return (
-		    React.createElement(Table, {
-			    rowHeight: 50, 
-			    rowGetter: this._rowGetter, 
-			    rowsCount: this.props.rows.length, 
-			    width: this.props.tableWidth, 
-			    height: this.props.tableHeight, 
-			    headerHeight: 50, 
-			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
-
-		      
-			  this.props.columnNames.map(function(name){
-			      return (
-				  React.createElement(Column, {
-				  label: name, 
-				  width: columnWidths[name], 			  
-				  dataKey: name, 
-				  isResizable: false}
-				  )
-			      );
-			  })
-		       
-		    )
-		);
-	    }
-	});
-
-
-
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var _ = __webpack_require__(2);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	    getDefaultProps: function() {
-		return {
-		    includedRegions: ["SUB", "DG", "CA3", "CA1"]
-		};
-	    },
-
-	    componentDidMount: function() {
-		var container = this.refs.container.getDOMNode();
-
-		container.addEventListener("load", function(){
-		    var svg = d3.select(container.contentDocument);
-
-		    this.update(svg, this.props, this.state);
-		}.bind(this));
-	    },
-
-	    shouldComponentUpdate: function(nextProps, nextState) {
-		var container = this.refs.container.getDOMNode();
-		container.setAttribute("width", nextProps.width);
-		container.setAttribute("height", nextProps.height);
-
-		var svg = d3.select(container.contentDocument);
-
-		this.update(svg, nextProps, nextState);
-		// render is not called again so the container is there until
-		// the end.
-		return false;
-	    },
-
-	    update: function(svg, props, state) {
-		var self = this;
-
-		svg.selectAll("path.region")
-		    .datum(function() { return this.dataset; })
-		    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
-		    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d.region);};})
-		    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "#EEE";});
-
-		svg.selectAll("text")
-		    .datum(function() { return this.className; })
-		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
-		
-		props.includedRegions.forEach(function(region){
-		    svg.selectAll("text."+region)
-			.style("fill", "white");
-		});
-	;
-
-	    },
-
-	    render: function(){
-		return (
-	            React.createElement("div", null, 
-		      React.createElement("object", {ref: "container", id: "svgobject", 
-			      type: "image/svg+xml", 
-			      width: this.props.width, 
-			      height: this.props.heght, 
-			      data: "assets/hipo_foto.svg"}
-		      )
-	            )
-		);
-	    }
-	});
-
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var BarChart = __webpack_require__(31).BarChart;
-
-	var Context = __webpack_require__(4);
-
-	// Data is like: [{value:25, label:"P1"},{value:45, label:"P2"}]
-	module.exports = React.createClass({displayName: "exports",
-	    getInitialState: function() {
-		return {
-		    "data": []
-		};
-	    },
-	    componentDidMount: function() {
-		var rpc = Context.instance().rpc;
-		var self = this;
-		var pipeline = [
-		    {$match : {"tint": "NISSL"}},
-		    {$group : {_id: "$patient", value: {$sum: "$cells/volume (mm3)"} } },
-		    {$project : { label: "$_id", value:1 , _id: 0}},
-		    {$sort : { value: -1 } }
-		];
-		rpc.call('TableSrv.aggregate', [this.props.table, pipeline])
-		    .then(function(view) {
-			return rpc.call("TableSrv.get_data", [view, "rows"])
-		    })
-		    .then(function(rows){
-			self.setState({"data": rows});
-		    })
-		    .catch(function(e){console.error(e);});
-	    },
-	    render: function(){
-		return (
-		    React.createElement(BarChart, {
-			    data: this.state.data, 
-			    width: 600, 
-			    height: 200, 
-			    margins: {top: 20, right: 30, bottom: 30, left: 60}, 
-			    fill: '#3182bd', 
-			    title: "Cells/Vol - NISSL"}
-		    )	
-		);
-	    }
-	});
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var _ = __webpack_require__(2);
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	    render: function() {
-		var title = this.props.title;
-
-		var width = 300;
-		var height = 300;
-
-		var child = React.Children.only(this.props.children);
-		child.props.width = width;
-		child.props.height = height;
-
-		return (
-		    React.createElement("div", {className: "card", key: this.props.key}, 
-		      React.createElement("h4", null, React.createElement("div", {className: "card-title"}, title)), 
-		      React.createElement("div", {className: "card-content"}, 
-			this.props.children		
-		      )
-		    )
-		);
-	    }
-	});
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var d3 = __webpack_require__(16);
-	var _ = __webpack_require__(2);
-
-	module.exports = {
-	    createChart: function(container, props, state){
-		var margin = this.props.margin;
-		var width = this.props.width - margin.left - margin.right;
-		var height = this.props.height - margin.top - margin.bottom;
-
-		var svg = d3.select(container).append("svg")
-		    .attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom)
-		    .attr("class", "pcp")
-		  .append("g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		svg.append("g").attr("class", "foreground");
-	    },
-
-	    cleanChart: function(container, props, state){
-		// unsubscribe things 
-	    },
-
-	    update: function(container, props, state) {
-		if ( !(props.attributes.length && props.data.length)) {
-		    d3.select(container).html('');
-		    this.createChart(container, props, state);
-		    return null
-		};
-		console.log("UPDATE"); 
-		var self = this;
-		var margin = props.margin;
-		var width = props.width - margin.left - margin.right;
-		var height = props.height - margin.top - margin.bottom;
-
-
-		var axis = d3.svg.axis().orient("left");
-		var scales = this._scales(width, height, props.data, props.attributes);
-		var path = this._path(props.attributes, scales);
-		var dragState = {};
-
-
-		var realSvg = d3.select(container).select("svg");
-		realSvg.attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom);
-
-		var svg = d3.select(container).select("svg > g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		// Add foreground lines.
-		var foreground = svg.select("g.foreground");
-		var foregroundLines = foreground.selectAll("path")
-		  .data(props.data, function(d){return d.measure_id;});
-		foregroundLines.enter().append("path");
-		foregroundLines.attr("d", path)
-		    .attr("class", function(d) {return d.patient;})
-		    .attr("title", function(d) {return d.measure_id;});
-		foregroundLines.exit().remove();
-
-		var brushes = this._brushes(scales, props.attributes, props.onBrush, foreground);
-
-		// Add a group element for each trait.
-		var coordinates = svg.selectAll(".coordinate")
-			.data(_.pluck(props.attributes, "name"), function(d){return d;});
-		coordinates.enter().append("g");
-		coordinates.attr("class", "coordinate")
-			.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
-			.call(d3.behavior.drag()
-			      .origin(function(d) { return {x: scales.x(d)}; })
-			      .on("dragstart", this._dragstart(props.attributes, dragState))
-			      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
-			      .on("dragend", this._dragend(scales, props.attributes, width, path))
-			     )
-			.call(function(g) {
-			    // Add an axis and title.
-			    g.append("g")
-				.attr("class", "axis")
-				.each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); })
-			      .append("text")
-				.attr("text-anchor", "middle")
-				.attr("y", -9)
-				.attr("class", "dimension")
-				.text(function(d){return _.capitalize(String(d));});})
-			.call(function(g) {
-			    // Add a brush for each axis.
-			    g.append("g")
-				.attr("class", "brush")
-				.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
-			       .selectAll("rect")
-				.attr("x", -8)
-				.attr("width", 16);});
-		coordinates.exit().remove();
-
-		return null;
-	    },
-
-	    _dragstart: function(attributes, dragState) {
-		return function dragstart(d) {
-		    dragState.i = _.pluck(attributes, "name").indexOf(d);
-		};
-	    },
-
-	    _drag: function(scales, dragState, attributes, foregroundLines, path, g){
-		var x = scales.x;
-		
-		return function drag(d) {
-		    x.range()[dragState.i] = d3.event.x;
-		    attributes.sort(function(a, b) { return x(a.name) - x(b.name); });
-		    g.attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-		    foregroundLines.attr("d", path);
-		};
-	    },
-
-	    _dragend: function(scales, attributes, width, path) {
-		var x = scales.x;
-
-		return function dragend(d) {
-		    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-		    var t = d3.transition().duration(500);
-		    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-		    t.selectAll(".foreground path").attr("d", path);
-		};
-	    },
-
-	    _scales: function(width, height, data, attributes) {
-		var self = this;
-
-		var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-		var y = {};
-
-		function sortRegions (rows) {
-		    return rows.sort(function(a,b){
-			var order = ["DG", "CA3", "CA1", "SUB"];
-			return d3.descending(order.indexOf(a), order.indexOf(b)); 
-		    })
-		}
-
-		attributes.forEach(function(d) {
-		    var name = d.name;
-		    if (d.attribute_type === 'QUANTITATIVE') {
-			y[name] = d3.scale.linear()
-			    .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
-					      , function(p) { return p[name]; }))
-			    .range([height, 0]);
-		    }
-		    else if (d.attribute_type === 'CATEGORICAL') {
-			var domain = d3.set(_.pluck(data, name)).values();
-			domain = (d.name == "region") ? sortRegions(domain) : domain;
-			y[name] = d3.scale.ordinal()
-			    .domain(domain)
-			    .rangePoints([height, 0]);
-		    }
-		});
-
-		return {x: x, y: y};
-	    },
-
-
-	    _brushes: function(scales, attributes, onBrush, foreground) {
-		if (_.isUndefined(onBrush)) return {};
-		var brushes = {};
-		var brush = this._brush(scales, brushes, foreground, onBrush);
-		var brushstart = function() {d3.event.sourceEvent.stopPropagation();};
-		attributes.forEach(function(d) {
-			var name = d.name;
-			if (d.attribute_type === "QUANTITATIVE") {
-			    brushes[name] = d3.svg.brush()
-				.y(scales.y[name])
-				.on("brushstart", brushstart)
-				.on("brush", brush);
-			}
-			else {//TODO: Add CATEGORICAL support
-			    brushes[name] = function(){};
-			    brushes[name].empty = function(){return true;};
-			}
-		});
-		return brushes;
-	    },
-
-	    _brush: function(scales, brushes, foreground, onBrush){
-		var triggerChangeThrottle = _.throttle(onBrush, 30);
-		// Handles a brush event, toggling the display of foreground lines.
-		return function () {
-		    var actives = _.keys(brushes).filter( function(dim) { return !brushes[dim].empty(); });
-		    var extents = _.zipObject(actives, actives.map(function(dim) { return brushes[dim].extent(); }));
-
-		    foreground.selectAll("path")
-			.attr('display', function(d) {
-			    var isInside = actives.every(function(dim) {
-				    //TODO: CATEGORICAL: console.log(extents[dim][0], "<=", d[dim], "&&",  d[dim], "<=" , extents[dim][1]);
-				    return extents[dim][0] <= d[dim] && d[dim] <= extents[dim][1];
-				});
-			    return isInside ? null : 'none';
-			});
-		    triggerChangeThrottle(extents);
-		};
-	    },
-
-	    // Cousure. Returns the path for a given data point.
-	    _path : function (attributes, scales) {
-		var line = d3.svg.line()
-			.defined(function(d){return !isNaN(d[1]);});
-		return function (d) {
-		    return line(_.pluck(attributes, "name")
-				.map(function(a) { return [scales.x(a), scales.y[a](d[a])]; }));  	
-		};
-	    }
-
-	};
-
-
-/***/ },
-/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;// MIT License:
@@ -1354,11 +893,11 @@
 
 
 /***/ },
-/* 13 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(12)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
 
 	    var WsRpc = function(server, path, port){
 		var self = this;
@@ -1514,10 +1053,10 @@
 
 
 /***/ },
-/* 14 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(12)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
 
 	    var Hub = function(server, port, rpc, gateway){
 		var self = this;
@@ -1627,29 +1166,7 @@
 
 
 /***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(34);
-	module.exports.Responsive = __webpack_require__(35);
-
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = d3;
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.ScatterChart = __webpack_require__(37);
-
-
-/***/ },
-/* 18 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1659,8 +1176,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var env = __webpack_require__(38);
-		var TimeoutError = __webpack_require__(27);
+		var env = __webpack_require__(22);
+		var TimeoutError = __webpack_require__(18);
 
 		function setTimeout(f, ms, x, y) {
 			return env.setTimer(function() {
@@ -1729,11 +1246,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 19 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1743,8 +1260,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var state = __webpack_require__(39);
-		var applier = __webpack_require__(29);
+		var state = __webpack_require__(23);
+		var applier = __webpack_require__(20);
 
 		return function array(Promise) {
 
@@ -2024,11 +1541,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 20 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2190,11 +1707,11 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 21 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2223,11 +1740,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 22 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2237,7 +1754,7 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var inspect = __webpack_require__(39).inspect;
+		var inspect = __webpack_require__(23).inspect;
 
 		return function inspection(Promise) {
 
@@ -2249,11 +1766,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 23 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2320,11 +1837,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 24 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2350,11 +1867,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 25 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2393,12 +1910,12 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 
 /***/ },
-/* 26 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2408,8 +1925,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var setTimer = __webpack_require__(38).setTimer;
-		var format = __webpack_require__(42);
+		var setTimer = __webpack_require__(22).setTimer;
+		var format = __webpack_require__(24);
 
 		return function unhandledRejection(Promise) {
 
@@ -2486,11 +2003,11 @@
 		function noop() {}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 27 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2519,10 +2036,10 @@
 
 		return TimeoutError;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 /***/ },
-/* 28 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2532,20 +2049,20 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var makePromise = __webpack_require__(40);
-		var Scheduler = __webpack_require__(41);
-		var async = __webpack_require__(38).asap;
+		var makePromise = __webpack_require__(25);
+		var Scheduler = __webpack_require__(26);
+		var async = __webpack_require__(22).asap;
 
 		return makePromise({
 			scheduler: new Scheduler(async)
 		});
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(33));
+	})(__webpack_require__(21));
 
 
 /***/ },
-/* 29 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2600,872 +2117,20 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 
 
 /***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-
-	module.exports = {
-	    getDefaultProps: function() {
-		var margin = {top: 20, right: 10, bottom: 20, left: 10};
-		return {
-		    margin: margin
-		};
-	    },
-
-	    componentDidMount: function() {
-		var container = this.refs.container.getDOMNode();
-		this.createChart(container, this.props, this.state);
-		this.update(container, this.props, this.state);
-	    },
-
-	    componentWillUnmount: function() {
-		var container = this.refs.container.getDOMNode();
-		this.cleanChart(container, this.props, this.state);
-	    },
-
-	    shouldComponentUpdate: function(nextProps, nextState) {
-		var container = this.refs.container.getDOMNode();
-		this.update(container, nextProps, nextState);
-		// render is not called again so the container is there until
-		// the end.
-		return false;
-	    },
-
-	    render: function(){
-		return (
-	            React.createElement("div", {ref: "container"})
-		);
-	    }
-	};
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.BarChart = __webpack_require__(43);
-
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	function ToObject(val) {
-		if (val == null) {
-			throw new TypeError('Object.assign cannot be called with null or undefined');
-		}
-
-		return Object(val);
-	}
-
-	module.exports = Object.assign || function (target, source) {
-		var from;
-		var keys;
-		var to = ToObject(target);
-
-		for (var s = 1; s < arguments.length; s++) {
-			from = arguments[s];
-			keys = Object.keys(Object(from));
-
-			for (var i = 0; i < keys.length; i++) {
-				to[keys[i]] = from[keys[i]];
-			}
-		}
-
-		return to;
-	};
-
-
-/***/ },
-/* 33 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var React = __webpack_require__(1);
-	var GridItem = __webpack_require__(44);
-	var utils = __webpack_require__(45);
-	var PureDeepRenderMixin = __webpack_require__(46);
-	var WidthListeningMixin = __webpack_require__(47);
-
-	/**
-	 * A reactive, fluid grid layout with draggable, resizable components.
-	 */
-	var ReactGridLayout = React.createClass({
-	  displayName: 'ReactGridLayout',
-
-	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
-
-	  propTypes: {
-	    //
-	    // Basic props
-	    //
-
-	    // If true, the container height swells and contracts to fit contents
-	    autoSize: React.PropTypes.bool,
-	    // # of cols.
-	    cols: React.PropTypes.number,
-
-	    // A selector that will not be draggable.
-	    draggableCancel: React.PropTypes.string,
-	    // A selector for the draggable handler
-	    draggableHandle: React.PropTypes.string,
-
-	    // layout is an array of object with the format:
-	    // {x: Number, y: Number, w: Number, h: Number}
-	    layout: function layout(props, propName, componentName) {
-	      var layout = props.layout;
-	      // I hope you're setting the _grid property on the grid items
-	      if (layout === undefined) {
-	        return;
-	      }utils.validateLayout(layout, 'layout');
-	    },
-
-	    layouts: function layouts(props, propName, componentName) {
-	      if (props.layouts) {
-	        throw new Error('ReactGridLayout does not use `layouts`: Use ReactGridLayout.Responsive.');
-	      }
-	    },
-
-	    // margin between items [x, y] in px
-	    margin: React.PropTypes.array,
-	    // Rows have a static height, but you can change this based on breakpoints if you like
-	    rowHeight: React.PropTypes.number,
-
-	    //
-	    // Flags
-	    //
-	    isDraggable: React.PropTypes.bool,
-	    isResizable: React.PropTypes.bool,
-	    // Use CSS transforms instead of top/left
-	    useCSSTransforms: React.PropTypes.bool,
-
-	    //
-	    // Callbacks
-	    //
-
-	    // Callback so you can save the layout.
-	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
-	    onLayoutChange: React.PropTypes.func,
-
-	    // Calls when drag starts. Callback is of the signature (layout, oldItem, newItem, placeholder, e).
-	    // All callbacks below have the same signature. 'start' and 'stop' callbacks omit the 'placeholder'.
-	    onDragStart: React.PropTypes.func,
-	    // Calls on each drag movement.
-	    onDrag: React.PropTypes.func,
-	    // Calls when drag is complete.
-	    onDragStop: React.PropTypes.func,
-	    //Calls when resize starts.
-	    onResizeStart: React.PropTypes.func,
-	    // Calls when resize movement happens.
-	    onResize: React.PropTypes.func,
-	    // Calls when resize is complete.
-	    onResizeStop: React.PropTypes.func,
-
-	    //
-	    // Other validations
-	    //
-
-	    // Children must not have duplicate keys.
-	    children: function children(props, propName, componentName) {
-	      React.PropTypes.node.apply(this, arguments);
-	      var children = props[propName];
-
-	      // Check children keys for duplicates. Throw if found.
-	      var keys = {};
-	      React.Children.forEach(children, function (child, i, list) {
-	        if (keys[child.key]) {
-	          throw new Error('Duplicate child key found! This will cause problems in ReactGridLayout.');
-	        }
-	        keys[child.key] = true;
-	      });
-	    }
-	  },
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      autoSize: true,
-	      cols: 12,
-	      rowHeight: 150,
-	      layout: [],
-	      margin: [10, 10],
-	      isDraggable: true,
-	      isResizable: true,
-	      useCSSTransforms: true,
-	      onLayoutChange: function onLayoutChange() {},
-	      onDragStart: function onDragStart() {},
-	      onDrag: function onDrag() {},
-	      onDragStop: function onDragStop() {},
-	      onResizeStart: function onResizeStart() {},
-	      onResize: function onResize() {},
-	      onResizeStop: function onResizeStop() {}
-	    };
-	  },
-
-	  getInitialState: function getInitialState() {
-	    return {
-	      activeDrag: null,
-	      isMounted: false,
-	      layout: utils.synchronizeLayoutWithChildren(this.props.layout, this.props.children, this.props.cols),
-	      width: this.props.initialWidth
-	    };
-	  },
-
-	  componentDidMount: function componentDidMount() {
-	    // Call back with layout on mount. This should be done after correcting the layout width
-	    // to ensure we don't rerender with the wrong width.
-	    this.props.onLayoutChange(this.state.layout);
-	    this.setState({ isMounted: true });
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // This allows you to set the width manually if you like.
-	    // Use manual width changes in combination with `listenToWindowResize: false`
-	    if (nextProps.width !== this.props.width) this.onWidthChange(nextProps.width);
-
-	    // If children change, regenerate the layout.
-	    if (nextProps.children.length !== this.props.children.length) {
-	      this.setState({
-	        layout: utils.synchronizeLayoutWithChildren(this.state.layout, nextProps.children, nextProps.cols)
-	      });
-	    }
-
-	    // Allow parent to set layout directly.
-	    if (nextProps.layout && JSON.stringify(nextProps.layout) !== JSON.stringify(this.state.layout)) {
-	      this.setState({
-	        layout: utils.synchronizeLayoutWithChildren(nextProps.layout, nextProps.children, nextProps.cols)
-	      });
-	    }
-	  },
-
-	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
-	    // Call back so we can store the layout
-	    // Do it only when a resize/drag is not active, otherwise there are way too many callbacks
-	    if (this.state.layout !== prevState.layout && !this.state.activeDrag) {
-	      this.props.onLayoutChange(this.state.layout, this.state.layouts);
-	    }
-	  },
-
-	  /**
-	   * Calculates a pixel value for the container.
-	   * @return {String} Container height in pixels.
-	   */
-	  containerHeight: function containerHeight() {
-	    if (!this.props.autoSize) {
-	      return;
-	    }return utils.bottom(this.state.layout) * this.props.rowHeight + this.props.margin[1] + 'px';
-	  },
-
-	  /**
-	   * When the width changes, save it to state. This helps with left/width calculations.
-	   */
-	  onWidthChange: function onWidthChange(width) {
-	    this.setState({ width: width });
-	  },
-
-	  /**
-	   * When dragging starts
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDragStart: function onDragStart(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-
-	    // No need to clone, `l` hasn't changed.
-	    this.props.onDragStart(layout, l, l, null, e);
-	  },
-	  /**
-	   * Each drag movement create a new dragelement and move the element to the dragged location
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDrag: function onDrag(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    // Clone layout item so we can pass it to the callback.
-	    var oldL = utils.clone(l);
-
-	    // Create placeholder (display only)
-	    var placeholder = {
-	      w: l.w, h: l.h, x: l.x, y: l.y, placeholder: true, i: i
-	    };
-
-	    // Move the element to the dragged location.
-	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
-
-	    this.props.onDrag(layout, oldL, l, placeholder, e);
-
-	    this.setState({
-	      layout: utils.compact(layout),
-	      activeDrag: placeholder
-	    });
-	  },
-
-	  /**
-	   * When dragging stops, figure out which position the element is closest to and update its x and y.
-	   * @param  {Number} i Index of the child.
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDragStop: function onDragStop(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    // Move the element here
-	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
-
-	    this.props.onDragStop(layout, oldL, l, null, e);
-
-	    // Set state
-	    this.setState({ layout: utils.compact(layout), activeDrag: null });
-	  },
-
-	  onResizeStart: function onResizeStart(i, w, h, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-
-	    // No need to clone, item hasn't changed
-	    this.props.onResizeStart(layout, l, l, null, e);
-	  },
-
-	  onResize: function onResize(i, w, h, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    // Set new width and height.
-	    l.w = w;
-	    l.h = h;
-
-	    // Create placeholder element (display only)
-	    var placeholder = {
-	      w: w, h: h, x: l.x, y: l.y, placeholder: true, i: i
-	    };
-
-	    this.props.onResize(layout, oldL, l, placeholder, e);
-
-	    // Re-compact the layout and set the drag placeholder.
-	    this.setState({ layout: utils.compact(layout), activeDrag: placeholder });
-	  },
-
-	  onResizeStop: function onResizeStop(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    this.props.onResizeStop(layout, oldL, l, null, e);
-
-	    this.setState({ activeDrag: null, layout: utils.compact(layout) });
-	  },
-
-	  /**
-	   * Create a placeholder object.
-	   * @return {Element} Placeholder div.
-	   */
-	  placeholder: function placeholder() {
-	    if (!this.state.activeDrag) {
-	      return '';
-	    } // {...this.state.activeDrag} is pretty slow, actually
-	    return React.createElement(
-	      GridItem,
-	      {
-	        w: this.state.activeDrag.w,
-	        h: this.state.activeDrag.h,
-	        x: this.state.activeDrag.x,
-	        y: this.state.activeDrag.y,
-	        i: this.state.activeDrag.i,
-	        isPlaceholder: true,
-	        className: 'react-grid-placeholder',
-	        containerWidth: this.state.width,
-	        cols: this.props.cols,
-	        margin: this.props.margin,
-	        rowHeight: this.props.rowHeight,
-	        isDraggable: false,
-	        isResizable: false,
-	        useCSSTransforms: this.props.useCSSTransforms
-	      },
-	      React.createElement('div', null)
-	    );
-	  },
-
-	  /**
-	   * Given a grid item, set its style attributes & surround in a <Draggable>.
-	   * @param  {Element} child React element.
-	   * @param  {Number}  i     Index of element.
-	   * @return {Element}       Element wrapped in draggable and properly placed.
-	   */
-	  processGridItem: function processGridItem(child) {
-	    var i = child.key;
-	    var l = utils.getLayoutItem(this.state.layout, i);
-
-	    // watchStart property tells Draggable to react to changes in the start param
-	    // Must be turned off on the item we're dragging as the changes in `activeDrag` cause rerenders
-	    var drag = this.state.activeDrag;
-	    var moveOnStartChange = drag && drag.i === i ? false : true;
-
-	    // Parse 'static'. Any properties defined directly on the grid item will take precedence.
-	    var draggable, resizable;
-	    if (l['static'] || this.props.isDraggable === false) draggable = false;
-	    if (l['static'] || this.props.isResizable === false) resizable = false;
-
-	    return React.createElement(
-	      GridItem,
-	      _extends({
-	        containerWidth: this.state.width,
-	        cols: this.props.cols,
-	        margin: this.props.margin,
-	        rowHeight: this.props.rowHeight,
-	        moveOnStartChange: moveOnStartChange,
-	        cancel: this.props.draggableCancel,
-	        handle: this.props.draggableHandle,
-	        onDragStop: this.onDragStop,
-	        onDragStart: this.onDragStart,
-	        onDrag: this.onDrag,
-	        onResizeStart: this.onResizeStart,
-	        onResize: this.onResize,
-	        onResizeStop: this.onResizeStop,
-	        isDraggable: draggable,
-	        isResizable: resizable,
-	        useCSSTransforms: this.props.useCSSTransforms && this.state.isMounted,
-	        usePercentages: !this.state.isMounted
-	      }, l),
-	      child
-	    );
-	  },
-
-	  render: function render() {
-	    // Calculate classname
-	    var _props = this.props;
-	    var className = _props.className;
-
-	    var props = _objectWithoutProperties(_props, ['className']);
-
-	    className = 'react-grid-layout ' + (className || '');
-
-	    return React.createElement(
-	      'div',
-	      _extends({}, props, { className: className, style: { height: this.containerHeight() } }),
-	      React.Children.map(this.props.children, this.processGridItem),
-	      this.placeholder()
-	    );
-	  }
-	});
-
-	module.exports = ReactGridLayout;
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var React = __webpack_require__(1);
-	var utils = __webpack_require__(45);
-	var responsiveUtils = __webpack_require__(48);
-	var PureDeepRenderMixin = __webpack_require__(46);
-	var WidthListeningMixin = __webpack_require__(47);
-	var ReactGridLayout = __webpack_require__(34);
-
-	/**
-	 * A wrapper around ReactGridLayout to support responsive breakpoints.
-	 */
-	var ResponsiveReactGridLayout = React.createClass({
-	  displayName: 'ResponsiveReactGridLayout',
-
-	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
-
-	  propTypes: {
-	    //
-	    // Basic props
-	    //
-
-	    // Optional, but if you are managing width yourself you may want to set the breakpoint
-	    // yourself as well.
-	    breakpoint: React.PropTypes.string,
-
-	    // {name: pxVal}, e.g. {lg: 1200, md: 996, sm: 768, xs: 480}
-	    breakpoints: React.PropTypes.object,
-
-	    // # of cols. This is a breakpoint -> cols map
-	    cols: React.PropTypes.object,
-
-	    // layouts is an object mapping breakpoints to layouts.
-	    // e.g. {lg: Layout, md: Layout, ...}
-	    layouts: function layouts(props, propName, componentName) {
-	      React.PropTypes.object.isRequired.apply(this, arguments);
-
-	      var layouts = props.layouts;
-	      Object.keys(layouts).map(function (k) {
-	        utils.validateLayout(layouts[k], 'layouts.' + k);
-	      });
-	    },
-
-	    //
-	    // Callbacks
-	    //
-
-	    // Calls back with breakpoint and new # cols
-	    onBreakpointChange: React.PropTypes.func,
-
-	    // Callback so you can save the layout.
-	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
-	    onLayoutChange: React.PropTypes.func
-	  },
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-	      cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
-	      layouts: {},
-	      onBreakpointChange: function onBreakpointChange() {},
-	      onLayoutChange: function onLayoutChange() {}
-	    };
-	  },
-
-	  getInitialState: function getInitialState() {
-	    var breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, this.props.initialWidth);
-	    var cols = responsiveUtils.getColsFromBreakpoint(breakpoint, this.props.cols);
-
-	    // Get the initial layout. This can tricky; we try to generate one however possible if one doesn't exist
-	    // for this layout.
-	    var initialLayout = responsiveUtils.findOrGenerateResponsiveLayout(this.props.layouts, this.props.breakpoints, breakpoint, breakpoint, cols);
-
-	    return {
-	      layout: initialLayout,
-	      // storage for layouts obsoleted by breakpoints
-	      layouts: this.props.layouts || {},
-	      breakpoint: breakpoint,
-	      cols: cols,
-	      width: this.props.initialWidth
-	    };
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // This allows you to set the width manually if you like.
-	    // Use manual width changes in combination with `listenToWindowResize: false`
-	    if (nextProps.width) this.onWidthChange(nextProps.width);
-
-	    // Allow parent to set breakpoint directly.
-	    if (nextProps.breakpoint !== this.props.breakpoint) {
-	      this.onWidthChange(this.state.width);
-	    }
-
-	    // Allow parent to set layouts directly.
-	    if (nextProps.layouts && nextProps.layouts !== this.state.layouts) {
-	      // Since we're setting an entirely new layout object, we must generate a new responsive layout
-	      // if one does not exist.
-	      var newLayout = responsiveUtils.findOrGenerateResponsiveLayout(nextProps.layouts, nextProps.breakpoints, this.state.breakpoint, this.state.breakpoint, this.state.cols);
-
-	      this.setState({
-	        layouts: nextProps.layouts,
-	        layout: newLayout
-	      });
-	    }
-	  },
-
-	  /**
-	   * Bubble this up, add `layouts` object.
-	   * @param  {Array} layout Layout from inner Grid.
-	   */
-	  onLayoutChange: function onLayoutChange(layout) {
-	    this.state.layouts[this.state.breakpoint] = layout;
-	    this.setState({ layout: layout, layouts: this.state.layouts });
-	    this.props.onLayoutChange(layout, this.state.layouts);
-	  },
-
-	  /**
-	   * When the width changes work through breakpoints and reset state with the new width & breakpoint.
-	   * Width changes are necessary to figure out the widget widths.
-	   */
-	  onWidthChange: function onWidthChange(width) {
-	    // Set new breakpoint
-	    var newState = { width: width };
-	    newState.breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, newState.width);
-	    newState.cols = responsiveUtils.getColsFromBreakpoint(newState.breakpoint, this.props.cols);
-
-	    // Breakpoint change
-	    if (newState.cols !== this.state.cols) {
-
-	      // Store the current layout
-	      newState.layouts = this.state.layouts;
-	      newState.layouts[this.state.breakpoint] = JSON.parse(JSON.stringify(this.state.layout));
-
-	      // Find or generate a new one.
-	      newState.layout = responsiveUtils.findOrGenerateResponsiveLayout(newState.layouts, this.props.breakpoints, newState.breakpoint, this.state.breakpoint, newState.cols);
-
-	      // This adds missing items.
-	      newState.layout = utils.synchronizeLayoutWithChildren(newState.layout, this.props.children, newState.cols);
-
-	      // Store this new layout as well.
-	      newState.layouts[newState.breakpoint] = newState.layout;
-
-	      this.props.onBreakpointChange(newState.breakpoint, newState.cols);
-	    }
-
-	    this.setState(newState);
-	  },
-
-	  render: function render() {
-	    // Don't pass responsive props to RGL.
-	    /*jshint unused:false*/
-	    var _props = this.props;
-	    var layouts = _props.layouts;
-	    var onBreakpointChange = _props.onBreakpointChange;
-	    var breakpoints = _props.breakpoints;
-
-	    var props = _objectWithoutProperties(_props, ['layouts', 'onBreakpointChange', 'breakpoints']);
-
-	    return React.createElement(
-	      ReactGridLayout,
-	      _extends({}, props, {
-	        layout: this.state.layout,
-	        cols: this.state.cols,
-	        listenToWindowResize: false,
-	        onLayoutChange: this.onLayoutChange,
-	        width: this.state.width }),
-	      this.props.children
-	    );
-	  }
-	});
-
-	module.exports = ResponsiveReactGridLayout;
-
-/***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(50);
-
-
-/***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var common = __webpack_require__(52);
-	var Chart = common.Chart;
-	var XAxis = common.XAxis;
-	var YAxis = common.YAxis;
-	var Voronoi = common.Voronoi;
-	var utils = __webpack_require__(53);
-	var immstruct = __webpack_require__(57);
-	var DataSeries = __webpack_require__(51);
-	var CartesianChartPropsMixin = __webpack_require__(54).CartesianChartPropsMixin;
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  mixins: [ CartesianChartPropsMixin ],
-
-	  propTypes: {
-	    margins: React.PropTypes.object,
-	    pointRadius: React.PropTypes.number,
-	    hoverAnimation: React.PropTypes.bool
-	 },
-
-	  getDefaultProps:function() {
-	    return {
-	      pointRadius: 3,
-	      margins: {top: 10, right: 20, bottom: 50, left: 45},
-	      hoverAnimation: true
-	    };
-	  },
-
-	  _calculateScales: utils.calculateScales,
-
-	  render:function() {
-
-	    var structure = immstruct('scatterChart', { voronoi: {}});
-
-	    var props = this.props;
-
-	    if (this.props.data && this.props.data.length < 1) {
-	      return React.createElement("g", null);
-	    }
-
-	    // Calculate inner chart dimensions
-	    var innerWidth, innerHeight;
-
-	    innerWidth = props.width - props.margins.left - props.margins.right;
-	    innerHeight = props.height - props.margins.top - props.margins.bottom;
-
-	    if (props.legend) {
-	      innerWidth = innerWidth - props.legendOffset;
-	    }
-
-	    if (!Array.isArray(props.data)) {
-	      props.data = [props.data];
-	    }
-
-	    // // Set margins if label is set
-	    // if (props.xAxisLabel) {
-	    //   var orient = props.xOrient;
-	    //   props.margins[orient] = props.margins[orient] + 10;
-	    // }
-	    //
-	    // // Set margins if label is set
-	    // if (props.yAxisLabel) {
-	    //   var orient = props.yOrient;
-	    //   props.margins[orient] = props.margins[orient] + 10;
-	    // }
-
-
-	    // Returns an object of flattened allValues, xValues, and yValues
-	    var flattenedData = utils.flattenData(props.data, props.xAccessor, props.yAccessor);
-
-	    var allValues = flattenedData.allValues,
-	        xValues = flattenedData.xValues,
-	        yValues = flattenedData.yValues;
-
-	    var scales = this._calculateScales(innerWidth, innerHeight, xValues, yValues);
-
-	    var trans = "translate(" + (props.yAxisOffset < 0 ? props.margins.left + Math.abs(props.yAxisOffset) : props.margins.left) + "," + props.margins.top + ")";
-
-	    var dataSeriesArray = props.data.map( function(series, idx)  {
-	      return (
-	          React.createElement(DataSeries, {
-	            structure: structure, 
-	            xScale: scales.xScale, 
-	            yScale: scales.yScale, 
-	            seriesName: series.name, 
-	            data: series.values, 
-	            width: innerWidth, 
-	            height: innerHeight, 
-	            fill: props.colors(idx), 
-	            pointRadius: props.pointRadius, 
-	            key: series.name, 
-	            hoverAnimation: props.hoverAnimation, 
-	            xAccessor: props.xAccessor, 
-	            yAccessor: props.yAccessor}
-	          )
-	      );
-	    });
-
-	    return (
-	      React.createElement(Chart, {
-	        viewBox: props.viewBox, 
-	        legend: props.legend, 
-	        data: props.data, 
-	        margins: props.margins, 
-	        colors: props.colors, 
-	        width: props.width, 
-	        height: props.height, 
-	        title: props.title}, 
-	        React.createElement("g", {transform: trans, className: "rd3-scatterchart"}, 
-	          React.createElement(Voronoi, {
-	            structure: structure, 
-	            data: allValues, 
-	            yScale: scales.yScale, 
-	            xScale: scales.xScale, 
-	            width: innerWidth, 
-	            height: innerHeight}
-	          ), 
-	          dataSeriesArray, 
-	          React.createElement(XAxis, {
-	            xAxisClassName: "rd3-scatterchart-xaxis", 
-	            strokeWidth: "1", 
-	            xAxisTickInterval: props.xAxisTickInterval, 
-	            xAxisOffset: props.xAxisOffset, 
-	            xScale: scales.xScale, 
-	            xAxisLabel: props.xAxisLabel, 
-	            xAxisLabelOffset: props.xAxisLabelOffset, 
-	            xOrient: props.xOrient, 
-	            data: props.data, 
-	            margins: props.margins, 
-	            width: innerWidth, 
-	            height: innerHeight, 
-	            stroke: props.axesColor}
-	          ), 
-	          React.createElement(YAxis, {
-	            yAxisClassName: "rd3-scatterchart-yaxis", 
-	            yScale: scales.yScale, 
-	            yAxisTickCount: props.yAxisTickCount, 
-	            yAxisOffset: props.yAxisOffset, 
-	            yAxisLabel: props.yAxisLabel, 
-	            yAxisLabelOffset: props.yAxisLabelOffset, 
-	            yOrient: props.yOrient, 
-	            margins: props.margins, 
-	            width: innerWidth, 
-	            height: innerHeight, 
-	            stroke: props.axesColor}
-	          )
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 38 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -3499,7 +2164,7 @@
 
 		} else if (!capturedSetTimeout) { // vert.x
 			var vertxRequire = require;
-			var vertx = __webpack_require__(49);
+			var vertx = __webpack_require__(27);
 			setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 			clearTimer = vertx.cancelTimer;
 			asap = vertx.runOnLoop || vertx.runOnContext;
@@ -3540,12 +2205,12 @@
 			};
 		}
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 39 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -3582,11 +2247,73 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 40 */
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	/** @author Brian Cavalier */
+	/** @author John Hann */
+
+	(function(define) { 'use strict';
+	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+
+		return {
+			formatError: formatError,
+			formatObject: formatObject,
+			tryStringify: tryStringify
+		};
+
+		/**
+		 * Format an error into a string.  If e is an Error and has a stack property,
+		 * it's returned.  Otherwise, e is formatted using formatObject, with a
+		 * warning added about e not being a proper Error.
+		 * @param {*} e
+		 * @returns {String} formatted string, suitable for output to developers
+		 */
+		function formatError(e) {
+			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
+			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
+		}
+
+		/**
+		 * Format an object, detecting "plain" objects and running them through
+		 * JSON.stringify if possible.
+		 * @param {Object} o
+		 * @returns {string}
+		 */
+		function formatObject(o) {
+			var s = String(o);
+			if(s === '[object Object]' && typeof JSON !== 'undefined') {
+				s = tryStringify(o, s);
+			}
+			return s;
+		}
+
+		/**
+		 * Try to return the result of JSON.stringify(x).  If that fails, return
+		 * defaultValue
+		 * @param {*} x
+		 * @param {*} defaultValue
+		 * @returns {String|*} JSON.stringify(x) or defaultValue
+		 */
+		function tryStringify(x, defaultValue) {
+			try {
+				return JSON.stringify(x);
+			} catch(e) {
+				return defaultValue;
+			}
+		}
+
+	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}(__webpack_require__(21)));
+
+
+/***/ },
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -4515,12 +3242,12 @@
 			return Promise;
 		};
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 41 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -4602,81 +3329,1427 @@
 		return Scheduler;
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* (ignored) */
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// shim for using process in browser
+
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    draining = true;
+	    var currentQueue;
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        var i = -1;
+	        while (++i < len) {
+	            currentQueue[i]();
+	        }
+	        len = queue.length;
+	    }
+	    draining = false;
+	}
+	process.nextTick = function (fun) {
+	    queue.push(fun);
+	    if (!draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
+
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ChartContainerMixin = __webpack_require__(38);
+
+	module.exports = function(chart){
+	    return React.createClass({mixins : [ChartContainerMixin, chart]});
+	};
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	Object.assign = Object.assign || __webpack_require__(42);
+	var FixedDataTable = __webpack_require__(43);
+	var _ = __webpack_require__(2);
+
+	var Table = FixedDataTable.Table;
+	var Column = FixedDataTable.Column;
+
+
+	module.exports = React.createClass({displayName: "exports",
+	    getInitialState: function() {
+		 
+		var initialColumnWith = (this.props.columnNames.length) ?
+					Math.round(this.props.width / this.props.columnNames.length)
+		                        : 0;
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+		return {
+		    "columnWidths": columnWidths
+		};
+	    },
+	    getDefaultProps: function(){
+		return {
+		    rows: [],
+		    columnNames: []
+		}
+	    },
+	    _rowGetter: function(i) {return this.props.rows[i];},
+	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
+		this.state.columnWidths[dataKey] = newColumnWidth;
+	//	isColumnResizing = false;
+	    },
+	    render: function(){
+		var columnNames = this.props.columnNames;
+		var initialColumnWith = (this.props.columnNames.length) ?
+					Math.round(this.props.width / this.props.columnNames.length)
+		                        : 0;
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+
+		if (this.props.rows.length == 0) return (React.createElement("div", null));
+
+		return (
+		    React.createElement(Table, {
+			    rowHeight: 50, 
+			    rowGetter: this._rowGetter, 
+			    rowsCount: this.props.rows.length, 
+			    width: this.props.width, 
+			    height: this.props.height, 
+			    headerHeight: 50, 
+			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
+
+		      
+			  this.props.columnNames.map(function(name){
+			      return (
+				  React.createElement(Column, {
+				  label: name, 
+				  width: columnWidths[name], 			  
+				  dataKey: name, 
+				  isResizable: false}
+				  )
+			      );
+			  })
+		       
+		    )
+		);
+	    }
+	});
+
+
+
+
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(36);
+	var _ = __webpack_require__(2);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	    getDefaultProps: function() {
+		return {
+		    includedRegions: ["SUB", "DG", "CA3", "CA1"]
+		};
+	    },
+
+	    componentDidMount: function() {
+		var container = this.refs.container.getDOMNode();
+
+		container.addEventListener("load", function(){
+		    var svg = d3.select(container.contentDocument);
+
+		    this.update(svg, this.props, this.state);
+		}.bind(this));
+	    },
+
+	    shouldComponentUpdate: function(nextProps, nextState) {
+		var container = this.refs.container.getDOMNode();
+		container.setAttribute("width", nextProps.width);
+		container.setAttribute("height", nextProps.height);
+
+		var svg = d3.select(container.contentDocument);
+
+		this.update(svg, nextProps, nextState);
+		// render is not called again so the container is there until
+		// the end.
+		return false;
+	    },
+
+	    update: function(svg, props, state) {
+		var self = this;
+
+		svg.selectAll("path.region")
+		    .datum(function() { return this.dataset; })
+		    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
+		    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d.region);};})
+		    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "#EEE";});
+
+		svg.selectAll("text")
+		    .datum(function() { return this.className; })
+		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
+		
+		props.includedRegions.forEach(function(region){
+		    svg.selectAll("text."+region)
+			.style("fill", "white");
+		});
+	;
+
+	    },
+
+	    render: function(){
+		return (
+	            React.createElement("div", null, 
+		      React.createElement("object", {ref: "container", id: "svgobject", 
+			      type: "image/svg+xml", 
+			      width: this.props.width, 
+			      height: this.props.heght, 
+			      data: "assets/hipo_foto.svg"}
+		      )
+	            )
+		);
+	    }
+	});
+
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var BarChart = __webpack_require__(39).BarChart;
+
+	var Context = __webpack_require__(4);
+
+	// Data is like: [{value:25, label:"P1"},{value:45, label:"P2"}]
+	module.exports = React.createClass({displayName: "exports",
+	    getInitialState: function() {
+		return {
+		    "data": []
+		};
+	    },
+	    componentDidMount: function() {
+		var rpc = Context.instance().rpc;
+		var self = this;
+		var pipeline = [
+		    {$match : {"tint": "NISSL"}},
+		    {$group : {_id: "$patient", value: {$sum: "$cells/volume (mm3)"} } },
+		    {$project : { label: "$_id", value:1 , _id: 0}},
+		    {$sort : { value: -1 } }
+		];
+		rpc.call('TableSrv.aggregate', [this.props.table, pipeline])
+		    .then(function(view) {
+			return rpc.call("TableSrv.get_data", [view, "rows"])
+		    })
+		    .then(function(rows){
+			self.setState({"data": rows});
+		    })
+		    .catch(function(e){console.error(e);});
+	    },
+	    render: function(){
+		return (
+		    React.createElement(BarChart, {
+			    data: this.state.data, 
+			    width: 600, 
+			    height: 200, 
+			    margins: {top: 20, right: 30, bottom: 30, left: 60}, 
+			    fill: '#3182bd', 
+			    title: "Cells/Vol - NISSL"}
+		    )	
+		);
+	    }
+	});
+
+
+/***/ },
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var _ = __webpack_require__(2);
+
+
+	module.exports = React.createClass({displayName: "exports",
+
+	    render: function() {
+		var title = this.props.title;
+
+		/* var child = React.cloneElement(
+		   React.Children.only(this.props.children), 
+		   {width: this.props.width, height: this.props.height}); */
+
+		return (
+		    React.createElement("div", {className: "card", key: this.props.key}, 
+		      React.createElement("h4", null, React.createElement("div", {className: "card-title"}, title)), 
+		      React.createElement("div", {className: "card-content"}, 
+			this.props.children		
+		      )
+		    )
+		);
+	    }
+	});
+
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var d3 = __webpack_require__(36);
+	var _ = __webpack_require__(2);
+
+	module.exports = {
+	    createChart: function(container, props, state){
+		var margin = this.props.margin;
+		var width = this.props.width - margin.left - margin.right;
+		var height = this.props.height - margin.top - margin.bottom;
+
+		var svg = d3.select(container).append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		    .attr("class", "pcp")
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		svg.append("g").attr("class", "foreground");
+	    },
+
+	    cleanChart: function(container, props, state){
+		// unsubscribe things 
+	    },
+
+	    update: function(container, props, state) {
+		if ( !(props.attributes.length && props.data.length)) {
+		    d3.select(container).html('');
+		    this.createChart(container, props, state);
+		    return null
+		};
+		console.log("UPDATE"); 
+		var self = this;
+		var margin = props.margin;
+		var width = props.width - margin.left - margin.right;
+		var height = props.height - margin.top - margin.bottom;
+
+
+		var axis = d3.svg.axis().orient("left");
+		var scales = this._scales(width, height, props.data, props.attributes);
+		var path = this._path(props.attributes, scales);
+		var dragState = {};
+
+
+		var realSvg = d3.select(container).select("svg");
+		realSvg.attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom);
+
+		var svg = d3.select(container).select("svg > g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		// Add foreground lines.
+		var foreground = svg.select("g.foreground");
+		var foregroundLines = foreground.selectAll("path")
+		  .data(props.data, function(d){return d.measure_id;});
+		foregroundLines.enter().append("path");
+		foregroundLines.attr("d", path)
+		    .attr("class", function(d) {return d.patient;})
+		    .attr("title", function(d) {return d.measure_id;});
+		foregroundLines.exit().remove();
+
+		var brushes = this._brushes(scales, props.attributes, props.onBrush, foreground);
+
+		// Add a group element for each trait.
+		var coordinates = svg.selectAll(".coordinate")
+			.data(_.pluck(props.attributes, "name"), function(d){return d;});
+		coordinates.enter().append("g");
+		coordinates.attr("class", "coordinate")
+			.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
+			.call(d3.behavior.drag()
+			      .origin(function(d) { return {x: scales.x(d)}; })
+			      .on("dragstart", this._dragstart(props.attributes, dragState))
+			      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
+			      .on("dragend", this._dragend(scales, props.attributes, width, path))
+			     )
+			.call(function(g) {
+			    // Add an axis and title.
+			    g.append("g")
+				.attr("class", "axis")
+				.each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); })
+			      .append("text")
+				.attr("text-anchor", "middle")
+				.attr("y", -9)
+				.attr("class", "dimension")
+				.text(function(d){return _.capitalize(String(d));});})
+			.call(function(g) {
+			    // Add a brush for each axis.
+			    g.append("g")
+				.attr("class", "brush")
+				.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
+			       .selectAll("rect")
+				.attr("x", -8)
+				.attr("width", 16);});
+		coordinates.exit().remove();
+
+		return null;
+	    },
+
+	    _dragstart: function(attributes, dragState) {
+		return function dragstart(d) {
+		    dragState.i = _.pluck(attributes, "name").indexOf(d);
+		};
+	    },
+
+	    _drag: function(scales, dragState, attributes, foregroundLines, path, g){
+		var x = scales.x;
+		
+		return function drag(d) {
+		    x.range()[dragState.i] = d3.event.x;
+		    attributes.sort(function(a, b) { return x(a.name) - x(b.name); });
+		    g.attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+		    foregroundLines.attr("d", path);
+		};
+	    },
+
+	    _dragend: function(scales, attributes, width, path) {
+		var x = scales.x;
+
+		return function dragend(d) {
+		    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+		    var t = d3.transition().duration(500);
+		    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+		    t.selectAll(".foreground path").attr("d", path);
+		};
+	    },
+
+	    _scales: function(width, height, data, attributes) {
+		var self = this;
+
+		var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+		var y = {};
+
+		function sortRegions (rows) {
+		    return rows.sort(function(a,b){
+			var order = ["DG", "CA3", "CA1", "SUB"];
+			return d3.descending(order.indexOf(a), order.indexOf(b)); 
+		    })
+		}
+
+		attributes.forEach(function(d) {
+		    var name = d.name;
+		    if (d.attribute_type === 'QUANTITATIVE') {
+			y[name] = d3.scale.linear()
+			    .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
+					      , function(p) { return p[name]; }))
+			    .range([height, 0]);
+		    }
+		    else if (d.attribute_type === 'CATEGORICAL') {
+			var domain = d3.set(_.pluck(data, name)).values();
+			domain = (d.name == "region") ? sortRegions(domain) : domain;
+			y[name] = d3.scale.ordinal()
+			    .domain(domain)
+			    .rangePoints([height, 0]);
+		    }
+		});
+
+		return {x: x, y: y};
+	    },
+
+
+	    _brushes: function(scales, attributes, onBrush, foreground) {
+		if (_.isUndefined(onBrush)) return {};
+		var brushes = {};
+		var brush = this._brush(scales, brushes, foreground, onBrush);
+		var brushstart = function() {d3.event.sourceEvent.stopPropagation();};
+		attributes.forEach(function(d) {
+			var name = d.name;
+			if (d.attribute_type === "QUANTITATIVE") {
+			    brushes[name] = d3.svg.brush()
+				.y(scales.y[name])
+				.on("brushstart", brushstart)
+				.on("brush", brush);
+			}
+			else {//TODO: Add CATEGORICAL support
+			    brushes[name] = function(){};
+			    brushes[name].empty = function(){return true;};
+			}
+		});
+		return brushes;
+	    },
+
+	    _brush: function(scales, brushes, foreground, onBrush){
+		var triggerChangeThrottle = _.throttle(onBrush, 30);
+		// Handles a brush event, toggling the display of foreground lines.
+		return function () {
+		    var actives = _.keys(brushes).filter( function(dim) { return !brushes[dim].empty(); });
+		    var extents = _.zipObject(actives, actives.map(function(dim) { return brushes[dim].extent(); }));
+
+		    foreground.selectAll("path")
+			.attr('display', function(d) {
+			    var isInside = actives.every(function(dim) {
+				    //TODO: CATEGORICAL: console.log(extents[dim][0], "<=", d[dim], "&&",  d[dim], "<=" , extents[dim][1]);
+				    return extents[dim][0] <= d[dim] && d[dim] <= extents[dim][1];
+				});
+			    return isInside ? null : 'none';
+			});
+		    triggerChangeThrottle(extents);
+		};
+	    },
+
+	    // Cousure. Returns the path for a given data point.
+	    _path : function (attributes, scales) {
+		var line = d3.svg.line()
+			.defined(function(d){return !isNaN(d[1]);});
+		return function (d) {
+		    return line(_.pluck(attributes, "name")
+				.map(function(a) { return [scales.x(a), scales.y[a](d[a])]; }));  	
+		};
+	    }
+
+	};
+
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(40);
+	module.exports.Responsive = __webpack_require__(41);
+
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = d3;
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.ScatterChart = __webpack_require__(44);
+
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+
+	module.exports = {
+	    getDefaultProps: function() {
+		var margin = {top: 20, right: 10, bottom: 20, left: 10};
+		return {
+		    margin: margin
+		};
+	    },
+
+	    componentDidMount: function() {
+		var container = this.refs.container.getDOMNode();
+		this.createChart(container, this.props, this.state);
+		this.update(container, this.props, this.state);
+	    },
+
+	    componentWillUnmount: function() {
+		var container = this.refs.container.getDOMNode();
+		this.cleanChart(container, this.props, this.state);
+	    },
+
+	    shouldComponentUpdate: function(nextProps, nextState) {
+		var container = this.refs.container.getDOMNode();
+		this.update(container, nextProps, nextState);
+		// render is not called again so the container is there until
+		// the end.
+		return false;
+	    },
+
+	    render: function(){
+		return (
+	            React.createElement("div", {ref: "container"})
+		);
+	    }
+	};
+
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.BarChart = __webpack_require__(45);
+
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var React = __webpack_require__(1);
+	var GridItem = __webpack_require__(46);
+	var utils = __webpack_require__(47);
+	var PureDeepRenderMixin = __webpack_require__(48);
+	var WidthListeningMixin = __webpack_require__(49);
+
+	/**
+	 * A reactive, fluid grid layout with draggable, resizable components.
+	 */
+	var ReactGridLayout = React.createClass({
+	  displayName: 'ReactGridLayout',
+
+	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
+
+	  propTypes: {
+	    //
+	    // Basic props
+	    //
+
+	    // If true, the container height swells and contracts to fit contents
+	    autoSize: React.PropTypes.bool,
+	    // # of cols.
+	    cols: React.PropTypes.number,
+
+	    // A selector that will not be draggable.
+	    draggableCancel: React.PropTypes.string,
+	    // A selector for the draggable handler
+	    draggableHandle: React.PropTypes.string,
+
+	    // layout is an array of object with the format:
+	    // {x: Number, y: Number, w: Number, h: Number}
+	    layout: function layout(props, propName, componentName) {
+	      var layout = props.layout;
+	      // I hope you're setting the _grid property on the grid items
+	      if (layout === undefined) {
+	        return;
+	      }utils.validateLayout(layout, 'layout');
+	    },
+
+	    layouts: function layouts(props, propName, componentName) {
+	      if (props.layouts) {
+	        throw new Error('ReactGridLayout does not use `layouts`: Use ReactGridLayout.Responsive.');
+	      }
+	    },
+
+	    // margin between items [x, y] in px
+	    margin: React.PropTypes.array,
+	    // Rows have a static height, but you can change this based on breakpoints if you like
+	    rowHeight: React.PropTypes.number,
+
+	    //
+	    // Flags
+	    //
+	    isDraggable: React.PropTypes.bool,
+	    isResizable: React.PropTypes.bool,
+	    // Use CSS transforms instead of top/left
+	    useCSSTransforms: React.PropTypes.bool,
+
+	    //
+	    // Callbacks
+	    //
+
+	    // Callback so you can save the layout.
+	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
+	    onLayoutChange: React.PropTypes.func,
+
+	    // Calls when drag starts. Callback is of the signature (layout, oldItem, newItem, placeholder, e).
+	    // All callbacks below have the same signature. 'start' and 'stop' callbacks omit the 'placeholder'.
+	    onDragStart: React.PropTypes.func,
+	    // Calls on each drag movement.
+	    onDrag: React.PropTypes.func,
+	    // Calls when drag is complete.
+	    onDragStop: React.PropTypes.func,
+	    //Calls when resize starts.
+	    onResizeStart: React.PropTypes.func,
+	    // Calls when resize movement happens.
+	    onResize: React.PropTypes.func,
+	    // Calls when resize is complete.
+	    onResizeStop: React.PropTypes.func,
+
+	    //
+	    // Other validations
+	    //
+
+	    // Children must not have duplicate keys.
+	    children: function children(props, propName, componentName) {
+	      React.PropTypes.node.apply(this, arguments);
+	      var children = props[propName];
+
+	      // Check children keys for duplicates. Throw if found.
+	      var keys = {};
+	      React.Children.forEach(children, function (child, i, list) {
+	        if (keys[child.key]) {
+	          throw new Error('Duplicate child key found! This will cause problems in ReactGridLayout.');
+	        }
+	        keys[child.key] = true;
+	      });
+	    }
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      autoSize: true,
+	      cols: 12,
+	      rowHeight: 150,
+	      layout: [],
+	      margin: [10, 10],
+	      isDraggable: true,
+	      isResizable: true,
+	      useCSSTransforms: true,
+	      onLayoutChange: function onLayoutChange() {},
+	      onDragStart: function onDragStart() {},
+	      onDrag: function onDrag() {},
+	      onDragStop: function onDragStop() {},
+	      onResizeStart: function onResizeStart() {},
+	      onResize: function onResize() {},
+	      onResizeStop: function onResizeStop() {}
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      activeDrag: null,
+	      isMounted: false,
+	      layout: utils.synchronizeLayoutWithChildren(this.props.layout, this.props.children, this.props.cols),
+	      width: this.props.initialWidth
+	    };
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    // Call back with layout on mount. This should be done after correcting the layout width
+	    // to ensure we don't rerender with the wrong width.
+	    this.props.onLayoutChange(this.state.layout);
+	    this.setState({ isMounted: true });
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    // This allows you to set the width manually if you like.
+	    // Use manual width changes in combination with `listenToWindowResize: false`
+	    if (nextProps.width !== this.props.width) this.onWidthChange(nextProps.width);
+
+	    // If children change, regenerate the layout.
+	    if (nextProps.children.length !== this.props.children.length) {
+	      this.setState({
+	        layout: utils.synchronizeLayoutWithChildren(this.state.layout, nextProps.children, nextProps.cols)
+	      });
+	    }
+
+	    // Allow parent to set layout directly.
+	    if (nextProps.layout && JSON.stringify(nextProps.layout) !== JSON.stringify(this.state.layout)) {
+	      this.setState({
+	        layout: utils.synchronizeLayoutWithChildren(nextProps.layout, nextProps.children, nextProps.cols)
+	      });
+	    }
+	  },
+
+	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+	    // Call back so we can store the layout
+	    // Do it only when a resize/drag is not active, otherwise there are way too many callbacks
+	    if (this.state.layout !== prevState.layout && !this.state.activeDrag) {
+	      this.props.onLayoutChange(this.state.layout, this.state.layouts);
+	    }
+	  },
+
+	  /**
+	   * Calculates a pixel value for the container.
+	   * @return {String} Container height in pixels.
+	   */
+	  containerHeight: function containerHeight() {
+	    if (!this.props.autoSize) {
+	      return;
+	    }return utils.bottom(this.state.layout) * this.props.rowHeight + this.props.margin[1] + 'px';
+	  },
+
+	  /**
+	   * When the width changes, save it to state. This helps with left/width calculations.
+	   */
+	  onWidthChange: function onWidthChange(width) {
+	    this.setState({ width: width });
+	  },
+
+	  /**
+	   * When dragging starts
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDragStart: function onDragStart(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+
+	    // No need to clone, `l` hasn't changed.
+	    this.props.onDragStart(layout, l, l, null, e);
+	  },
+	  /**
+	   * Each drag movement create a new dragelement and move the element to the dragged location
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDrag: function onDrag(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    // Clone layout item so we can pass it to the callback.
+	    var oldL = utils.clone(l);
+
+	    // Create placeholder (display only)
+	    var placeholder = {
+	      w: l.w, h: l.h, x: l.x, y: l.y, placeholder: true, i: i
+	    };
+
+	    // Move the element to the dragged location.
+	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
+
+	    this.props.onDrag(layout, oldL, l, placeholder, e);
+
+	    this.setState({
+	      layout: utils.compact(layout),
+	      activeDrag: placeholder
+	    });
+	  },
+
+	  /**
+	   * When dragging stops, figure out which position the element is closest to and update its x and y.
+	   * @param  {Number} i Index of the child.
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDragStop: function onDragStop(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    // Move the element here
+	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
+
+	    this.props.onDragStop(layout, oldL, l, null, e);
+
+	    // Set state
+	    this.setState({ layout: utils.compact(layout), activeDrag: null });
+	  },
+
+	  onResizeStart: function onResizeStart(i, w, h, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+
+	    // No need to clone, item hasn't changed
+	    this.props.onResizeStart(layout, l, l, null, e);
+	  },
+
+	  onResize: function onResize(i, w, h, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    // Set new width and height.
+	    l.w = w;
+	    l.h = h;
+
+	    // Create placeholder element (display only)
+	    var placeholder = {
+	      w: w, h: h, x: l.x, y: l.y, placeholder: true, i: i
+	    };
+
+	    this.props.onResize(layout, oldL, l, placeholder, e);
+
+	    // Re-compact the layout and set the drag placeholder.
+	    this.setState({ layout: utils.compact(layout), activeDrag: placeholder });
+	  },
+
+	  onResizeStop: function onResizeStop(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    this.props.onResizeStop(layout, oldL, l, null, e);
+
+	    this.setState({ activeDrag: null, layout: utils.compact(layout) });
+	  },
+
+	  /**
+	   * Create a placeholder object.
+	   * @return {Element} Placeholder div.
+	   */
+	  placeholder: function placeholder() {
+	    if (!this.state.activeDrag) {
+	      return '';
+	    } // {...this.state.activeDrag} is pretty slow, actually
+	    return React.createElement(
+	      GridItem,
+	      {
+	        w: this.state.activeDrag.w,
+	        h: this.state.activeDrag.h,
+	        x: this.state.activeDrag.x,
+	        y: this.state.activeDrag.y,
+	        i: this.state.activeDrag.i,
+	        isPlaceholder: true,
+	        className: 'react-grid-placeholder',
+	        containerWidth: this.state.width,
+	        cols: this.props.cols,
+	        margin: this.props.margin,
+	        rowHeight: this.props.rowHeight,
+	        isDraggable: false,
+	        isResizable: false,
+	        useCSSTransforms: this.props.useCSSTransforms
+	      },
+	      React.createElement('div', null)
+	    );
+	  },
+
+	  /**
+	   * Given a grid item, set its style attributes & surround in a <Draggable>.
+	   * @param  {Element} child React element.
+	   * @param  {Number}  i     Index of element.
+	   * @return {Element}       Element wrapped in draggable and properly placed.
+	   */
+	  processGridItem: function processGridItem(child) {
+	    var i = child.key;
+	    var l = utils.getLayoutItem(this.state.layout, i);
+
+	    // watchStart property tells Draggable to react to changes in the start param
+	    // Must be turned off on the item we're dragging as the changes in `activeDrag` cause rerenders
+	    var drag = this.state.activeDrag;
+	    var moveOnStartChange = drag && drag.i === i ? false : true;
+
+	    // Parse 'static'. Any properties defined directly on the grid item will take precedence.
+	    var draggable, resizable;
+	    if (l['static'] || this.props.isDraggable === false) draggable = false;
+	    if (l['static'] || this.props.isResizable === false) resizable = false;
+
+	    return React.createElement(
+	      GridItem,
+	      _extends({
+	        containerWidth: this.state.width,
+	        cols: this.props.cols,
+	        margin: this.props.margin,
+	        rowHeight: this.props.rowHeight,
+	        moveOnStartChange: moveOnStartChange,
+	        cancel: this.props.draggableCancel,
+	        handle: this.props.draggableHandle,
+	        onDragStop: this.onDragStop,
+	        onDragStart: this.onDragStart,
+	        onDrag: this.onDrag,
+	        onResizeStart: this.onResizeStart,
+	        onResize: this.onResize,
+	        onResizeStop: this.onResizeStop,
+	        isDraggable: draggable,
+	        isResizable: resizable,
+	        useCSSTransforms: this.props.useCSSTransforms && this.state.isMounted,
+	        usePercentages: !this.state.isMounted
+	      }, l),
+	      child
+	    );
+	  },
+
+	  render: function render() {
+	    // Calculate classname
+	    var _props = this.props;
+	    var className = _props.className;
+
+	    var props = _objectWithoutProperties(_props, ['className']);
+
+	    className = 'react-grid-layout ' + (className || '');
+
+	    return React.createElement(
+	      'div',
+	      _extends({}, props, { className: className, style: { height: this.containerHeight() } }),
+	      React.Children.map(this.props.children, this.processGridItem),
+	      this.placeholder()
+	    );
+	  }
+	});
+
+	module.exports = ReactGridLayout;
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var React = __webpack_require__(1);
+	var utils = __webpack_require__(47);
+	var responsiveUtils = __webpack_require__(50);
+	var PureDeepRenderMixin = __webpack_require__(48);
+	var WidthListeningMixin = __webpack_require__(49);
+	var ReactGridLayout = __webpack_require__(40);
+
+	/**
+	 * A wrapper around ReactGridLayout to support responsive breakpoints.
+	 */
+	var ResponsiveReactGridLayout = React.createClass({
+	  displayName: 'ResponsiveReactGridLayout',
+
+	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
+
+	  propTypes: {
+	    //
+	    // Basic props
+	    //
+
+	    // Optional, but if you are managing width yourself you may want to set the breakpoint
+	    // yourself as well.
+	    breakpoint: React.PropTypes.string,
+
+	    // {name: pxVal}, e.g. {lg: 1200, md: 996, sm: 768, xs: 480}
+	    breakpoints: React.PropTypes.object,
+
+	    // # of cols. This is a breakpoint -> cols map
+	    cols: React.PropTypes.object,
+
+	    // layouts is an object mapping breakpoints to layouts.
+	    // e.g. {lg: Layout, md: Layout, ...}
+	    layouts: function layouts(props, propName, componentName) {
+	      React.PropTypes.object.isRequired.apply(this, arguments);
+
+	      var layouts = props.layouts;
+	      Object.keys(layouts).map(function (k) {
+	        utils.validateLayout(layouts[k], 'layouts.' + k);
+	      });
+	    },
+
+	    //
+	    // Callbacks
+	    //
+
+	    // Calls back with breakpoint and new # cols
+	    onBreakpointChange: React.PropTypes.func,
+
+	    // Callback so you can save the layout.
+	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
+	    onLayoutChange: React.PropTypes.func
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
+	      cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+	      layouts: {},
+	      onBreakpointChange: function onBreakpointChange() {},
+	      onLayoutChange: function onLayoutChange() {}
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    var breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, this.props.initialWidth);
+	    var cols = responsiveUtils.getColsFromBreakpoint(breakpoint, this.props.cols);
+
+	    // Get the initial layout. This can tricky; we try to generate one however possible if one doesn't exist
+	    // for this layout.
+	    var initialLayout = responsiveUtils.findOrGenerateResponsiveLayout(this.props.layouts, this.props.breakpoints, breakpoint, breakpoint, cols);
+
+	    return {
+	      layout: initialLayout,
+	      // storage for layouts obsoleted by breakpoints
+	      layouts: this.props.layouts || {},
+	      breakpoint: breakpoint,
+	      cols: cols,
+	      width: this.props.initialWidth
+	    };
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    // This allows you to set the width manually if you like.
+	    // Use manual width changes in combination with `listenToWindowResize: false`
+	    if (nextProps.width) this.onWidthChange(nextProps.width);
+
+	    // Allow parent to set breakpoint directly.
+	    if (nextProps.breakpoint !== this.props.breakpoint) {
+	      this.onWidthChange(this.state.width);
+	    }
+
+	    // Allow parent to set layouts directly.
+	    if (nextProps.layouts && nextProps.layouts !== this.state.layouts) {
+	      // Since we're setting an entirely new layout object, we must generate a new responsive layout
+	      // if one does not exist.
+	      var newLayout = responsiveUtils.findOrGenerateResponsiveLayout(nextProps.layouts, nextProps.breakpoints, this.state.breakpoint, this.state.breakpoint, this.state.cols);
+
+	      this.setState({
+	        layouts: nextProps.layouts,
+	        layout: newLayout
+	      });
+	    }
+	  },
+
+	  /**
+	   * Bubble this up, add `layouts` object.
+	   * @param  {Array} layout Layout from inner Grid.
+	   */
+	  onLayoutChange: function onLayoutChange(layout) {
+	    this.state.layouts[this.state.breakpoint] = layout;
+	    this.setState({ layout: layout, layouts: this.state.layouts });
+	    this.props.onLayoutChange(layout, this.state.layouts);
+	  },
+
+	  /**
+	   * When the width changes work through breakpoints and reset state with the new width & breakpoint.
+	   * Width changes are necessary to figure out the widget widths.
+	   */
+	  onWidthChange: function onWidthChange(width) {
+	    // Set new breakpoint
+	    var newState = { width: width };
+	    newState.breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, newState.width);
+	    newState.cols = responsiveUtils.getColsFromBreakpoint(newState.breakpoint, this.props.cols);
+
+	    // Breakpoint change
+	    if (newState.cols !== this.state.cols) {
+
+	      // Store the current layout
+	      newState.layouts = this.state.layouts;
+	      newState.layouts[this.state.breakpoint] = JSON.parse(JSON.stringify(this.state.layout));
+
+	      // Find or generate a new one.
+	      newState.layout = responsiveUtils.findOrGenerateResponsiveLayout(newState.layouts, this.props.breakpoints, newState.breakpoint, this.state.breakpoint, newState.cols);
+
+	      // This adds missing items.
+	      newState.layout = utils.synchronizeLayoutWithChildren(newState.layout, this.props.children, newState.cols);
+
+	      // Store this new layout as well.
+	      newState.layouts[newState.breakpoint] = newState.layout;
+
+	      this.props.onBreakpointChange(newState.breakpoint, newState.cols);
+	    }
+
+	    this.setState(newState);
+	  },
+
+	  render: function render() {
+	    // Don't pass responsive props to RGL.
+	    /*jshint unused:false*/
+	    var _props = this.props;
+	    var layouts = _props.layouts;
+	    var onBreakpointChange = _props.onBreakpointChange;
+	    var breakpoints = _props.breakpoints;
+
+	    var props = _objectWithoutProperties(_props, ['layouts', 'onBreakpointChange', 'breakpoints']);
+
+	    return React.createElement(
+	      ReactGridLayout,
+	      _extends({}, props, {
+	        layout: this.state.layout,
+	        cols: this.state.cols,
+	        listenToWindowResize: false,
+	        onLayoutChange: this.onLayoutChange,
+	        width: this.state.width }),
+	      this.props.children
+	    );
+	  }
+	});
+
+	module.exports = ResponsiveReactGridLayout;
 
 /***/ },
 /* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
-	/** @author Brian Cavalier */
-	/** @author John Hann */
+	'use strict';
 
-	(function(define) { 'use strict';
-	!(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
-
-		return {
-			formatError: formatError,
-			formatObject: formatObject,
-			tryStringify: tryStringify
-		};
-
-		/**
-		 * Format an error into a string.  If e is an Error and has a stack property,
-		 * it's returned.  Otherwise, e is formatted using formatObject, with a
-		 * warning added about e not being a proper Error.
-		 * @param {*} e
-		 * @returns {String} formatted string, suitable for output to developers
-		 */
-		function formatError(e) {
-			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
-			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
+	function ToObject(val) {
+		if (val == null) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
 		}
 
-		/**
-		 * Format an object, detecting "plain" objects and running them through
-		 * JSON.stringify if possible.
-		 * @param {Object} o
-		 * @returns {string}
-		 */
-		function formatObject(o) {
-			var s = String(o);
-			if(s === '[object Object]' && typeof JSON !== 'undefined') {
-				s = tryStringify(o, s);
-			}
-			return s;
-		}
+		return Object(val);
+	}
 
-		/**
-		 * Try to return the result of JSON.stringify(x).  If that fails, return
-		 * defaultValue
-		 * @param {*} x
-		 * @param {*} defaultValue
-		 * @returns {String|*} JSON.stringify(x) or defaultValue
-		 */
-		function tryStringify(x, defaultValue) {
-			try {
-				return JSON.stringify(x);
-			} catch(e) {
-				return defaultValue;
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var keys;
+		var to = ToObject(target);
+
+		for (var s = 1; s < arguments.length; s++) {
+			from = arguments[s];
+			keys = Object.keys(Object(from));
+
+			for (var i = 0; i < keys.length; i++) {
+				to[keys[i]] = from[keys[i]];
 			}
 		}
 
-	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+		return to;
+	};
 
 
 /***/ },
 /* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = __webpack_require__(51);
+
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var DataSeries = __webpack_require__(55);
-	var common = __webpack_require__(52);
+	var d3 = __webpack_require__(36);
+	var common = __webpack_require__(53);
+	var Chart = common.Chart;
+	var XAxis = common.XAxis;
+	var YAxis = common.YAxis;
+	var Voronoi = common.Voronoi;
+	var utils = __webpack_require__(54);
+	var immstruct = __webpack_require__(57);
+	var DataSeries = __webpack_require__(52);
+	var CartesianChartPropsMixin = __webpack_require__(55).CartesianChartPropsMixin;
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  mixins: [ CartesianChartPropsMixin ],
+
+	  propTypes: {
+	    margins: React.PropTypes.object,
+	    pointRadius: React.PropTypes.number,
+	    hoverAnimation: React.PropTypes.bool
+	 },
+
+	  getDefaultProps:function() {
+	    return {
+	      pointRadius: 3,
+	      margins: {top: 10, right: 20, bottom: 50, left: 45},
+	      hoverAnimation: true
+	    };
+	  },
+
+	  _calculateScales: utils.calculateScales,
+
+	  render:function() {
+
+	    var structure = immstruct('scatterChart', { voronoi: {}});
+
+	    var props = this.props;
+
+	    if (this.props.data && this.props.data.length < 1) {
+	      return React.createElement("g", null);
+	    }
+
+	    // Calculate inner chart dimensions
+	    var innerWidth, innerHeight;
+
+	    innerWidth = props.width - props.margins.left - props.margins.right;
+	    innerHeight = props.height - props.margins.top - props.margins.bottom;
+
+	    if (props.legend) {
+	      innerWidth = innerWidth - props.legendOffset;
+	    }
+
+	    if (!Array.isArray(props.data)) {
+	      props.data = [props.data];
+	    }
+
+	    // // Set margins if label is set
+	    // if (props.xAxisLabel) {
+	    //   var orient = props.xOrient;
+	    //   props.margins[orient] = props.margins[orient] + 10;
+	    // }
+	    //
+	    // // Set margins if label is set
+	    // if (props.yAxisLabel) {
+	    //   var orient = props.yOrient;
+	    //   props.margins[orient] = props.margins[orient] + 10;
+	    // }
+
+
+	    // Returns an object of flattened allValues, xValues, and yValues
+	    var flattenedData = utils.flattenData(props.data, props.xAccessor, props.yAccessor);
+
+	    var allValues = flattenedData.allValues,
+	        xValues = flattenedData.xValues,
+	        yValues = flattenedData.yValues;
+
+	    var scales = this._calculateScales(innerWidth, innerHeight, xValues, yValues);
+
+	    var trans = "translate(" + (props.yAxisOffset < 0 ? props.margins.left + Math.abs(props.yAxisOffset) : props.margins.left) + "," + props.margins.top + ")";
+
+	    var dataSeriesArray = props.data.map( function(series, idx)  {
+	      return (
+	          React.createElement(DataSeries, {
+	            structure: structure, 
+	            xScale: scales.xScale, 
+	            yScale: scales.yScale, 
+	            seriesName: series.name, 
+	            data: series.values, 
+	            width: innerWidth, 
+	            height: innerHeight, 
+	            fill: props.colors(idx), 
+	            pointRadius: props.pointRadius, 
+	            key: series.name, 
+	            hoverAnimation: props.hoverAnimation, 
+	            xAccessor: props.xAccessor, 
+	            yAccessor: props.yAccessor}
+	          )
+	      );
+	    });
+
+	    return (
+	      React.createElement(Chart, {
+	        viewBox: props.viewBox, 
+	        legend: props.legend, 
+	        data: props.data, 
+	        margins: props.margins, 
+	        colors: props.colors, 
+	        width: props.width, 
+	        height: props.height, 
+	        title: props.title}, 
+	        React.createElement("g", {transform: trans, className: "rd3-scatterchart"}, 
+	          React.createElement(Voronoi, {
+	            structure: structure, 
+	            data: allValues, 
+	            yScale: scales.yScale, 
+	            xScale: scales.xScale, 
+	            width: innerWidth, 
+	            height: innerHeight}
+	          ), 
+	          dataSeriesArray, 
+	          React.createElement(XAxis, {
+	            xAxisClassName: "rd3-scatterchart-xaxis", 
+	            strokeWidth: "1", 
+	            xAxisTickInterval: props.xAxisTickInterval, 
+	            xAxisOffset: props.xAxisOffset, 
+	            xScale: scales.xScale, 
+	            xAxisLabel: props.xAxisLabel, 
+	            xAxisLabelOffset: props.xAxisLabelOffset, 
+	            xOrient: props.xOrient, 
+	            data: props.data, 
+	            margins: props.margins, 
+	            width: innerWidth, 
+	            height: innerHeight, 
+	            stroke: props.axesColor}
+	          ), 
+	          React.createElement(YAxis, {
+	            yAxisClassName: "rd3-scatterchart-yaxis", 
+	            yScale: scales.yScale, 
+	            yAxisTickCount: props.yAxisTickCount, 
+	            yAxisOffset: props.yAxisOffset, 
+	            yAxisLabel: props.yAxisLabel, 
+	            yAxisLabelOffset: props.yAxisLabelOffset, 
+	            yOrient: props.yOrient, 
+	            margins: props.margins, 
+	            width: innerWidth, 
+	            height: innerHeight, 
+	            stroke: props.axesColor}
+	          )
+	        )
+	      )
+	    );
+	  }
+
+	});
+
+
+/***/ },
+/* 45 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(36);
+	var DataSeries = __webpack_require__(56);
+	var common = __webpack_require__(53);
 	var Chart = common.Chart;
 	var XAxis = common.XAxis;
 	var YAxis = common.YAxis;
@@ -4766,16 +4839,16 @@
 
 
 /***/ },
-/* 44 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var React = __webpack_require__(1);
 	var cloneWithProps = __webpack_require__(73);
-	var utils = __webpack_require__(45);
-	var Draggable = __webpack_require__(71);
-	var Resizable = __webpack_require__(69).Resizable;
-	var PureDeepRenderMixin = __webpack_require__(46);
+	var utils = __webpack_require__(47);
+	var Draggable = __webpack_require__(66);
+	var Resizable = __webpack_require__(67).Resizable;
+	var PureDeepRenderMixin = __webpack_require__(48);
 
 	/**
 	 * An individual item within a ReactGridLayout.
@@ -5113,12 +5186,12 @@
 	module.exports = GridItem;
 
 /***/ },
-/* 45 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assign = __webpack_require__(70);
+	var assign = __webpack_require__(68);
 
 	var utils = module.exports = {
 
@@ -5496,11 +5569,11 @@
 	};
 
 /***/ },
-/* 46 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var deepEqual = __webpack_require__(72);
+	var deepEqual = __webpack_require__(69);
 
 	// Like PureRenderMixin, but with deep comparisons.
 	var PureDeepRenderMixin = {
@@ -5512,7 +5585,7 @@
 	module.exports = PureDeepRenderMixin;
 
 /***/ },
-/* 47 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5565,12 +5638,12 @@
 	module.exports = WidthListeningMixin;
 
 /***/ },
-/* 48 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(45);
+	var utils = __webpack_require__(47);
 
 	var responsiveUtils = module.exports = {
 
@@ -5651,13 +5724,7 @@
 	};
 
 /***/ },
-/* 49 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* (ignored) */
-
-/***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -5699,10 +5766,10 @@
 
 	module.exports = FixedDataTableRoot;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5782,23 +5849,23 @@
 
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
-	exports.XAxis = __webpack_require__(67).XAxis;
-	exports.YAxis = __webpack_require__(67).YAxis;
-	exports.Chart = __webpack_require__(68).Chart;
-	exports.LegendChart = __webpack_require__(68).LegendChart;
+	exports.XAxis = __webpack_require__(71).XAxis;
+	exports.YAxis = __webpack_require__(71).YAxis;
+	exports.Chart = __webpack_require__(72).Chart;
+	exports.LegendChart = __webpack_require__(72).LegendChart;
 	exports.Legend = __webpack_require__(63);
 	exports.Voronoi = __webpack_require__(64);
 
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var d3 = __webpack_require__(16);
+	var d3 = __webpack_require__(36);
 
 
 	exports.calculateScales = function(chartWidth, chartHeight, xValues, yValues)  {
@@ -5946,7 +6013,7 @@
 
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -5954,14 +6021,14 @@
 
 
 /***/ },
-/* 55 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var Bar = __webpack_require__(66);
+	var d3 = __webpack_require__(36);
+	var Bar = __webpack_require__(70);
 
 	module.exports = React.createClass({displayName: "exports",
 
@@ -6006,70 +6073,6 @@
 	    );
 	  }
 	});
-
-
-/***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    draining = true;
-	    var currentQueue;
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        var i = -1;
-	        while (++i < len) {
-	            currentQueue[i]();
-	        }
-	        len = queue.length;
-	    }
-	    draining = false;
-	}
-	process.nextTick = function (fun) {
-	    queue.push(fun);
-	    if (!draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
 
 
 /***/ },
@@ -6218,9 +6221,9 @@
 
 	/* jslint bitwise: true */
 
-	var FixedDataTableHelper = __webpack_require__(76);
-	var Locale = __webpack_require__(77);
-	var React = __webpack_require__(75);
+	var FixedDataTableHelper = __webpack_require__(75);
+	var Locale = __webpack_require__(76);
+	var React = __webpack_require__(77);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(78);
 	var ReactWheelHandler = __webpack_require__(79);
 	var Scrollbar = __webpack_require__(80);
@@ -7248,7 +7251,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(75);
+	var React = __webpack_require__(77);
 
 	var PropTypes = React.PropTypes;
 
@@ -7388,7 +7391,7 @@
 
 	module.exports = FixedDataTableColumn;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 61 */
@@ -7406,7 +7409,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(75);
+	var React = __webpack_require__(77);
 
 	var PropTypes = React.PropTypes;
 
@@ -7468,7 +7471,7 @@
 
 	module.exports = FixedDataTableColumnGroup;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 62 */
@@ -7477,8 +7480,8 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var utils = __webpack_require__(53);
+	var d3 = __webpack_require__(36);
+	var utils = __webpack_require__(54);
 
 	module.exports = React.createClass({displayName: "exports",
 
@@ -7564,7 +7567,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
+	var d3 = __webpack_require__(36);
 
 	module.exports = React.createClass({displayName: "exports",
 
@@ -7639,7 +7642,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
+	var d3 = __webpack_require__(36);
 
 	var Polygon = React.createClass({displayName: "Polygon",
 
@@ -7704,7 +7707,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
+	var d3 = __webpack_require__(36);
 
 	module.exports =  {
 
@@ -7761,73 +7764,23 @@
 /* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var React = __webpack_require__(1);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    fill: React.PropTypes.string,
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    offset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      offset: 0
-	    };
-	  },
-
-	  render:function() {
-	    return (
-	      React.createElement("rect", {
-	        fill: this.props.fill, 
-	        width: this.props.width, 
-	        height: this.props.height, 
-	        x: this.props.offset, 
-	        y: this.props.availableHeight  - this.props.height, 
-	        className: "rd3-barchart-bar"}
-	      )
-	    );
-	  }
-	});
+	module.exports = __webpack_require__(93);
 
 
 /***/ },
 /* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
-	
-	exports.XAxis = __webpack_require__(96);
-	exports.YAxis = __webpack_require__(97);
-
-
-/***/ },
-/* 68 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.BasicChart = __webpack_require__(93);
-	exports.Chart = __webpack_require__(94);
-	exports.LegendChart = __webpack_require__(95);
-
-
-/***/ },
-/* 69 */
-/***/ function(module, exports, __webpack_require__) {
-
 	module.exports = function() {
 	  throw new Error("Don't instantiate Resizable directly! Use require('react-resizable').Resizable");
 	};
 
-	module.exports.Resizable = __webpack_require__(98);
-	module.exports.ResizableBox = __webpack_require__(99);
+	module.exports.Resizable = __webpack_require__(94);
+	module.exports.ResizableBox = __webpack_require__(95);
 
 
 /***/ },
-/* 70 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7859,19 +7812,12 @@
 
 
 /***/ },
-/* 71 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(100);
-
-
-/***/ },
-/* 72 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var pSlice = Array.prototype.slice;
-	var objectKeys = __webpack_require__(101);
-	var isArguments = __webpack_require__(102);
+	var objectKeys = __webpack_require__(96);
+	var isArguments = __webpack_require__(97);
 
 	var deepEqual = module.exports = function (actual, expected, opts) {
 	  if (!opts) opts = {};
@@ -7966,6 +7912,63 @@
 
 
 /***/ },
+/* 70 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    fill: React.PropTypes.string,
+	    width: React.PropTypes.number,
+	    height: React.PropTypes.number,
+	    offset: React.PropTypes.number
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      offset: 0
+	    };
+	  },
+
+	  render:function() {
+	    return (
+	      React.createElement("rect", {
+	        fill: this.props.fill, 
+	        width: this.props.width, 
+	        height: this.props.height, 
+	        x: this.props.offset, 
+	        y: this.props.availableHeight  - this.props.height, 
+	        className: "rd3-barchart-bar"}
+	      )
+	    );
+	  }
+	});
+
+
+/***/ },
+/* 71 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.XAxis = __webpack_require__(98);
+	exports.YAxis = __webpack_require__(99);
+
+
+/***/ },
+/* 72 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.BasicChart = __webpack_require__(100);
+	exports.Chart = __webpack_require__(101);
+	exports.LegendChart = __webpack_require__(102);
+
+
+/***/ },
 /* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -8025,15 +8028,15 @@
 
 	module.exports = cloneWithProps;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Immutable = __webpack_require__(131);
-	var Cursor = __webpack_require__(121);
-	var EventEmitter = __webpack_require__(122).EventEmitter;
+	var Cursor = __webpack_require__(125);
+	var EventEmitter = __webpack_require__(126).EventEmitter;
 	var inherits = __webpack_require__(132);
 	var utils = __webpack_require__(107);
 
@@ -8375,32 +8378,14 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule React
-	 */
-
-	module.exports = __webpack_require__(1);
-
-
-/***/ },
-/* 76 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
 	 * @providesModule FixedDataTableHelper
 	 * @typechecks
 	 */
 
 	"use strict";
 
-	var Locale = __webpack_require__(77);
-	var React = __webpack_require__(75);
+	var Locale = __webpack_require__(76);
+	var React = __webpack_require__(77);
 	var FixedDataTableColumnGroup = __webpack_require__(61);
 	var FixedDataTableColumn = __webpack_require__(60);
 
@@ -8492,7 +8477,7 @@
 
 
 /***/ },
-/* 77 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -8515,6 +8500,24 @@
 	};
 
 	module.exports = Locale;
+
+
+/***/ },
+/* 77 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule React
+	 */
+
+	module.exports = __webpack_require__(1);
 
 
 /***/ },
@@ -8553,8 +8556,8 @@
 
 	"use strict";
 
-	var normalizeWheel = __webpack_require__(112);
-	var requestAnimationFramePolyfill = __webpack_require__(113);
+	var normalizeWheel = __webpack_require__(109);
+	var requestAnimationFramePolyfill = __webpack_require__(110);
 
 
 	  /**
@@ -8629,13 +8632,13 @@
 	 * @typechecks
 	 */
 
-	var DOMMouseMoveTracker = __webpack_require__(109);
-	var Keys = __webpack_require__(110);
-	var React = __webpack_require__(75);
+	var DOMMouseMoveTracker = __webpack_require__(111);
+	var Keys = __webpack_require__(112);
+	var React = __webpack_require__(77);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(78);
 	var ReactWheelHandler = __webpack_require__(79);
 
-	var cssVar = __webpack_require__(111);
+	var cssVar = __webpack_require__(113);
 	var cx = __webpack_require__(87);
 	var emptyFunction = __webpack_require__(89);
 	var translateDOMPositionXY = __webpack_require__(92);
@@ -9114,7 +9117,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(75);
+	var React = __webpack_require__(77);
 	var FixedDataTableRowBuffer = __webpack_require__(114);
 	var FixedDataTableRow = __webpack_require__(83);
 
@@ -9285,9 +9288,9 @@
 	 * @typechecks
 	 */
 
-	var DOMMouseMoveTracker = __webpack_require__(109);
-	var Locale = __webpack_require__(77);
-	var React = __webpack_require__(75);
+	var DOMMouseMoveTracker = __webpack_require__(111);
+	var Locale = __webpack_require__(76);
+	var React = __webpack_require__(77);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(78);
 
 	var clamp = __webpack_require__(116);
@@ -9455,8 +9458,8 @@
 
 	"use strict";
 
-	var FixedDataTableHelper = __webpack_require__(76);
-	var React = __webpack_require__(75);
+	var FixedDataTableHelper = __webpack_require__(75);
+	var React = __webpack_require__(77);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(78);
 	var FixedDataTableCellGroup = __webpack_require__(117);
 
@@ -9971,7 +9974,7 @@
 	 */
 	'use strict';
 
-	var React = __webpack_require__(75);
+	var React = __webpack_require__(77);
 
 	var cloneWithProps = __webpack_require__(86);
 
@@ -10349,7 +10352,7 @@
 
 	module.exports = invariant;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 91 */
@@ -10461,480 +10464,8 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-
-	module.exports = React.createClass({displayName: "exports",
-	  render: function() {
-	    return (
-	      React.createElement("div", null, 
-	        React.createElement("h4", null, this.props.title), 
-	        React.createElement("svg", {
-	          viewBox: this.props.viewBox, 
-	          width: this.props.width, 
-	          height: this.props.height
-	        }, this.props.children)
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 94 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var LegendChart = __webpack_require__(95);
-	var BasicChart = __webpack_require__(93);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    legend: React.PropTypes.bool,
-	    viewBox: React.PropTypes.string
-	  },
-
-	  getDefaultProps: function() {
-	    return {
-	      legend: false
-	    };
-	  },
-
-	  render: function() {
-	    if (this.props.legend) {
-	      return React.createElement(LegendChart, React.__spread({},  this.props));
-	    }
-	    return React.createElement(BasicChart, React.__spread({},  this.props));
-	  }
-
-	});
-
-
-
-/***/ },
-/* 95 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var Legend = __webpack_require__(63);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    legend: React.PropTypes.bool,
-	    legendPosition: React.PropTypes.string,
-	    sideOffset: React.PropTypes.number,
-	    margins: React.PropTypes.object,
-	    data: React.PropTypes.oneOfType([
-	      React.PropTypes.object,
-	      React.PropTypes.array
-	    ])
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      data: {},
-	      legend: false,
-	      legendPosition: 'right',
-	      sideOffset: 90
-	    };
-	  },
-
-	  _renderLegend:function() {
-	    if (this.props.legend) {
-	      return (
-	        React.createElement(Legend, {
-	          legendPosition: this.props.legendPosition, 
-	          margins: this.props.margins, 
-	          colors: this.props.colors, 
-	          data: this.props.data, 
-	          width: this.props.width, 
-	          height: this.props.height, 
-	          sideOffset: this.props.sideOffset}
-	        ) 
-	      );
-	    }
-	  },
-
-	  render:function() {
-	    return (
-	      React.createElement("div", {style: {'width': this.props.width, 'height': this.props.height}}, 
-	        React.createElement("h4", null, this.props.title), 
-	        this._renderLegend(), 
-	        React.createElement("svg", {viewBox: this.props.viewBox, width: this.props.width - this.props.sideOffset, height: this.props.height}, this.props.children)
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 96 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var AxisTicks = __webpack_require__(123);
-	var AxisLine = __webpack_require__(124);
-	var Label = __webpack_require__(125);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    xAxisClassName: React.PropTypes.string.isRequired,
-	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
-	    xScale: React.PropTypes.func.isRequired,
-	    height: React.PropTypes.number.isRequired,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    tickStroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.string,
-	    xAxisOffset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      xAxisClassName: 'x axis',
-	      xAxisLabelOffset: 10,
-	      xOrient: 'bottom',
-	      fill: 'none',
-	      stroke: 'none',
-	      tickStroke: '#000',
-	      strokeWidth: 'none',
-	      xAxisOffset: 0,
-	      label: ''
-	    };
-	  },
-
-	  render:function() {
-	    var props = this.props;
-
-	    var t = ("translate(0," + (props.xAxisOffset + props.height) + ")");
-
-	    var tickArguments;
-	    if (typeof props.xAxisTickCount !== 'undefined') {
-	      tickArguments = [props.xAxisTickCount];
-	    }
-	    
-	    if (typeof props.xAxisTickInterval !== 'undefined') {
-	      tickArguments = [d3.time[props.xAxisTickInterval.unit], props.xAxisTickInterval.interval];
-	    }
-
-	    return (
-	      React.createElement("g", {
-	        className: props.xAxisClassName, 
-	        transform: t
-	      }, 
-	        React.createElement(Label, {
-	          label: props.xAxisLabel, 
-	          offset: props.xAxisLabelOffset, 
-	          orient: props.xOrient, 
-	          margins: props.margins, 
-	          width: props.width}
-	        ), 
-	        React.createElement(AxisTicks, {
-	          tickFormatting: props.tickFormatting, 
-	          tickArguments: tickArguments, 
-	          xScale: props.xScale, 
-	          orient: props.xOrient}
-	        ), 
-	        React.createElement(AxisLine, React.__spread({
-	          scale: props.xScale, 
-	          orient: props.xOrient}, 
-	          props)
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 97 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var AxisTicks = __webpack_require__(123);
-	var AxisLine = __webpack_require__(124);
-	var Label = __webpack_require__(125);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    yAxisClassName: React.PropTypes.string,
-	    yOrient: React.PropTypes.oneOf(['left', 'right']),
-	    yScale: React.PropTypes.func.isRequired,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    tickStroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.string,
-	    yAxisOffset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      yAxisClassName: 'y axis',
-	      yOrient: 'left',
-	      fill: 'none',
-	      stroke: '#000',
-	      tickStroke: '#000',
-	      strokeWidth: '1',
-	      yAxisOffset: 0
-	    };
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-
-	    var t;
-	    if (props.yOrient === 'right') {
-	       t = ("translate(" + (props.yAxisOffset + props.width) + ",0)");
-	    } else {
-	       t = ("translate(" + props.yAxisOffset + ",0)");
-	    }
-
-	    var tickArguments;
-	    if (props.yAxisTickCount) {
-	      tickArguments = [props.yAxisTickCount];
-	    }
-	    
-	    if (props.yAxisTickInterval) {
-	      tickArguments = [d3.time[props.yAxisTickInterval.unit], props.yAxisTickInterval.interval];
-	    }
-
-	    return (
-	      React.createElement("g", {
-	        className: props.yAxisClassName, 
-	        transform: t
-	      }, 
-	        React.createElement(AxisTicks, {
-	          tickFormatting: props.tickFormatting, 
-	          tickArguments: tickArguments, 
-	          yScale: props.yScale, 
-	          orient: props.yOrient, 
-	          height: props.height, 
-	          width: props.width}
-	        ), 
-	        React.createElement(AxisLine, React.__spread({
-	          scale: props.yScale, 
-	          orient: props.yOrient}, 
-	          props)
-	        ), 
-	        React.createElement(Label, {
-	          label: props.yAxisLabel, 
-	          offset: props.yAxisLabelOffset, 
-	          orient: props.yOrient, 
-	          margins: props.margins, 
-	          height: props.height, 
-	          width: props.width}
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 98 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var React = __webpack_require__(1);
-	var Draggable = __webpack_require__(71);
-	var assign = __webpack_require__(70);
 	var PureRenderMixin = __webpack_require__(108);
-	var cloneWithProps = __webpack_require__(73);
-
-	var Resizable = module.exports = React.createClass({
-	  displayName: "Resizable",
-	  mixins: [PureRenderMixin],
-
-	  propTypes: {
-	    children: React.PropTypes.element,
-	    // Functions
-	    onResizeStop: React.PropTypes.func,
-	    onResizeStart: React.PropTypes.func,
-	    onResize: React.PropTypes.func,
-
-	    width: React.PropTypes.number.isRequired,
-	    height: React.PropTypes.number.isRequired,
-	    // If you change this, be sure to update your css
-	    handleSize: React.PropTypes.array,
-	    // These will be passed wholesale to react-draggable
-	    draggableOpts: React.PropTypes.object
-	  },
-
-	  getDefaultProps: function () {
-	    return {
-	      handleSize: [20, 20]
-	    };
-	  },
-
-	  minConstraints: function () {
-	    return parseConstraints(this.props.minConstraints, this.props.handleSize[0]) || this.props.handleSize;
-	  },
-
-	  maxConstraints: function () {
-	    return parseConstraints(this.props.maxConstraints, this.props.handleSize[1]);
-	  },
-
-
-	  /**
-	   * Wrapper around drag events to provide more useful data.
-	   * 
-	   * @param  {String} handlerName Handler name to wrap.
-	   * @return {Function}           Handler function.
-	   */
-	  resizeHandler: function (handlerName) {
-	    var me = this;
-	    return function (e, _ref) {
-	      var element = _ref.element;
-	      var position = _ref.position;
-	      me.props[handlerName] && me.props[handlerName](e, { element: element, size: calcWH(position, me.props.handleSize) });
-	    };
-	  },
-
-	  render: function () {
-	    var p = this.props;
-	    // What we're doing here is getting the child of this element, and cloning it with this element's props.
-	    // We are then defining its children as:
-	    // Its original children (resizable's child's children), and
-	    // A draggable handle.
-
-	    return cloneWithProps(p.children, assign({}, p, {
-	      children: [p.children.props.children, React.createElement(Draggable, React.__spread({}, p.draggableOpts, {
-	        start: { x: p.width - 20, y: p.height - 20 },
-	        moveOnStartChange: true,
-	        onStop: this.resizeHandler("onResizeStop"),
-	        onStart: this.resizeHandler("onResizeStart"),
-	        onDrag: this.resizeHandler("onResize"),
-	        minConstraints: this.minConstraints(),
-	        maxConstraints: this.maxConstraints()
-	      }), React.createElement("span", {
-	        className: "react-resizable-handle"
-	      }))]
-	    }));
-	  }
-	});
-
-	/**
-	 * Parse left and top coordinates; we have to add the handle size to get the full picture.
-	 * @param  {Number} options.left Left coordinate.
-	 * @param  {Number} options.top  Top coordinate.
-	 * @param  {Array}  handleSize   Handle data.
-	 * @return {Object}              Coordinates
-	 */
-	function calcWH(_ref2, handleSize) {
-	  var left = _ref2.left;
-	  var top = _ref2.top;
-	  return { width: left + handleSize[0], height: top + handleSize[1] };
-	}
-
-	/**
-	 * Constraints must be subtracted by the size of the handle to work properly.
-	 * This has a side-effect of effectively limiting the minimum size to the handleSize,
-	 * which IMO is fine.
-	 * @param  {Array} constraints Constraints array.
-	 * @param  {Array} handleSize  Handle size array.
-	 * @return {Array}             Transformed constraints.
-	 */
-	function parseConstraints(constraints, handleSize) {
-	  if (!constraints) return;
-	  return constraints.map(function (c) {
-	    return c - handleSize;
-	  });
-	}
-
-/***/ },
-/* 99 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var _objectWithoutProperties = function (obj, keys) {
-	  var target = {};
-	  for (var i in obj) {
-	    if (keys.indexOf(i) >= 0) continue;
-	    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-	    target[i] = obj[i];
-	  }
-
-	  return target;
-	};
-
-	"use strict";
-	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(108);
-	var Resizable = __webpack_require__(98);
-
-	// An example use of Resizable.
-	var ResizableBox = module.exports = React.createClass({
-	  displayName: "ResizableBox",
-	  mixins: [PureRenderMixin],
-
-	  propTypes: {},
-
-	  getInitialState: function () {
-	    return {
-	      width: this.props.width,
-	      height: this.props.height
-	    };
-	  },
-
-	  onResize: function (event, _ref) {
-	    var element = _ref.element;
-	    var size = _ref.size;
-	    if (size.width !== this.state.width || size.height !== this.state.height) {
-	      this.setState({
-	        width: size.width,
-	        height: size.height
-	      });
-	    }
-	  },
-
-	  render: function () {
-	    // Basic wrapper around a Resizable instance.
-	    // If you use Resizable directly, you are responsible for updating the component
-	    // with a new width and height.
-	    var handleSize = this.props.handleSize;
-	    var minConstraints = this.props.minConstraints;
-	    var maxConstraints = this.props.maxConstraints;
-	    var props = _objectWithoutProperties(this.props, ["handleSize", "minConstraints", "maxConstraints"]);
-
-	    return React.createElement(Resizable, {
-	      minConstraints: minConstraints,
-	      maxConstraints: maxConstraints,
-	      handleSize: handleSize,
-	      width: this.state.width,
-	      height: this.state.height,
-	      onResize: this.onResize,
-	      draggableOpts: this.props.draggableOpts
-	    }, React.createElement("div", React.__spread({
-	      style: { width: this.state.width + "px", height: this.state.height + "px" }
-	    }, props), this.props.children));
-	  }
-	});
-
-/***/ },
-/* 100 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(108);
-	var emptyFunction = __webpack_require__(126);
+	var emptyFunction = __webpack_require__(121);
 	var cloneWithProps = __webpack_require__(73);
 
 	function createUIEvent(draggable) {
@@ -11494,7 +11025,188 @@
 
 
 /***/ },
-/* 101 */
+/* 94 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var React = __webpack_require__(1);
+	var Draggable = __webpack_require__(66);
+	var assign = __webpack_require__(68);
+	var PureRenderMixin = __webpack_require__(108);
+	var cloneWithProps = __webpack_require__(73);
+
+	var Resizable = module.exports = React.createClass({
+	  displayName: "Resizable",
+	  mixins: [PureRenderMixin],
+
+	  propTypes: {
+	    children: React.PropTypes.element,
+	    // Functions
+	    onResizeStop: React.PropTypes.func,
+	    onResizeStart: React.PropTypes.func,
+	    onResize: React.PropTypes.func,
+
+	    width: React.PropTypes.number.isRequired,
+	    height: React.PropTypes.number.isRequired,
+	    // If you change this, be sure to update your css
+	    handleSize: React.PropTypes.array,
+	    // These will be passed wholesale to react-draggable
+	    draggableOpts: React.PropTypes.object
+	  },
+
+	  getDefaultProps: function () {
+	    return {
+	      handleSize: [20, 20]
+	    };
+	  },
+
+	  minConstraints: function () {
+	    return parseConstraints(this.props.minConstraints, this.props.handleSize[0]) || this.props.handleSize;
+	  },
+
+	  maxConstraints: function () {
+	    return parseConstraints(this.props.maxConstraints, this.props.handleSize[1]);
+	  },
+
+
+	  /**
+	   * Wrapper around drag events to provide more useful data.
+	   * 
+	   * @param  {String} handlerName Handler name to wrap.
+	   * @return {Function}           Handler function.
+	   */
+	  resizeHandler: function (handlerName) {
+	    var me = this;
+	    return function (e, _ref) {
+	      var element = _ref.element;
+	      var position = _ref.position;
+	      me.props[handlerName] && me.props[handlerName](e, { element: element, size: calcWH(position, me.props.handleSize) });
+	    };
+	  },
+
+	  render: function () {
+	    var p = this.props;
+	    // What we're doing here is getting the child of this element, and cloning it with this element's props.
+	    // We are then defining its children as:
+	    // Its original children (resizable's child's children), and
+	    // A draggable handle.
+
+	    return cloneWithProps(p.children, assign({}, p, {
+	      children: [p.children.props.children, React.createElement(Draggable, React.__spread({}, p.draggableOpts, {
+	        start: { x: p.width - 20, y: p.height - 20 },
+	        moveOnStartChange: true,
+	        onStop: this.resizeHandler("onResizeStop"),
+	        onStart: this.resizeHandler("onResizeStart"),
+	        onDrag: this.resizeHandler("onResize"),
+	        minConstraints: this.minConstraints(),
+	        maxConstraints: this.maxConstraints()
+	      }), React.createElement("span", {
+	        className: "react-resizable-handle"
+	      }))]
+	    }));
+	  }
+	});
+
+	/**
+	 * Parse left and top coordinates; we have to add the handle size to get the full picture.
+	 * @param  {Number} options.left Left coordinate.
+	 * @param  {Number} options.top  Top coordinate.
+	 * @param  {Array}  handleSize   Handle data.
+	 * @return {Object}              Coordinates
+	 */
+	function calcWH(_ref2, handleSize) {
+	  var left = _ref2.left;
+	  var top = _ref2.top;
+	  return { width: left + handleSize[0], height: top + handleSize[1] };
+	}
+
+	/**
+	 * Constraints must be subtracted by the size of the handle to work properly.
+	 * This has a side-effect of effectively limiting the minimum size to the handleSize,
+	 * which IMO is fine.
+	 * @param  {Array} constraints Constraints array.
+	 * @param  {Array} handleSize  Handle size array.
+	 * @return {Array}             Transformed constraints.
+	 */
+	function parseConstraints(constraints, handleSize) {
+	  if (!constraints) return;
+	  return constraints.map(function (c) {
+	    return c - handleSize;
+	  });
+	}
+
+/***/ },
+/* 95 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _objectWithoutProperties = function (obj, keys) {
+	  var target = {};
+	  for (var i in obj) {
+	    if (keys.indexOf(i) >= 0) continue;
+	    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+	    target[i] = obj[i];
+	  }
+
+	  return target;
+	};
+
+	"use strict";
+	var React = __webpack_require__(1);
+	var PureRenderMixin = __webpack_require__(108);
+	var Resizable = __webpack_require__(94);
+
+	// An example use of Resizable.
+	var ResizableBox = module.exports = React.createClass({
+	  displayName: "ResizableBox",
+	  mixins: [PureRenderMixin],
+
+	  propTypes: {},
+
+	  getInitialState: function () {
+	    return {
+	      width: this.props.width,
+	      height: this.props.height
+	    };
+	  },
+
+	  onResize: function (event, _ref) {
+	    var element = _ref.element;
+	    var size = _ref.size;
+	    if (size.width !== this.state.width || size.height !== this.state.height) {
+	      this.setState({
+	        width: size.width,
+	        height: size.height
+	      });
+	    }
+	  },
+
+	  render: function () {
+	    // Basic wrapper around a Resizable instance.
+	    // If you use Resizable directly, you are responsible for updating the component
+	    // with a new width and height.
+	    var handleSize = this.props.handleSize;
+	    var minConstraints = this.props.minConstraints;
+	    var maxConstraints = this.props.maxConstraints;
+	    var props = _objectWithoutProperties(this.props, ["handleSize", "minConstraints", "maxConstraints"]);
+
+	    return React.createElement(Resizable, {
+	      minConstraints: minConstraints,
+	      maxConstraints: maxConstraints,
+	      handleSize: handleSize,
+	      width: this.state.width,
+	      height: this.state.height,
+	      onResize: this.onResize,
+	      draggableOpts: this.props.draggableOpts
+	    }, React.createElement("div", React.__spread({
+	      style: { width: this.state.width + "px", height: this.state.height + "px" }
+	    }, props), this.props.children));
+	  }
+	});
+
+/***/ },
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = typeof Object.keys === 'function'
@@ -11509,7 +11221,7 @@
 
 
 /***/ },
-/* 102 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var supportsArgumentsClass = (function(){
@@ -11535,6 +11247,297 @@
 
 
 /***/ },
+/* 98 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(36);
+	var AxisTicks = __webpack_require__(122);
+	var AxisLine = __webpack_require__(123);
+	var Label = __webpack_require__(124);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    xAxisClassName: React.PropTypes.string.isRequired,
+	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
+	    xScale: React.PropTypes.func.isRequired,
+	    height: React.PropTypes.number.isRequired,
+	    fill: React.PropTypes.string,
+	    stroke: React.PropTypes.string,
+	    tickStroke: React.PropTypes.string,
+	    strokeWidth: React.PropTypes.string,
+	    xAxisOffset: React.PropTypes.number
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      xAxisClassName: 'x axis',
+	      xAxisLabelOffset: 10,
+	      xOrient: 'bottom',
+	      fill: 'none',
+	      stroke: 'none',
+	      tickStroke: '#000',
+	      strokeWidth: 'none',
+	      xAxisOffset: 0,
+	      label: ''
+	    };
+	  },
+
+	  render:function() {
+	    var props = this.props;
+
+	    var t = ("translate(0," + (props.xAxisOffset + props.height) + ")");
+
+	    var tickArguments;
+	    if (typeof props.xAxisTickCount !== 'undefined') {
+	      tickArguments = [props.xAxisTickCount];
+	    }
+	    
+	    if (typeof props.xAxisTickInterval !== 'undefined') {
+	      tickArguments = [d3.time[props.xAxisTickInterval.unit], props.xAxisTickInterval.interval];
+	    }
+
+	    return (
+	      React.createElement("g", {
+	        className: props.xAxisClassName, 
+	        transform: t
+	      }, 
+	        React.createElement(Label, {
+	          label: props.xAxisLabel, 
+	          offset: props.xAxisLabelOffset, 
+	          orient: props.xOrient, 
+	          margins: props.margins, 
+	          width: props.width}
+	        ), 
+	        React.createElement(AxisTicks, {
+	          tickFormatting: props.tickFormatting, 
+	          tickArguments: tickArguments, 
+	          xScale: props.xScale, 
+	          orient: props.xOrient}
+	        ), 
+	        React.createElement(AxisLine, React.__spread({
+	          scale: props.xScale, 
+	          orient: props.xOrient}, 
+	          props)
+	        )
+	      )
+	    );
+	  }
+
+	});
+
+
+/***/ },
+/* 99 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(36);
+	var AxisTicks = __webpack_require__(122);
+	var AxisLine = __webpack_require__(123);
+	var Label = __webpack_require__(124);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    yAxisClassName: React.PropTypes.string,
+	    yOrient: React.PropTypes.oneOf(['left', 'right']),
+	    yScale: React.PropTypes.func.isRequired,
+	    fill: React.PropTypes.string,
+	    stroke: React.PropTypes.string,
+	    tickStroke: React.PropTypes.string,
+	    strokeWidth: React.PropTypes.string,
+	    yAxisOffset: React.PropTypes.number
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      yAxisClassName: 'y axis',
+	      yOrient: 'left',
+	      fill: 'none',
+	      stroke: '#000',
+	      tickStroke: '#000',
+	      strokeWidth: '1',
+	      yAxisOffset: 0
+	    };
+	  },
+
+	  render:function() {
+
+	    var props = this.props;
+
+	    var t;
+	    if (props.yOrient === 'right') {
+	       t = ("translate(" + (props.yAxisOffset + props.width) + ",0)");
+	    } else {
+	       t = ("translate(" + props.yAxisOffset + ",0)");
+	    }
+
+	    var tickArguments;
+	    if (props.yAxisTickCount) {
+	      tickArguments = [props.yAxisTickCount];
+	    }
+	    
+	    if (props.yAxisTickInterval) {
+	      tickArguments = [d3.time[props.yAxisTickInterval.unit], props.yAxisTickInterval.interval];
+	    }
+
+	    return (
+	      React.createElement("g", {
+	        className: props.yAxisClassName, 
+	        transform: t
+	      }, 
+	        React.createElement(AxisTicks, {
+	          tickFormatting: props.tickFormatting, 
+	          tickArguments: tickArguments, 
+	          yScale: props.yScale, 
+	          orient: props.yOrient, 
+	          height: props.height, 
+	          width: props.width}
+	        ), 
+	        React.createElement(AxisLine, React.__spread({
+	          scale: props.yScale, 
+	          orient: props.yOrient}, 
+	          props)
+	        ), 
+	        React.createElement(Label, {
+	          label: props.yAxisLabel, 
+	          offset: props.yAxisLabelOffset, 
+	          orient: props.yOrient, 
+	          margins: props.margins, 
+	          height: props.height, 
+	          width: props.width}
+	        )
+	      )
+	    );
+	  }
+
+	});
+
+
+/***/ },
+/* 100 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+
+	module.exports = React.createClass({displayName: "exports",
+	  render: function() {
+	    return (
+	      React.createElement("div", null, 
+	        React.createElement("h4", null, this.props.title), 
+	        React.createElement("svg", {
+	          viewBox: this.props.viewBox, 
+	          width: this.props.width, 
+	          height: this.props.height
+	        }, this.props.children)
+	      )
+	    );
+	  }
+	});
+
+
+/***/ },
+/* 101 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var LegendChart = __webpack_require__(102);
+	var BasicChart = __webpack_require__(100);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    legend: React.PropTypes.bool,
+	    viewBox: React.PropTypes.string
+	  },
+
+	  getDefaultProps: function() {
+	    return {
+	      legend: false
+	    };
+	  },
+
+	  render: function() {
+	    if (this.props.legend) {
+	      return React.createElement(LegendChart, React.__spread({},  this.props));
+	    }
+	    return React.createElement(BasicChart, React.__spread({},  this.props));
+	  }
+
+	});
+
+
+
+/***/ },
+/* 102 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var Legend = __webpack_require__(63);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    legend: React.PropTypes.bool,
+	    legendPosition: React.PropTypes.string,
+	    sideOffset: React.PropTypes.number,
+	    margins: React.PropTypes.object,
+	    data: React.PropTypes.oneOfType([
+	      React.PropTypes.object,
+	      React.PropTypes.array
+	    ])
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      data: {},
+	      legend: false,
+	      legendPosition: 'right',
+	      sideOffset: 90
+	    };
+	  },
+
+	  _renderLegend:function() {
+	    if (this.props.legend) {
+	      return (
+	        React.createElement(Legend, {
+	          legendPosition: this.props.legendPosition, 
+	          margins: this.props.margins, 
+	          colors: this.props.colors, 
+	          data: this.props.data, 
+	          width: this.props.width, 
+	          height: this.props.height, 
+	          sideOffset: this.props.sideOffset}
+	        ) 
+	      );
+	    }
+	  },
+
+	  render:function() {
+	    return (
+	      React.createElement("div", {style: {'width': this.props.width, 'height': this.props.height}}, 
+	        React.createElement("h4", null, this.props.title), 
+	        this._renderLegend(), 
+	        React.createElement("svg", {viewBox: this.props.viewBox, width: this.props.width - this.props.sideOffset, height: this.props.height}, this.props.children)
+	      )
+	    );
+	  }
+	});
+
+
+/***/ },
 /* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -11551,10 +11554,10 @@
 
 	'use strict';
 
-	var ReactContext = __webpack_require__(127);
-	var ReactCurrentOwner = __webpack_require__(128);
+	var ReactContext = __webpack_require__(129);
+	var ReactCurrentOwner = __webpack_require__(130);
 
-	var assign = __webpack_require__(129);
+	var assign = __webpack_require__(127);
 	var warning = __webpack_require__(106);
 
 	var RESERVED_PROPS = {
@@ -11843,7 +11846,7 @@
 
 	module.exports = ReactElement;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 104 */
@@ -11862,9 +11865,9 @@
 
 	'use strict';
 
-	var assign = __webpack_require__(129);
-	var emptyFunction = __webpack_require__(126);
-	var joinClasses = __webpack_require__(130);
+	var assign = __webpack_require__(127);
+	var emptyFunction = __webpack_require__(121);
+	var joinClasses = __webpack_require__(128);
 
 	/**
 	 * Creates a transfer strategy that will merge prop values using the supplied
@@ -12016,7 +12019,7 @@
 
 	"use strict";
 
-	var emptyFunction = __webpack_require__(126);
+	var emptyFunction = __webpack_require__(121);
 
 	/**
 	 * Similar to invariant but only logs a warning if the condition is not met.
@@ -12063,7 +12066,7 @@
 
 	module.exports = warning;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 107 */
@@ -12094,7 +12097,7 @@
 
 	'use strict';
 
-	var shallowEqual = __webpack_require__(135);
+	var shallowEqual = __webpack_require__(133);
 
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -12142,247 +12145,15 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule DOMMouseMoveTracker
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var EventListener = __webpack_require__(133);
-
-	var cancelAnimationFramePolyfill = __webpack_require__(134);
-	var requestAnimationFramePolyfill = __webpack_require__(113);
-
-
-	  /**
-	   * onMove is the callback that will be called on every mouse move.
-	   * onMoveEnd is called on mouse up when movement has ended.
-	   */
-	  function DOMMouseMoveTracker(
-	onMove,
-	    /*function*/ onMoveEnd,
-	    /*DOMElement*/ domNode) {
-	    this.$DOMMouseMoveTracker_isDragging = false;
-	    this.$DOMMouseMoveTracker_animationFrameID = null;
-	    this.$DOMMouseMoveTracker_domNode = domNode;
-	    this.$DOMMouseMoveTracker_onMove = onMove;
-	    this.$DOMMouseMoveTracker_onMoveEnd = onMoveEnd;
-	    this.$DOMMouseMoveTracker_onMouseMove = this.$DOMMouseMoveTracker_onMouseMove.bind(this);
-	    this.$DOMMouseMoveTracker_onMouseUp = this.$DOMMouseMoveTracker_onMouseUp.bind(this);
-	    this.$DOMMouseMoveTracker_didMouseMove = this.$DOMMouseMoveTracker_didMouseMove.bind(this);
-	  }
-
-	  /**
-	   * This is to set up the listeners for listening to mouse move
-	   * and mouse up signaling the movement has ended. Please note that these
-	   * listeners are added at the document.body level. It takes in an event
-	   * in order to grab inital state.
-	   */
-	  DOMMouseMoveTracker.prototype.captureMouseMoves=function(event) {
-	    if (!this.$DOMMouseMoveTracker_eventMoveToken && !this.$DOMMouseMoveTracker_eventUpToken) {
-	      this.$DOMMouseMoveTracker_eventMoveToken = EventListener.listen(
-	        this.$DOMMouseMoveTracker_domNode,
-	        'mousemove',
-	        this.$DOMMouseMoveTracker_onMouseMove
-	      );
-	      this.$DOMMouseMoveTracker_eventUpToken = EventListener.listen(
-	        this.$DOMMouseMoveTracker_domNode,
-	        'mouseup',
-	        this.$DOMMouseMoveTracker_onMouseUp
-	      );
-	    }
-
-	    if (!this.$DOMMouseMoveTracker_isDragging) {
-	      this.$DOMMouseMoveTracker_deltaX = 0;
-	      this.$DOMMouseMoveTracker_deltaY = 0;
-	      this.$DOMMouseMoveTracker_isDragging = true;
-	      this.$DOMMouseMoveTracker_x = event.clientX;
-	      this.$DOMMouseMoveTracker_y = event.clientY;
-	    }
-	    event.preventDefault();
-	  };
-
-	  /**
-	   * These releases all of the listeners on document.body.
-	   */
-	  DOMMouseMoveTracker.prototype.releaseMouseMoves=function() {
-	    if (this.$DOMMouseMoveTracker_eventMoveToken && this.$DOMMouseMoveTracker_eventUpToken) {
-	      this.$DOMMouseMoveTracker_eventMoveToken.remove();
-	      this.$DOMMouseMoveTracker_eventMoveToken = null;
-	      this.$DOMMouseMoveTracker_eventUpToken.remove();
-	      this.$DOMMouseMoveTracker_eventUpToken = null;
-	    }
-
-	    if (this.$DOMMouseMoveTracker_animationFrameID !== null) {
-	      cancelAnimationFramePolyfill(this.$DOMMouseMoveTracker_animationFrameID);
-	      this.$DOMMouseMoveTracker_animationFrameID = null;
-	    }
-
-	    if (this.$DOMMouseMoveTracker_isDragging) {
-	      this.$DOMMouseMoveTracker_isDragging = false;
-	      this.$DOMMouseMoveTracker_x = null;
-	      this.$DOMMouseMoveTracker_y = null;
-	    }
-	  };
-
-	  /**
-	   * Returns whether or not if the mouse movement is being tracked.
-	   */
-	  DOMMouseMoveTracker.prototype.isDragging=function() {
-	    return this.$DOMMouseMoveTracker_isDragging;
-	  };
-
-	  /**
-	   * Calls onMove passed into constructor and updates internal state.
-	   */
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseMove=function(event) {
-	    var x = event.clientX;
-	    var y = event.clientY;
-
-	    this.$DOMMouseMoveTracker_deltaX += (x - this.$DOMMouseMoveTracker_x);
-	    this.$DOMMouseMoveTracker_deltaY += (y - this.$DOMMouseMoveTracker_y);
-
-	    if (this.$DOMMouseMoveTracker_animationFrameID === null) {
-	      // The mouse may move faster then the animation frame does.
-	      // Use `requestAnimationFramePolyfill` to avoid over-updating.
-	      this.$DOMMouseMoveTracker_animationFrameID =
-	        requestAnimationFramePolyfill(this.$DOMMouseMoveTracker_didMouseMove);
-	    }
-
-	    this.$DOMMouseMoveTracker_x = x;
-	    this.$DOMMouseMoveTracker_y = y;
-	    event.preventDefault();
-	  };
-
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_didMouseMove=function() {
-	    this.$DOMMouseMoveTracker_animationFrameID = null;
-	    this.$DOMMouseMoveTracker_onMove(this.$DOMMouseMoveTracker_deltaX, this.$DOMMouseMoveTracker_deltaY);
-	    this.$DOMMouseMoveTracker_deltaX = 0;
-	    this.$DOMMouseMoveTracker_deltaY = 0;
-	  };
-
-	  /**
-	   * Calls onMoveEnd passed into constructor and updates internal state.
-	   */
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseUp=function() {
-	    if (this.$DOMMouseMoveTracker_animationFrameID) {
-	      this.$DOMMouseMoveTracker_didMouseMove();
-	    }
-	    this.$DOMMouseMoveTracker_onMoveEnd();
-	  };
-
-
-	module.exports = DOMMouseMoveTracker;
-
-
-/***/ },
-/* 110 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Keys
-	 */
-
-	module.exports = {
-	  BACKSPACE:  8,
-	  TAB:        9,
-	  RETURN:    13,
-	  ALT:       18,
-	  ESC:       27,
-	  SPACE:     32,
-	  PAGE_UP:   33,
-	  PAGE_DOWN: 34,
-	  END:       35,
-	  HOME:      36,
-	  LEFT:      37,
-	  UP:        38,
-	  RIGHT:     39,
-	  DOWN:      40,
-	  DELETE:    46,
-	  COMMA:    188,
-	  PERIOD:   190,
-	  A:         65,
-	  Z:         90,
-	  ZERO:      48,
-	  NUMPAD_0:  96,
-	  NUMPAD_9: 105
-	};
-
-
-/***/ },
-/* 111 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule cssVar
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var CSS_VARS = {
-	  'scrollbar-face-active-color': '#7d7d7d',
-	  'scrollbar-face-color': '#c2c2c2',
-	  'scrollbar-face-margin': '4px',
-	  'scrollbar-face-radius': '6px',
-	  'scrollbar-size': '15px',
-	  'scrollbar-size-large': '17px',
-	  'scrollbar-track-color': 'rgba(255, 255, 255, 0.8)',
-	};
-
-	/**
-	 * @param {string} name
-	 */
-	function cssVar(name) {
-	  if (CSS_VARS.hasOwnProperty(name)) {
-	    return CSS_VARS[name];
-	  }
-
-	  throw new Error(
-	    'cssVar' + '("' + name + '"): Unexpected class transformation.'
-	  );
-	}
-
-	cssVar.CSS_VARS = CSS_VARS;
-
-	module.exports = cssVar;
-
-
-/***/ },
-/* 112 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
 	 * @providesModule normalizeWheel
 	 * @typechecks
 	 */
 
 	"use strict";
 
-	var UserAgent_DEPRECATED = __webpack_require__(137);
+	var UserAgent_DEPRECATED = __webpack_require__(134);
 
-	var isEventSupported = __webpack_require__(138);
+	var isEventSupported = __webpack_require__(135);
 
 
 	// Reasonable defaults
@@ -12550,7 +12321,7 @@
 
 
 /***/ },
-/* 113 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -12590,6 +12361,238 @@
 	module.exports = requestAnimationFrame;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 111 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule DOMMouseMoveTracker
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var EventListener = __webpack_require__(137);
+
+	var cancelAnimationFramePolyfill = __webpack_require__(138);
+	var requestAnimationFramePolyfill = __webpack_require__(110);
+
+
+	  /**
+	   * onMove is the callback that will be called on every mouse move.
+	   * onMoveEnd is called on mouse up when movement has ended.
+	   */
+	  function DOMMouseMoveTracker(
+	onMove,
+	    /*function*/ onMoveEnd,
+	    /*DOMElement*/ domNode) {
+	    this.$DOMMouseMoveTracker_isDragging = false;
+	    this.$DOMMouseMoveTracker_animationFrameID = null;
+	    this.$DOMMouseMoveTracker_domNode = domNode;
+	    this.$DOMMouseMoveTracker_onMove = onMove;
+	    this.$DOMMouseMoveTracker_onMoveEnd = onMoveEnd;
+	    this.$DOMMouseMoveTracker_onMouseMove = this.$DOMMouseMoveTracker_onMouseMove.bind(this);
+	    this.$DOMMouseMoveTracker_onMouseUp = this.$DOMMouseMoveTracker_onMouseUp.bind(this);
+	    this.$DOMMouseMoveTracker_didMouseMove = this.$DOMMouseMoveTracker_didMouseMove.bind(this);
+	  }
+
+	  /**
+	   * This is to set up the listeners for listening to mouse move
+	   * and mouse up signaling the movement has ended. Please note that these
+	   * listeners are added at the document.body level. It takes in an event
+	   * in order to grab inital state.
+	   */
+	  DOMMouseMoveTracker.prototype.captureMouseMoves=function(event) {
+	    if (!this.$DOMMouseMoveTracker_eventMoveToken && !this.$DOMMouseMoveTracker_eventUpToken) {
+	      this.$DOMMouseMoveTracker_eventMoveToken = EventListener.listen(
+	        this.$DOMMouseMoveTracker_domNode,
+	        'mousemove',
+	        this.$DOMMouseMoveTracker_onMouseMove
+	      );
+	      this.$DOMMouseMoveTracker_eventUpToken = EventListener.listen(
+	        this.$DOMMouseMoveTracker_domNode,
+	        'mouseup',
+	        this.$DOMMouseMoveTracker_onMouseUp
+	      );
+	    }
+
+	    if (!this.$DOMMouseMoveTracker_isDragging) {
+	      this.$DOMMouseMoveTracker_deltaX = 0;
+	      this.$DOMMouseMoveTracker_deltaY = 0;
+	      this.$DOMMouseMoveTracker_isDragging = true;
+	      this.$DOMMouseMoveTracker_x = event.clientX;
+	      this.$DOMMouseMoveTracker_y = event.clientY;
+	    }
+	    event.preventDefault();
+	  };
+
+	  /**
+	   * These releases all of the listeners on document.body.
+	   */
+	  DOMMouseMoveTracker.prototype.releaseMouseMoves=function() {
+	    if (this.$DOMMouseMoveTracker_eventMoveToken && this.$DOMMouseMoveTracker_eventUpToken) {
+	      this.$DOMMouseMoveTracker_eventMoveToken.remove();
+	      this.$DOMMouseMoveTracker_eventMoveToken = null;
+	      this.$DOMMouseMoveTracker_eventUpToken.remove();
+	      this.$DOMMouseMoveTracker_eventUpToken = null;
+	    }
+
+	    if (this.$DOMMouseMoveTracker_animationFrameID !== null) {
+	      cancelAnimationFramePolyfill(this.$DOMMouseMoveTracker_animationFrameID);
+	      this.$DOMMouseMoveTracker_animationFrameID = null;
+	    }
+
+	    if (this.$DOMMouseMoveTracker_isDragging) {
+	      this.$DOMMouseMoveTracker_isDragging = false;
+	      this.$DOMMouseMoveTracker_x = null;
+	      this.$DOMMouseMoveTracker_y = null;
+	    }
+	  };
+
+	  /**
+	   * Returns whether or not if the mouse movement is being tracked.
+	   */
+	  DOMMouseMoveTracker.prototype.isDragging=function() {
+	    return this.$DOMMouseMoveTracker_isDragging;
+	  };
+
+	  /**
+	   * Calls onMove passed into constructor and updates internal state.
+	   */
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseMove=function(event) {
+	    var x = event.clientX;
+	    var y = event.clientY;
+
+	    this.$DOMMouseMoveTracker_deltaX += (x - this.$DOMMouseMoveTracker_x);
+	    this.$DOMMouseMoveTracker_deltaY += (y - this.$DOMMouseMoveTracker_y);
+
+	    if (this.$DOMMouseMoveTracker_animationFrameID === null) {
+	      // The mouse may move faster then the animation frame does.
+	      // Use `requestAnimationFramePolyfill` to avoid over-updating.
+	      this.$DOMMouseMoveTracker_animationFrameID =
+	        requestAnimationFramePolyfill(this.$DOMMouseMoveTracker_didMouseMove);
+	    }
+
+	    this.$DOMMouseMoveTracker_x = x;
+	    this.$DOMMouseMoveTracker_y = y;
+	    event.preventDefault();
+	  };
+
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_didMouseMove=function() {
+	    this.$DOMMouseMoveTracker_animationFrameID = null;
+	    this.$DOMMouseMoveTracker_onMove(this.$DOMMouseMoveTracker_deltaX, this.$DOMMouseMoveTracker_deltaY);
+	    this.$DOMMouseMoveTracker_deltaX = 0;
+	    this.$DOMMouseMoveTracker_deltaY = 0;
+	  };
+
+	  /**
+	   * Calls onMoveEnd passed into constructor and updates internal state.
+	   */
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseUp=function() {
+	    if (this.$DOMMouseMoveTracker_animationFrameID) {
+	      this.$DOMMouseMoveTracker_didMouseMove();
+	    }
+	    this.$DOMMouseMoveTracker_onMoveEnd();
+	  };
+
+
+	module.exports = DOMMouseMoveTracker;
+
+
+/***/ },
+/* 112 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Keys
+	 */
+
+	module.exports = {
+	  BACKSPACE:  8,
+	  TAB:        9,
+	  RETURN:    13,
+	  ALT:       18,
+	  ESC:       27,
+	  SPACE:     32,
+	  PAGE_UP:   33,
+	  PAGE_DOWN: 34,
+	  END:       35,
+	  HOME:      36,
+	  LEFT:      37,
+	  UP:        38,
+	  RIGHT:     39,
+	  DOWN:      40,
+	  DELETE:    46,
+	  COMMA:    188,
+	  PERIOD:   190,
+	  A:         65,
+	  Z:         90,
+	  ZERO:      48,
+	  NUMPAD_0:  96,
+	  NUMPAD_9: 105
+	};
+
+
+/***/ },
+/* 113 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule cssVar
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var CSS_VARS = {
+	  'scrollbar-face-active-color': '#7d7d7d',
+	  'scrollbar-face-color': '#c2c2c2',
+	  'scrollbar-face-margin': '4px',
+	  'scrollbar-face-radius': '6px',
+	  'scrollbar-size': '15px',
+	  'scrollbar-size-large': '17px',
+	  'scrollbar-track-color': 'rgba(255, 255, 255, 0.8)',
+	};
+
+	/**
+	 * @param {string} name
+	 */
+	function cssVar(name) {
+	  if (CSS_VARS.hasOwnProperty(name)) {
+	    return CSS_VARS[name];
+	  }
+
+	  throw new Error(
+	    'cssVar' + '("' + name + '"): Unexpected class transformation.'
+	  );
+	}
+
+	cssVar.CSS_VARS = CSS_VARS;
+
+	module.exports = cssVar;
+
 
 /***/ },
 /* 114 */
@@ -12854,9 +12857,9 @@
 
 	"use strict";
 
-	var FixedDataTableHelper = __webpack_require__(76);
+	var FixedDataTableHelper = __webpack_require__(75);
 	var ImmutableObject = __webpack_require__(140);
-	var React = __webpack_require__(75);
+	var React = __webpack_require__(77);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(78);
 	var FixedDataTableCell = __webpack_require__(141);
 
@@ -13331,6 +13334,286 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule emptyFunction
+	 */
+
+	function makeEmptyFunction(arg) {
+	  return function() {
+	    return arg;
+	  };
+	}
+
+	/**
+	 * This function accepts and discards inputs; it has no side effects. This is
+	 * primarily useful idiomatically for overridable function endpoints which
+	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
+	 */
+	function emptyFunction() {}
+
+	emptyFunction.thatReturns = makeEmptyFunction;
+	emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
+	emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
+	emptyFunction.thatReturnsNull = makeEmptyFunction(null);
+	emptyFunction.thatReturnsThis = function() { return this; };
+	emptyFunction.thatReturnsArgument = function(arg) { return arg; };
+
+	module.exports = emptyFunction;
+
+
+/***/ },
+/* 122 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(36);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  getDefaultProps:function() {
+	    return {
+	      innerTickSize: 6,
+	      outerTickSize: 6,
+	      tickPadding: 3,
+	      tickArguments: [10],
+	      tickValues: null,
+	      d3_identity: function(d){return d;},
+	      tickFormatting: function(d){return d;},
+	      tickFormat: null
+	    };
+	  },
+
+	  render:function() {
+	    var props = this.props;
+
+	    var tr,
+	        ticks,
+	        scale,
+	        adjustedScale,
+	        textAnchor,
+	        tickFormat,
+	        y1, y2, dy, x1, x2, dx;
+
+	    var sign = props.yScale ? -1 : 1;
+	    var tickSpacing = Math.max(props.innerTickSize, 0) + props.tickPadding;  
+
+	    scale = props.yScale ? props.yScale : props.xScale;
+
+	    ticks = props.tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, props.tickArguments) : scale.domain()) : props.tickValues;
+	    tickFormat = props.tickFormat_ == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, props.tickArguments) : props.d3_identity) : props.tickFormat_;
+
+	    adjustedScale = scale.rangeBand ? function(d)  { return scale(d) + scale.rangeBand() / 2; } : scale;
+
+	    // Still working on this
+	    // Ticks and lines are not fully aligned
+	    // in some orientations
+	    switch (props.orient) {
+	      case 'top':
+	        tr = function(tick)  {return ("translate(" + adjustedScale(tick) + ",0)");};
+	        textAnchor = "middle";
+	        y2 = props.innerTickSize * sign;
+	        y1 = tickSpacing * sign;
+	        dy =  sign < 0 ? "0em" : ".71em";
+	        break;
+	      case 'bottom':
+	        tr = function(tick)  {return ("translate(" + adjustedScale(tick) + ",0)");};
+	        textAnchor = "middle";
+	        y2 = props.innerTickSize * sign;
+	        y1 = tickSpacing * sign;
+	        dy =  sign < 0 ? "0em" : ".71em";
+	        break;
+	      case 'left':
+	        tr = function(tick)  {return ("translate(0," + adjustedScale(tick) + ")");};
+	        textAnchor = "end";
+	        x2 = props.innerTickSize * sign;
+	        x1 = tickSpacing * sign;
+	        dy = ".32em";
+	        break;
+	      case 'right':
+	        tr = function(tick)  {return ("translate(0," + adjustedScale(tick) + ")");};
+	        textAnchor = "end";
+	        x2 = props.innerTickSize;
+	        x1 = tickSpacing * sign;
+	        dy = ".32em";
+	        break;
+	    }
+
+	    return (
+	      React.createElement("g", null, 
+	        ticks.map( function(tick, i)  {
+	          return (
+	            React.createElement("g", {key: i, className: "tick", transform: tr(tick)}, 
+	              React.createElement("line", {style: {shapeRendering:'crispEdges',opacity:'1',stroke:'#000'}, x2: x2, y2: y2}
+	              ), 
+	              React.createElement("text", {
+	                strokeWidth: "0.01", 
+	                dy: dy, x: x1, y: y1, 
+	                stroke: "#000", 
+	                textAnchor: textAnchor
+	              }, 
+	                tickFormat(tick)
+	              )
+	            )
+	          );
+	          })
+	        
+	      )
+	    );
+	  }
+
+	});
+
+
+/***/ },
+/* 123 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(36);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    scale: React.PropTypes.func.isRequired,
+	    innerTickSize: React.PropTypes.number,
+	    outerTickSize: React.PropTypes.number,
+	    tickPadding: React.PropTypes.number,
+	    tickArguments: React.PropTypes.array,
+	    fill: React.PropTypes.string,
+	    stroke: React.PropTypes.string
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      innerTickSize: 6,
+	      outerTickSize: 6,
+	      tickPadding: 3,
+	      tickArguments: [10],
+	      tickValues: null,
+	      tickFormat: null 
+	    };
+	  },
+
+
+	  _d3_scaleExtent:function(domain) {
+	    var start = domain[0], stop = domain[domain.length - 1];
+	    return start < stop ? [start, stop] : [stop, start];
+	  },
+
+	  _d3_scaleRange:function(scale) {
+	    return scale.rangeExtent ? scale.rangeExtent() : this._d3_scaleExtent(scale.range());
+	  },
+
+	  render:function() {
+
+	    var props = this.props;
+	    var sign = props.orient === "top" || props.orient === "left" ? -1 : 1;
+
+	    var range = this._d3_scaleRange(props.scale);
+
+	    var d;
+
+	    if (props.orient === "bottom" || props.orient === "top") {
+	      d = "M" + range[0] + "," + sign * props.outerTickSize + "V0H" + range[1] + "V" + sign * props.outerTickSize;
+	    } else {
+	      d = "M" + sign * props.outerTickSize + "," + range[0] + "H0V" + range[1] + "H" + sign * props.outerTickSize;
+	    }
+
+
+	    return (
+	      React.createElement("path", {
+	        className: "domain", 
+	        d: d, 
+	        style: {'shapeRendering':'crispEdges'}, 
+	        fill: "none", 
+	        stroke: props.stroke, 
+	        strokeWidth: props.strokeWidth
+	      }
+	      )
+	    );
+	  }
+	});
+
+
+/***/ },
+/* 124 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  render:function() {
+	    var props = this.props;
+	    var strokeWidth = '0.01';
+	    if (props.label) {
+	      switch (props.orient) {
+	        case 'top':
+	          return (
+	            React.createElement("text", {
+	              strokeWidth: strokeWidth, 
+	              y: props.offset, x: props.width/2, 
+	              textAnchor: "middle"}, 
+	              props.label
+	            )
+	          );
+	        case 'bottom':
+	          return (
+	            React.createElement("text", {
+	              strokeWidth: strokeWidth, 
+	              y: props.offset, x: props.width/2, 
+	              textAnchor: "middle"}, 
+	              props.label
+	            )
+	          );
+	        case 'left':
+	          return (
+	            React.createElement("text", {
+	              strokeWidth: strokeWidth, 
+	              y: -props.offset, x: -props.height/2, 
+	              textAnchor: "middle", 
+	              transform: "rotate(270)"}, 
+	              props.label
+	            )
+	          );
+	        case 'right':
+	          return (
+	            React.createElement("text", {
+	              strokeWidth: strokeWidth, 
+	              y: props.offset, x: -props.height/2, 
+	              textAnchor: "middle", 
+	              transform: "rotate(270)"}, 
+	              props.label
+	            )
+	          );
+	      }
+	    }
+	    return React.createElement("text", null);
+	  }
+
+	});
+
+
+
+
+/***/ },
+/* 125 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
 	 *  Copyright (c) 2014-2015, Facebook, Inc.
 	 *  All rights reserved.
 	 *
@@ -13644,7 +13927,7 @@
 
 
 /***/ },
-/* 122 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13879,249 +14162,60 @@
 
 
 /***/ },
-/* 123 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2014-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Object.assign
+	 */
+
+	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
 
 	'use strict';
 
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  getDefaultProps:function() {
-	    return {
-	      innerTickSize: 6,
-	      outerTickSize: 6,
-	      tickPadding: 3,
-	      tickArguments: [10],
-	      tickValues: null,
-	      d3_identity: function(d){return d;},
-	      tickFormatting: function(d){return d;},
-	      tickFormat: null
-	    };
-	  },
-
-	  render:function() {
-	    var props = this.props;
-
-	    var tr,
-	        ticks,
-	        scale,
-	        adjustedScale,
-	        textAnchor,
-	        tickFormat,
-	        y1, y2, dy, x1, x2, dx;
-
-	    var sign = props.yScale ? -1 : 1;
-	    var tickSpacing = Math.max(props.innerTickSize, 0) + props.tickPadding;  
-
-	    scale = props.yScale ? props.yScale : props.xScale;
-
-	    ticks = props.tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, props.tickArguments) : scale.domain()) : props.tickValues;
-	    tickFormat = props.tickFormat_ == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, props.tickArguments) : props.d3_identity) : props.tickFormat_;
-
-	    adjustedScale = scale.rangeBand ? function(d)  { return scale(d) + scale.rangeBand() / 2; } : scale;
-
-	    // Still working on this
-	    // Ticks and lines are not fully aligned
-	    // in some orientations
-	    switch (props.orient) {
-	      case 'top':
-	        tr = function(tick)  {return ("translate(" + adjustedScale(tick) + ",0)");};
-	        textAnchor = "middle";
-	        y2 = props.innerTickSize * sign;
-	        y1 = tickSpacing * sign;
-	        dy =  sign < 0 ? "0em" : ".71em";
-	        break;
-	      case 'bottom':
-	        tr = function(tick)  {return ("translate(" + adjustedScale(tick) + ",0)");};
-	        textAnchor = "middle";
-	        y2 = props.innerTickSize * sign;
-	        y1 = tickSpacing * sign;
-	        dy =  sign < 0 ? "0em" : ".71em";
-	        break;
-	      case 'left':
-	        tr = function(tick)  {return ("translate(0," + adjustedScale(tick) + ")");};
-	        textAnchor = "end";
-	        x2 = props.innerTickSize * sign;
-	        x1 = tickSpacing * sign;
-	        dy = ".32em";
-	        break;
-	      case 'right':
-	        tr = function(tick)  {return ("translate(0," + adjustedScale(tick) + ")");};
-	        textAnchor = "end";
-	        x2 = props.innerTickSize;
-	        x1 = tickSpacing * sign;
-	        dy = ".32em";
-	        break;
-	    }
-
-	    return (
-	      React.createElement("g", null, 
-	        ticks.map( function(tick, i)  {
-	          return (
-	            React.createElement("g", {key: i, className: "tick", transform: tr(tick)}, 
-	              React.createElement("line", {style: {shapeRendering:'crispEdges',opacity:'1',stroke:'#000'}, x2: x2, y2: y2}
-	              ), 
-	              React.createElement("text", {
-	                strokeWidth: "0.01", 
-	                dy: dy, x: x1, y: y1, 
-	                stroke: "#000", 
-	                textAnchor: textAnchor
-	              }, 
-	                tickFormat(tick)
-	              )
-	            )
-	          );
-	          })
-	        
-	      )
-	    );
+	function assign(target, sources) {
+	  if (target == null) {
+	    throw new TypeError('Object.assign target cannot be null or undefined');
 	  }
 
-	});
+	  var to = Object(target);
+	  var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-
-/***/ },
-/* 124 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    scale: React.PropTypes.func.isRequired,
-	    innerTickSize: React.PropTypes.number,
-	    outerTickSize: React.PropTypes.number,
-	    tickPadding: React.PropTypes.number,
-	    tickArguments: React.PropTypes.array,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      innerTickSize: 6,
-	      outerTickSize: 6,
-	      tickPadding: 3,
-	      tickArguments: [10],
-	      tickValues: null,
-	      tickFormat: null 
-	    };
-	  },
-
-
-	  _d3_scaleExtent:function(domain) {
-	    var start = domain[0], stop = domain[domain.length - 1];
-	    return start < stop ? [start, stop] : [stop, start];
-	  },
-
-	  _d3_scaleRange:function(scale) {
-	    return scale.rangeExtent ? scale.rangeExtent() : this._d3_scaleExtent(scale.range());
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-	    var sign = props.orient === "top" || props.orient === "left" ? -1 : 1;
-
-	    var range = this._d3_scaleRange(props.scale);
-
-	    var d;
-
-	    if (props.orient === "bottom" || props.orient === "top") {
-	      d = "M" + range[0] + "," + sign * props.outerTickSize + "V0H" + range[1] + "V" + sign * props.outerTickSize;
-	    } else {
-	      d = "M" + sign * props.outerTickSize + "," + range[0] + "H0V" + range[1] + "H" + sign * props.outerTickSize;
+	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
+	    var nextSource = arguments[nextIndex];
+	    if (nextSource == null) {
+	      continue;
 	    }
 
+	    var from = Object(nextSource);
 
-	    return (
-	      React.createElement("path", {
-	        className: "domain", 
-	        d: d, 
-	        style: {'shapeRendering':'crispEdges'}, 
-	        fill: "none", 
-	        stroke: props.stroke, 
-	        strokeWidth: props.strokeWidth
-	      }
-	      )
-	    );
-	  }
-	});
+	    // We don't currently support accessors nor proxies. Therefore this
+	    // copy cannot throw. If we ever supported this then we must handle
+	    // exceptions and side-effects. We don't support symbols so they won't
+	    // be transferred.
 
-
-/***/ },
-/* 125 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  render:function() {
-	    var props = this.props;
-	    var strokeWidth = '0.01';
-	    if (props.label) {
-	      switch (props.orient) {
-	        case 'top':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: props.offset, x: props.width/2, 
-	              textAnchor: "middle"}, 
-	              props.label
-	            )
-	          );
-	        case 'bottom':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: props.offset, x: props.width/2, 
-	              textAnchor: "middle"}, 
-	              props.label
-	            )
-	          );
-	        case 'left':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: -props.offset, x: -props.height/2, 
-	              textAnchor: "middle", 
-	              transform: "rotate(270)"}, 
-	              props.label
-	            )
-	          );
-	        case 'right':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: props.offset, x: -props.height/2, 
-	              textAnchor: "middle", 
-	              transform: "rotate(270)"}, 
-	              props.label
-	            )
-	          );
+	    for (var key in from) {
+	      if (hasOwnProperty.call(from, key)) {
+	        to[key] = from[key];
 	      }
 	    }
-	    return React.createElement("text", null);
 	  }
 
-	});
+	  return to;
+	}
 
-
+	module.exports = assign;
 
 
 /***/ },
-/* 126 */
+/* 128 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -14132,34 +14226,41 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule emptyFunction
+	 * @providesModule joinClasses
+	 * @typechecks static-only
 	 */
 
-	function makeEmptyFunction(arg) {
-	  return function() {
-	    return arg;
-	  };
-	}
+	'use strict';
 
 	/**
-	 * This function accepts and discards inputs; it has no side effects. This is
-	 * primarily useful idiomatically for overridable function endpoints which
-	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
+	 * Combines multiple className strings into one.
+	 * http://jsperf.com/joinclasses-args-vs-array
+	 *
+	 * @param {...?string} classes
+	 * @return {string}
 	 */
-	function emptyFunction() {}
+	function joinClasses(className/*, ... */) {
+	  if (!className) {
+	    className = '';
+	  }
+	  var nextClass;
+	  var argLength = arguments.length;
+	  if (argLength > 1) {
+	    for (var ii = 1; ii < argLength; ii++) {
+	      nextClass = arguments[ii];
+	      if (nextClass) {
+	        className = (className ? className + ' ' : '') + nextClass;
+	      }
+	    }
+	  }
+	  return className;
+	}
 
-	emptyFunction.thatReturns = makeEmptyFunction;
-	emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
-	emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
-	emptyFunction.thatReturnsNull = makeEmptyFunction(null);
-	emptyFunction.thatReturnsThis = function() { return this; };
-	emptyFunction.thatReturnsArgument = function(arg) { return arg; };
-
-	module.exports = emptyFunction;
+	module.exports = joinClasses;
 
 
 /***/ },
-/* 127 */
+/* 129 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -14175,7 +14276,7 @@
 
 	'use strict';
 
-	var assign = __webpack_require__(129);
+	var assign = __webpack_require__(127);
 	var emptyObject = __webpack_require__(143);
 	var warning = __webpack_require__(106);
 
@@ -14237,10 +14338,10 @@
 
 	module.exports = ReactContext;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 128 */
+/* 130 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -14275,104 +14376,6 @@
 	};
 
 	module.exports = ReactCurrentOwner;
-
-
-/***/ },
-/* 129 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2014-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Object.assign
-	 */
-
-	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
-
-	'use strict';
-
-	function assign(target, sources) {
-	  if (target == null) {
-	    throw new TypeError('Object.assign target cannot be null or undefined');
-	  }
-
-	  var to = Object(target);
-	  var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
-	    var nextSource = arguments[nextIndex];
-	    if (nextSource == null) {
-	      continue;
-	    }
-
-	    var from = Object(nextSource);
-
-	    // We don't currently support accessors nor proxies. Therefore this
-	    // copy cannot throw. If we ever supported this then we must handle
-	    // exceptions and side-effects. We don't support symbols so they won't
-	    // be transferred.
-
-	    for (var key in from) {
-	      if (hasOwnProperty.call(from, key)) {
-	        to[key] = from[key];
-	      }
-	    }
-	  }
-
-	  return to;
-	}
-
-	module.exports = assign;
-
-
-/***/ },
-/* 130 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule joinClasses
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	/**
-	 * Combines multiple className strings into one.
-	 * http://jsperf.com/joinclasses-args-vs-array
-	 *
-	 * @param {...?string} classes
-	 * @return {string}
-	 */
-	function joinClasses(className/*, ... */) {
-	  if (!className) {
-	    className = '';
-	  }
-	  var nextClass;
-	  var argLength = arguments.length;
-	  if (argLength > 1) {
-	    for (var ii = 1; ii < argLength; ii++) {
-	      nextClass = arguments[ii];
-	      if (nextClass) {
-	        className = (className ? className + ' ' : '') + nextClass;
-	      }
-	    }
-	  }
-	  return className;
-	}
-
-	module.exports = joinClasses;
 
 
 /***/ },
@@ -19322,123 +19325,6 @@
 /* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule EventListener
-	 * @typechecks
-	 */
-
-	var emptyFunction = __webpack_require__(89);
-
-	/**
-	 * Upstream version of event listener. Does not take into account specific
-	 * nature of platform.
-	 */
-	var EventListener = {
-	  /**
-	   * Listen to DOM events during the bubble phase.
-	   *
-	   * @param {DOMEventTarget} target DOM element to register listener on.
-	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
-	   * @param {function} callback Callback function.
-	   * @return {object} Object with a `remove` method.
-	   */
-	  listen: function(target, eventType, callback) {
-	    if (target.addEventListener) {
-	      target.addEventListener(eventType, callback, false);
-	      return {
-	        remove: function() {
-	          target.removeEventListener(eventType, callback, false);
-	        }
-	      };
-	    } else if (target.attachEvent) {
-	      target.attachEvent('on' + eventType, callback);
-	      return {
-	        remove: function() {
-	          target.detachEvent('on' + eventType, callback);
-	        }
-	      };
-	    }
-	  },
-
-	  /**
-	   * Listen to DOM events during the capture phase.
-	   *
-	   * @param {DOMEventTarget} target DOM element to register listener on.
-	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
-	   * @param {function} callback Callback function.
-	   * @return {object} Object with a `remove` method.
-	   */
-	  capture: function(target, eventType, callback) {
-	    if (!target.addEventListener) {
-	      if (process.env.NODE_ENV !== 'production') {
-	        console.error(
-	          'Attempted to listen to events during the capture phase on a ' +
-	          'browser that does not support the capture phase. Your application ' +
-	          'will not receive some events.'
-	        );
-	      }
-	      return {
-	        remove: emptyFunction
-	      };
-	    } else {
-	      target.addEventListener(eventType, callback, true);
-	      return {
-	        remove: function() {
-	          target.removeEventListener(eventType, callback, true);
-	        }
-	      };
-	    }
-	  },
-
-	  registerDefault: function() {}
-	};
-
-	module.exports = EventListener;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
-
-/***/ },
-/* 134 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule cancelAnimationFramePolyfill
-	 */
-
-	/**
-	 * Here is the native and polyfill version of cancelAnimationFrame.
-	 * Please don't use it directly and use cancelAnimationFrame module instead.
-	 */
-	var cancelAnimationFrame =
-	  global.cancelAnimationFrame       ||
-	  global.webkitCancelAnimationFrame ||
-	  global.mozCancelAnimationFrame    ||
-	  global.oCancelAnimationFrame      ||
-	  global.msCancelAnimationFrame     ||
-	  global.clearTimeout;
-
-	module.exports = cancelAnimationFrame;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 135 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/**
 	 * Copyright 2013-2015, Facebook, Inc.
 	 * All rights reserved.
@@ -19484,33 +19370,7 @@
 
 
 /***/ },
-/* 136 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule nativeRequestAnimationFrame
-	 */
-
-	var nativeRequestAnimationFrame =
-	  global.requestAnimationFrame       ||
-	  global.webkitRequestAnimationFrame ||
-	  global.mozRequestAnimationFrame    ||
-	  global.oRequestAnimationFrame      ||
-	  global.msRequestAnimationFrame;
-
-	module.exports = nativeRequestAnimationFrame;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 137 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -19803,7 +19663,7 @@
 
 
 /***/ },
-/* 138 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -19870,6 +19730,149 @@
 
 	module.exports = isEventSupported;
 
+
+/***/ },
+/* 136 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule nativeRequestAnimationFrame
+	 */
+
+	var nativeRequestAnimationFrame =
+	  global.requestAnimationFrame       ||
+	  global.webkitRequestAnimationFrame ||
+	  global.mozRequestAnimationFrame    ||
+	  global.oRequestAnimationFrame      ||
+	  global.msRequestAnimationFrame;
+
+	module.exports = nativeRequestAnimationFrame;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 137 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule EventListener
+	 * @typechecks
+	 */
+
+	var emptyFunction = __webpack_require__(89);
+
+	/**
+	 * Upstream version of event listener. Does not take into account specific
+	 * nature of platform.
+	 */
+	var EventListener = {
+	  /**
+	   * Listen to DOM events during the bubble phase.
+	   *
+	   * @param {DOMEventTarget} target DOM element to register listener on.
+	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
+	   * @param {function} callback Callback function.
+	   * @return {object} Object with a `remove` method.
+	   */
+	  listen: function(target, eventType, callback) {
+	    if (target.addEventListener) {
+	      target.addEventListener(eventType, callback, false);
+	      return {
+	        remove: function() {
+	          target.removeEventListener(eventType, callback, false);
+	        }
+	      };
+	    } else if (target.attachEvent) {
+	      target.attachEvent('on' + eventType, callback);
+	      return {
+	        remove: function() {
+	          target.detachEvent('on' + eventType, callback);
+	        }
+	      };
+	    }
+	  },
+
+	  /**
+	   * Listen to DOM events during the capture phase.
+	   *
+	   * @param {DOMEventTarget} target DOM element to register listener on.
+	   * @param {string} eventType Event type, e.g. 'click' or 'mouseover'.
+	   * @param {function} callback Callback function.
+	   * @return {object} Object with a `remove` method.
+	   */
+	  capture: function(target, eventType, callback) {
+	    if (!target.addEventListener) {
+	      if (process.env.NODE_ENV !== 'production') {
+	        console.error(
+	          'Attempted to listen to events during the capture phase on a ' +
+	          'browser that does not support the capture phase. Your application ' +
+	          'will not receive some events.'
+	        );
+	      }
+	      return {
+	        remove: emptyFunction
+	      };
+	    } else {
+	      target.addEventListener(eventType, callback, true);
+	      return {
+	        remove: function() {
+	          target.removeEventListener(eventType, callback, true);
+	        }
+	      };
+	    }
+	  },
+
+	  registerDefault: function() {}
+	};
+
+	module.exports = EventListener;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+
+/***/ },
+/* 138 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule cancelAnimationFramePolyfill
+	 */
+
+	/**
+	 * Here is the native and polyfill version of cancelAnimationFrame.
+	 * Please don't use it directly and use cancelAnimationFrame module instead.
+	 */
+	var cancelAnimationFrame =
+	  global.cancelAnimationFrame       ||
+	  global.webkitCancelAnimationFrame ||
+	  global.mozCancelAnimationFrame    ||
+	  global.oCancelAnimationFrame      ||
+	  global.msCancelAnimationFrame     ||
+	  global.clearTimeout;
+
+	module.exports = cancelAnimationFrame;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 139 */
@@ -20244,7 +20247,7 @@
 
 	module.exports = ImmutableObject;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 141 */
@@ -20263,7 +20266,7 @@
 	 */
 
 	var ImmutableObject = __webpack_require__(140);
-	var React = __webpack_require__(75);
+	var React = __webpack_require__(77);
 
 	var cloneWithProps = __webpack_require__(86);
 	var cx = __webpack_require__(87);
@@ -20529,7 +20532,7 @@
 
 	module.exports = emptyObject;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
 /* 144 */

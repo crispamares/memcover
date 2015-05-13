@@ -9,12 +9,9 @@ module.exports = React.createClass({
     render: function() {
 	var title = this.props.title;
 
-	var width = 300;
-	var height = 300;
-
-	var child = React.Children.only(this.props.children);
-	child.props.width = width;
-	child.props.height = height;
+	/* var child = React.cloneElement(
+	   React.Children.only(this.props.children), 
+	   {width: this.props.width, height: this.props.height}); */
 
 	return (
 	    <div className="card" key={this.props.key}>

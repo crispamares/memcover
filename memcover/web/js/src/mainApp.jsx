@@ -26,6 +26,10 @@ module.exports = React.createClass({
 	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
 
+	var cards = {
+	    0: {i:0, grid: layout[0], constructor: ScatterChart, config:{title: "Scatter Chart"}}
+	};
+
 	return {
 	    "schema": {attributes:{}},
 	    "morphoTable": this.props.morphoTable,
@@ -123,7 +127,7 @@ module.exports = React.createClass({
 
 	console.log("******", this.state);
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
-
+	var rowHeight = 50;
 	var scatterData = [
 	    {
 		name: "series1",
@@ -143,26 +147,28 @@ module.exports = React.createClass({
 	];
 	
 	var layout = this.state.layout;
-	var cardHeight
+	var scatterCh = [];
 	return (
 	    <ReactGridLayout className="layout" 
 		    layout={layout} 
 		    cols={12} 
-		    rowHeight={50} 
+		    rowHeight={rowHeight} 
 		    useCSSTransforms={true} 
 		    onLayoutChange={function(layout){self.setState({"layout":layout});}}
 		    onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
 		    >
+	      
 	      <div key={0}>
 		<Card key={0} title={"Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}>
 		  <ScatterChart 
 			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
 			  data={scatterData}
-			  width={(contentWidth/12) * layout[0].w - 50}
-			  height={260}
+			  width={(contentWidth/12) * layout[0].w - 50} 
+			  height={rowHeight * layout[0].h - 20}
 			  />
 		</Card>
 	      </div>
+	    
 	      <div key={1}>
 		<Card title={"AT8 Cells/Vol per region"}>
 		  <img src="assets/boxplot.png" width={(contentWidth/12) * layout[1].w - 50}/>
@@ -193,8 +199,8 @@ module.exports = React.createClass({
 	      <div key={"table"}>
 		<DataTable 			  
 			rows={this.state.measuresData}
-			tableWidth={contentWidth -10}
-			tableHeight={480}
+			width={contentWidth -10}
+			height={480}
 			columnNames={columnNames}
 			>
 		</DataTable>
