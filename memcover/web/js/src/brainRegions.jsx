@@ -24,6 +24,9 @@ module.exports = React.createClass({
 
     shouldComponentUpdate: function(nextProps, nextState) {
 	var container = this.refs.container.getDOMNode();
+	container.setAttribute("width", nextProps.width);
+	container.setAttribute("height", nextProps.height);
+
 	var svg = d3.select(container.contentDocument);
 
 	this.update(svg, nextProps, nextState);

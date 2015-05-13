@@ -20,8 +20,8 @@ module.exports = React.createClass({
 
 	var layout = [
 	    {x: 8, y: 0, w: 4, h: 6, i:0, handle:".card-title"}, 
-	    {x: 3, y: 0, w: 5, h: 6, i:1}, 
-	    {x: 0, y: 0, w: 3, h: 6, i:2}, 
+	    {x: 3, y: 0, w: 5, h: 6, i:1, handle:".card-title"}, 
+	    {x: 0, y: 0, w: 3, h: 6, i:2, handle:".card-title"}, 
 	    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
 	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
@@ -143,6 +143,7 @@ module.exports = React.createClass({
 	];
 	
 	var layout = this.state.layout;
+	var cardHeight
 	return (
 	    <ReactGridLayout className="layout" 
 		    layout={layout} 
@@ -153,25 +154,27 @@ module.exports = React.createClass({
 		    onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
 		    >
 	      <div key={0}>
-		<Card title={"chop chop"}>
+		<Card key={0} title={"Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}>
 		  <ScatterChart 
 			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
 			  data={scatterData}
 			  width={(contentWidth/12) * layout[0].w - 50}
 			  height={260}
-			  title="Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"
 			  />
 		</Card>
 	      </div>
 	      <div key={1}>
-                <h4>AT8 Cells/Vol per region</h4>
-		<img src="assets/boxplot.png" width={(contentWidth/12) * layout[1].w - 50}/>
+		<Card title={"AT8 Cells/Vol per region"}>
+		  <img src="assets/boxplot.png" width={(contentWidth/12) * layout[1].w - 50}/>
+		</Card>
 	      </div>
 	      <div key={2}>
-		<BrainRegions 
-			width={(contentWidth/12) * layout[2].w - 50} 
-			includedRegions={this.state.includedRegions}
-			onClickRegion={this.toggleRegion}></BrainRegions>
+		<Card title={"Regions"}>
+		  <BrainRegions 
+			  width={(contentWidth/12) * layout[2].w - 50} 
+			  includedRegions={this.state.includedRegions}
+			  onClickRegion={this.toggleRegion}></BrainRegions>
+		</Card>
 	      </div>
 	      <div key={3}>
 		<PCPChart 
