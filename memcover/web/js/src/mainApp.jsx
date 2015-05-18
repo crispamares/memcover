@@ -15,20 +15,26 @@ var Card = require('./card');
 var PCPChart = reactify(require('./pcpChart'));
 var ScatterChart = require('react-d3/scatterchart').ScatterChart;
 
+
+
 module.exports = React.createClass({
     getInitialState: function() {
 
 	var layout = [
-	    {x: 8, y: 0, w: 4, h: 6, i:0, handle:".card-title"}, 
-	    {x: 3, y: 0, w: 5, h: 6, i:1, handle:".card-title"}, 
-	    {x: 0, y: 0, w: 3, h: 6, i:2, handle:".card-title"}, 
-	    {x: 0, y: 1, w: 12, h: 9, i:3, isDraggable:false}, 
+	    {x: 8, y: 0, w: 4, h: 6, i:"c0", handle:".card-title"}, 
+	    {x: 3, y: 0, w: 5, h: 6, i:"c1", handle:".card-title"}, 
+	    {x: 0, y: 0, w: 3, h: 6, i:"c2", handle:".card-title"}, 
+	    {x: 0, y: 1, w: 12, h: 9, i:"c3", isDraggable:false}, 
 	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
 
-	var cards = {
-	    0: {i:0, grid: layout[0], constructor: ScatterChart, config:{title: "Scatter Chart"}}
-	};
+//	var layout = [
+//	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
+//	];
+
+	var cards = [
+	    {key:"c0", kind:"scatter", title: "Scatter Chart", config:{}}
+	];
 
 	return {
 	    "schema": {attributes:{}},
@@ -36,7 +42,8 @@ module.exports = React.createClass({
 	    "measuresData": [],
 	    "regionsCondition": null,
 	    "includedRegions": [],
-	    "layout": layout
+	    "layout": layout,
+	    "cards": cards
 	};
     },
     componentDidMount: function() {
@@ -120,7 +127,7 @@ module.exports = React.createClass({
 
 	rpc.call('ConditionSrv.toggle_category', [this.state.regionsCondition, region]);
     },
-
+    
     render: function(){
 	var self = this;
 	var columnNames = _.keys(this.state.schema.attributes);
@@ -147,6 +154,17 @@ module.exports = React.createClass({
 	];
 	
 	var layout = this.state.layout;
+
+	var computeWidth = function (key) {
+	    var width = _.result(_.find(layout, {i: key}), "w");
+	    console.log("width: ", key, (contentWidth/12) * width - 50 );
+	    return (contentWidth/12) * width - 20;
+	};
+	var computeHeight = function (key) {
+	    var height = _.result(_.find(layout, {i: key}), "h");
+	    return rowHeight * height - 60;
+	};
+
 	var scatterCh = [];
 	return (
 	    <ReactGridLayout className="layout" 
@@ -158,33 +176,38 @@ module.exports = React.createClass({
 		    onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
 		    >
 	      
-	      <div key={0}>
-		<Card key={0} title={"Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}>
+	      <div key={"c0"}>
+		<Card key={"c0"} title={"Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}>
 		  <ScatterChart 
 			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
 			  data={scatterData}
-			  width={(contentWidth/12) * layout[0].w - 50} 
-			  height={rowHeight * layout[0].h - 20}
+			  width={computeWidth("c0")}
+			  height={computeHeight("c0")}
 			  />
 		</Card>
 	      </div>
 	    
-	      <div key={1}>
+	      <div key={"c1"}>
 		<Card title={"AT8 Cells/Vol per region"}>
-		  <img src="assets/boxplot.png" width={(contentWidth/12) * layout[1].w - 50}/>
+		  <img src="assets/boxplot.png"
+			  width={computeWidth("c1")}
+			  height={computeHeight("c1")}
+			  />
 		</Card>
 	      </div>
-	      <div key={2}>
+	      <div key={"c2"}>
 		<Card title={"Regions"}>
 		  <BrainRegions 
-			  width={(contentWidth/12) * layout[2].w - 50} 
+			  width={computeWidth("c2")}
+			  height={computeHeight("c2")}
 			  includedRegions={this.state.includedRegions}
 			  onClickRegion={this.toggleRegion}></BrainRegions>
 		</Card>
 	      </div>
-	      <div key={3}>
+	      <div key={"c3"}>
 		<PCPChart 
-			width={(contentWidth/12) * layout[3].w - 50} height={450} 
+			width={computeWidth("c3")}
+			height={computeHeight("c3")}
 			margin={{top: 50, right: 40, bottom: 40, left: 40}}
 			attributes={
 			    _.chain(this.state.schema.attributes).values()
@@ -197,11 +220,11 @@ module.exports = React.createClass({
 		</PCPChart>
 	      </div>
 	      <div key={"table"}>
-		<DataTable 			  
+		<DataTable
 			rows={this.state.measuresData}
-			width={contentWidth -10}
-			height={480}
 			columnNames={columnNames}
+			width={computeWidth("table")}
+			height={computeHeight("table")}
 			>
 		</DataTable>
 	      </div>
