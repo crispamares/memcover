@@ -16,24 +16,48 @@ var PCPChart = reactify(require('./pcpChart'));
 var ScatterChart = require('react-d3/scatterchart').ScatterChart;
 
 
+var scatterData = [
+    {
+	name: "series1",
+	values: [ 
+	    { x: 4.5, y:	10093.0355127938 },
+	    { x: 2, y:	9053.6006591816 },
+	    { x: 5.5, y:	9709.7132826258 },
+	    { x: 5.5, y:	4411.9646756317 },
+	    { x: 4, y:	11871.6073443496 },
+	    { x: 5, y:	8503.093763325 },
+	    { x: 4.25, y:	9717.1988192271 },
+	    { x: 4.75, y:	9739.9604497065 },
+	    { x: 5, y:	7204.7118005418 },
+	    { x: 5, y:	9935.2958133543 } 
+	]
+    },
+];
+
 
 module.exports = React.createClass({
     getInitialState: function() {
 
+//	var layout = [
+//	    {x: 8, y: 0, w: 4, h: 6, i:"c0", handle:".card-title"}, 
+//	    {x: 3, y: 0, w: 5, h: 6, i:"c1", handle:".card-title"}, 
+//	    {x: 0, y: 0, w: 3, h: 6, i:"c2", handle:".card-title"}, 
+//	    {x: 0, y: 1, w: 12, h: 9, i:"c3", isDraggable:false}, 
+//	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
+//	];
+
 	var layout = [
-	    {x: 8, y: 0, w: 4, h: 6, i:"c0", handle:".card-title"}, 
-	    {x: 3, y: 0, w: 5, h: 6, i:"c1", handle:".card-title"}, 
-	    {x: 0, y: 0, w: 3, h: 6, i:"c2", handle:".card-title"}, 
-	    {x: 0, y: 1, w: 12, h: 9, i:"c3", isDraggable:false}, 
+	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
 	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
 
-//	var layout = [
-//	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
-//	];
-
 	var cards = [
-	    {key:"c0", kind:"scatter", title: "Scatter Chart", config:{}}
+	    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{
+		margins:{top: 20, right: 60, bottom: 60, left: 60},
+		data:scatterData
+	    }},
+	    {key:"table", kind:"table", title: "", config:{}},
+	    {key:"paco", kind:"pep", title: "", config:{}}
 	];
 
 	return {
@@ -130,30 +154,13 @@ module.exports = React.createClass({
     
     render: function(){
 	var self = this;
-	var columnNames = _.keys(this.state.schema.attributes);
 
 	console.log("******", this.state);
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
 	var rowHeight = 50;
-	var scatterData = [
-	    {
-		name: "series1",
-		values: [ 
-		    { x: 4.5, y:	10093.0355127938 },
-		    { x: 2, y:	9053.6006591816 },
-		    { x: 5.5, y:	9709.7132826258 },
-		    { x: 5.5, y:	4411.9646756317 },
-		    { x: 4, y:	11871.6073443496 },
-		    { x: 5, y:	8503.093763325 },
-		    { x: 4.25, y:	9717.1988192271 },
-		    { x: 4.75, y:	9739.9604497065 },
-		    { x: 5, y:	7204.7118005418 },
-		    { x: 5, y:	9935.2958133543 } 
-		]
-	    },
-	];
 	
 	var layout = this.state.layout;
+	var cards = this.state.cards;
 
 	var computeWidth = function (key) {
 	    var width = _.result(_.find(layout, {i: key}), "w");
@@ -166,6 +173,7 @@ module.exports = React.createClass({
 	};
 
 	var scatterCh = [];
+
 	return (
 	    <ReactGridLayout className="layout" 
 		    layout={layout} 
@@ -175,60 +183,91 @@ module.exports = React.createClass({
 		    onLayoutChange={function(layout){self.setState({"layout":layout});}}
 		    onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
 		    >
+
+	      {
+		  cards.map(function(card){
+		      var component = null;
+		      var size = {width: computeWidth(card.key), height: computeHeight(card.key)};
+		      switch (card.kind) {
+			  case "scatter":
+			      component = (<ScatterChart {...size} {...card.config} />);
+			      break;
+			  case "table":
+			      var columnNames = _.keys(self.state.schema.attributes);
+			      component = (<DataTable {...size} {...card.config} rows={self.state.measuresData} columnNames={columnNames}/>);
+			      break;
+		      }
+
+		      return (
+			  <div key={card.key}>
+			    <Card key={card.key} title={card.title}>
+			      {component}
+			    </Card>
+			  </div>			      
+		      );
+		  })
+	      }
 	      
-	      <div key={"c0"}>
-		<Card key={"c0"} title={"Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}>
-		  <ScatterChart 
-			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
-			  data={scatterData}
-			  width={computeWidth("c0")}
-			  height={computeHeight("c0")}
-			  />
-		</Card>
-	      </div>
-	    
-	      <div key={"c1"}>
-		<Card title={"AT8 Cells/Vol per region"}>
-		  <img src="assets/boxplot.png"
-			  width={computeWidth("c1")}
-			  height={computeHeight("c1")}
-			  />
-		</Card>
-	      </div>
-	      <div key={"c2"}>
-		<Card title={"Regions"}>
-		  <BrainRegions 
-			  width={computeWidth("c2")}
-			  height={computeHeight("c2")}
-			  includedRegions={this.state.includedRegions}
-			  onClickRegion={this.toggleRegion}></BrainRegions>
-		</Card>
-	      </div>
-	      <div key={"c3"}>
-		<PCPChart 
-			width={computeWidth("c3")}
-			height={computeHeight("c3")}
-			margin={{top: 50, right: 40, bottom: 40, left: 40}}
-			attributes={
-			    _.chain(this.state.schema.attributes).values()
-				.filter(function(d){return !_.include(["measure_id"], d.name); })
-				.value()
-			}
-			data={this.state.measuresData}
-			onBrush={function(extent){/*console.log(extent);*/}}
-			>
-		</PCPChart>
-	      </div>
-	      <div key={"table"}>
-		<DataTable
-			rows={this.state.measuresData}
-			columnNames={columnNames}
-			width={computeWidth("table")}
-			height={computeHeight("table")}
-			>
-		</DataTable>
-	      </div>
 	    </ReactGridLayout> 
 	);
     }
 });
+
+
+
+//	      <div key={"c0"}>
+//		<Card key={"c0"} title={"Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}>
+//		  <ScatterChart 
+//			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
+//			  data={scatterData}
+//			  width={computeWidth("c0")}
+//			  height={computeHeight("c0")}
+//			  />
+//		</Card>
+//	      </div>
+//	    
+//	      <div key={"c1"}>
+//		<Card title={"AT8 Cells/Vol per region"}>
+//		  <img src="assets/boxplot.png"
+//			  width={computeWidth("c1")}
+//			  height={computeHeight("c1")}
+//			  />
+//		</Card>
+//	      </div>
+//	      <div key={"c2"}>
+//		<Card title={"Regions"}>
+//		  <BrainRegions 
+//			  width={computeWidth("c2")}
+//			  height={computeHeight("c2")}
+//			  includedRegions={this.state.includedRegions}
+//			  onClickRegion={this.toggleRegion}></BrainRegions>
+//		</Card>
+//	      </div>
+//	      <div key={"c3"}>
+//		<PCPChart 
+//			width={computeWidth("c3")}
+//			height={computeHeight("c3")}
+//			margin={{top: 50, right: 40, bottom: 40, left: 40}}
+//			attributes={
+//			    _.chain(this.state.schema.attributes).values()
+//				.filter(function(d){return !_.include(["measure_id"], d.name); })
+//				.value()
+//			}
+//			data={this.state.measuresData}
+//			onBrush={function(extent){/*console.log(extent);*/}}
+//			>
+//		</PCPChart>
+//	      </div>
+//	      <div key={"table"}>
+//		<DataTable
+//			rows={this.state.measuresData}
+//			columnNames={columnNames}
+//			width={computeWidth("table")}
+//			height={computeHeight("table")}
+//			>
+//		</DataTable>
+//	      </div>
+
+
+
+
