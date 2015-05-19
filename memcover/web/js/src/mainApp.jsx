@@ -15,6 +15,16 @@ var Card = require('./card');
 var PCPChart = reactify(require('./pcpChart'));
 var ScatterChart = require('react-d3/scatterchart').ScatterChart;
 
+/**
+ *  Bootstrap requires
+ */
+var BS = require('react-bootstrap');
+var Navbar = BS.Navbar;
+var Nav = BS.Nav;
+var NavItem = BS.NavItem;
+var Button = BS.Button;
+var Glyphicon = BS.Glyphicon;
+
 
 var scatterData = [
     {
@@ -56,8 +66,7 @@ module.exports = React.createClass({
 		margins:{top: 20, right: 60, bottom: 60, left: 60},
 		data:scatterData
 	    }},
-	    {key:"table", kind:"table", title: "", config:{}},
-	    {key:"paco", kind:"pep", title: "", config:{}}
+	    {key:"table", kind:"table", title: "", config:{}}
 	];
 
 	return {
@@ -151,6 +160,16 @@ module.exports = React.createClass({
 
 	rpc.call('ConditionSrv.toggle_category', [this.state.regionsCondition, region]);
     },
+
+    addCard: function() {
+	var Y = _.max(this.state.layout, 'y') + 1;
+	var key = "c" + this.state.layout.length
+	this.state.layout.push({x:0, y: Y, w: 5, h: 6, i:key, handle:".card-title"});
+	this.state.cards.push({key:key, kind:"table", title: "", config:{}});
+	this.setState({layout:this.state.layout, cards: this.state.cards});
+
+    },
+
     
     render: function(){
 	var self = this;
@@ -175,40 +194,50 @@ module.exports = React.createClass({
 	var scatterCh = [];
 
 	return (
-	    <ReactGridLayout className="layout" 
-		    layout={layout} 
-		    cols={12} 
-		    rowHeight={rowHeight} 
-		    useCSSTransforms={true} 
-		    onLayoutChange={function(layout){self.setState({"layout":layout});}}
-		    onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
-		    >
+	    <div className="mainApp">
+	      <Navbar brand='Memcover' fixedTop>
+		  <Button className="navbar-btn pull-right" bsStyle="primary" onClick={this.addCard}> 
+		    <Glyphicon glyph='plus' /> Add Card 
+		  </Button> 
+	      </Navbar>
 
-	      {
-		  cards.map(function(card){
-		      var component = null;
-		      var size = {width: computeWidth(card.key), height: computeHeight(card.key)};
-		      switch (card.kind) {
-			  case "scatter":
-			      component = (<ScatterChart {...size} {...card.config} />);
-			      break;
-			  case "table":
-			      var columnNames = _.keys(self.state.schema.attributes);
-			      component = (<DataTable {...size} {...card.config} rows={self.state.measuresData} columnNames={columnNames}/>);
-			      break;
-		      }
+	      <ReactGridLayout className="layout" 
+		      layout={layout} 
+		      cols={12} 
+		      rowHeight={rowHeight} 
+		      useCSSTransforms={true} 
+		      onLayoutChange={function(layout){self.setState({"layout":layout});}}
+		      onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
+		      >
+		{
+		    /*
+		     * Render all the cards
+		     */
+		 cards.map(function(card){
+		     var component = null;
+		     var size = {width: computeWidth(card.key), height: computeHeight(card.key)};
+		     switch (card.kind) {
+			 case "scatter":
+			     component = (<ScatterChart {...size} {...card.config} />);
+			     break;
+			 case "table":
+			     var columnNames = _.keys(self.state.schema.attributes);
+			     component = (<DataTable {...size} {...card.config} rows={self.state.measuresData} columnNames={columnNames}/>);
+			     break;
+		     }
 
-		      return (
-			  <div key={card.key}>
-			    <Card key={card.key} title={card.title}>
-			      {component}
-			    </Card>
-			  </div>			      
-		      );
-		  })
-	      }
-	      
-	    </ReactGridLayout> 
+		     return (
+			 <div key={card.key}>
+			 <Card key={card.key} title={card.title}>
+			 {component}
+			 </Card>
+			 </div>			      
+		     );
+		 })
+		 }
+			 
+	      </ReactGridLayout> 
+	    </div>
 	);
     }
 });

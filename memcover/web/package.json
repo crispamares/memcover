@@ -14,7 +14,8 @@
     "fixed-data-table": "~0.1.2",
     "react-grid-layout": "~0.8.1",
     "react-d3": "~0.3.0",
-    "object-assign": "~2.0.0"
+    "object-assign": "~2.0.0",
+    "react-bootstrap": "~0.22.4"
   },
   "devDependencies": {
     "jsx-loader": "~0.12.2"
