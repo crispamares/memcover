@@ -11,6 +11,7 @@ var DataTable = require('./dataTable');
 var BrainRegions = require('./brainRegions');
 var SimpleVis = require('./simpleVis');
 var Card = require('./card');
+var CardCreationMenu = require('./cardCreationMenu');
 
 var PCPChart = reactify(require('./pcpChart'));
 var ScatterChart = require('react-d3/scatterchart').ScatterChart;
@@ -24,7 +25,7 @@ var Nav = BS.Nav;
 var NavItem = BS.NavItem;
 var Button = BS.Button;
 var Glyphicon = BS.Glyphicon;
-
+var ModalTrigger = BS.ModalTrigger;
 
 var scatterData = [
     {
@@ -195,17 +196,21 @@ module.exports = React.createClass({
 
 	return (
 	    <div className="mainApp">
+
 	      <Navbar brand='Memcover' fixedTop>
-		  <Button className="navbar-btn pull-right" bsStyle="primary" onClick={this.addCard}> 
+		<ModalTrigger modal={<CardCreationMenu  onCreateCard={this.addCard}/>}>
+		  <Button className="navbar-btn pull-right" bsStyle="primary"> 
 		    <Glyphicon glyph='plus' /> Add Card 
 		  </Button> 
+		</ModalTrigger>
 	      </Navbar>
 
+
 	      <ReactGridLayout className="layout" 
-		      layout={layout} 
-		      cols={12} 
-		      rowHeight={rowHeight} 
-		      useCSSTransforms={true} 
+		      layout={layout}
+		      cols={12}
+		      rowHeight={rowHeight}
+		      useCSSTransforms={true}
 		      onLayoutChange={function(layout){self.setState({"layout":layout});}}
 		      onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
 		      >
