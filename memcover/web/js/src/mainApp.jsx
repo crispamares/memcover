@@ -58,21 +58,24 @@ module.exports = React.createClass({
 //	];
 
 	var layout = [
-	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
-	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
+//	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
+//	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
 
 	var cards = [
-	    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{
-		margins:{top: 20, right: 60, bottom: 60, left: 60},
-		data:scatterData
-	    }},
-	    {key:"table", kind:"table", title: "", config:{}}
+// 	    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{
+// 		margins:{top: 20, right: 60, bottom: 60, left: 60},
+// 		data:scatterData
+// 	    }}
 	];
+
+	var tables = {};
+	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: []};
 
 	return {
 	    "schema": {attributes:{}},
 	    "morphoTable": this.props.morphoTable,
+	    "tables": tables,
 	    "measuresData": [],
 	    "regionsCondition": null,
 	    "includedRegions": [],
@@ -80,6 +83,7 @@ module.exports = React.createClass({
 	    "cards": cards
 	};
     },
+
     componentDidMount: function() {
 	var rpc = Context.instance().rpc;
 	var self = this;
@@ -162,11 +166,12 @@ module.exports = React.createClass({
 	rpc.call('ConditionSrv.toggle_category', [this.state.regionsCondition, region]);
     },
 
-    addCard: function() {
-	var Y = _.max(this.state.layout, 'y') + 1;
+    addCard: function(card) {
+	var Y = Math.max(0, _.max(this.state.layout, 'y')) + 1;
 	var key = "c" + this.state.layout.length
+	card.key = key;
 	this.state.layout.push({x:0, y: Y, w: 5, h: 6, i:key, handle:".card-title"});
-	this.state.cards.push({key:key, kind:"table", title: "", config:{}});
+	this.state.cards.push(card);
 	this.setState({layout:this.state.layout, cards: this.state.cards});
 
     },
@@ -175,7 +180,7 @@ module.exports = React.createClass({
     render: function(){
 	var self = this;
 
-	console.log("******", this.state);
+	console.log("**** mainApp.state OnRender: ---> ", this.state);
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
 	var rowHeight = 50;
 	
@@ -192,13 +197,23 @@ module.exports = React.createClass({
 	    return rowHeight * height - 60;
 	};
 
-	var scatterCh = [];
+
+	var creationMenuTabs = [
+	    {kind: "table", title: "Data Table", 
+		options: { 
+		    tables:[this.props.morphoTable],
+		    columns: _.map(self.state.schema.attributes, 
+			function(value, key){return {name: key, included: true};}
+		    )
+		}
+	    }
+	];
 
 	return (
 	    <div className="mainApp">
 
 	      <Navbar brand='Memcover' fixedTop>
-		<ModalTrigger modal={<CardCreationMenu  onCreateCard={this.addCard}/>}>
+		<ModalTrigger modal={<CardCreationMenu tabs={creationMenuTabs} onCreateCard={this.addCard}/>}>
 		  <Button className="navbar-btn pull-right" bsStyle="primary"> 
 		    <Glyphicon glyph='plus' /> Add Card 
 		  </Button> 
@@ -226,7 +241,8 @@ module.exports = React.createClass({
 			     component = (<ScatterChart {...size} {...card.config} />);
 			     break;
 			 case "table":
-			     var columnNames = _.keys(self.state.schema.attributes);
+			     // var columnNames = _.keys(self.state.schema.attributes);
+			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
 			     component = (<DataTable {...size} {...card.config} rows={self.state.measuresData} columnNames={columnNames}/>);
 			     break;
 		     }

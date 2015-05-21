@@ -98,24 +98,24 @@
 
 	var React = __webpack_require__(1);
 	var _ = __webpack_require__(2);
-	var ReactGridLayout = __webpack_require__(15);
+	var ReactGridLayout = __webpack_require__(29);
 
 	var Context = __webpack_require__(4);
 
-	var reactify = __webpack_require__(6);
-	var DataTable = __webpack_require__(7);
-	var BrainRegions = __webpack_require__(8);
-	var SimpleVis = __webpack_require__(9);
-	var Card = __webpack_require__(10);
-	var CardCreationMenu = __webpack_require__(218);
+	var reactify = __webpack_require__(30);
+	var DataTable = __webpack_require__(31);
+	var BrainRegions = __webpack_require__(32);
+	var SimpleVis = __webpack_require__(33);
+	var Card = __webpack_require__(34);
+	var CardCreationMenu = __webpack_require__(35);
 
-	var PCPChart = reactify(__webpack_require__(11));
-	var ScatterChart = __webpack_require__(29).ScatterChart;
+	var PCPChart = reactify(__webpack_require__(36));
+	var ScatterChart = __webpack_require__(37).ScatterChart;
 
 	/**
 	 *  Bootstrap requires
 	 */
-	var BS = __webpack_require__(30);
+	var BS = __webpack_require__(38);
 	var Navbar = BS.Navbar;
 	var Nav = BS.Nav;
 	var NavItem = BS.NavItem;
@@ -154,21 +154,24 @@
 	//	];
 
 		var layout = [
-		    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
-		    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
+	//	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
+	//	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 		];
 
 		var cards = [
-		    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{
-			margins:{top: 20, right: 60, bottom: 60, left: 60},
-			data:scatterData
-		    }},
-		    {key:"table", kind:"table", title: "", config:{}}
+	// 	    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{
+	// 		margins:{top: 20, right: 60, bottom: 60, left: 60},
+	// 		data:scatterData
+	// 	    }}
 		];
+
+		var tables = {};
+		tables[this.props.morphoTable] = {name: this.props.morphoTable, data: []};
 
 		return {
 		    "schema": {attributes:{}},
 		    "morphoTable": this.props.morphoTable,
+		    "tables": tables,
 		    "measuresData": [],
 		    "regionsCondition": null,
 		    "includedRegions": [],
@@ -176,6 +179,7 @@
 		    "cards": cards
 		};
 	    },
+
 	    componentDidMount: function() {
 		var rpc = Context.instance().rpc;
 		var self = this;
@@ -258,11 +262,12 @@
 		rpc.call('ConditionSrv.toggle_category', [this.state.regionsCondition, region]);
 	    },
 
-	    addCard: function() {
-		var Y = _.max(this.state.layout, 'y') + 1;
+	    addCard: function(card) {
+		var Y = Math.max(0, _.max(this.state.layout, 'y')) + 1;
 		var key = "c" + this.state.layout.length
+		card.key = key;
 		this.state.layout.push({x:0, y: Y, w: 5, h: 6, i:key, handle:".card-title"});
-		this.state.cards.push({key:key, kind:"table", title: "", config:{}});
+		this.state.cards.push(card);
 		this.setState({layout:this.state.layout, cards: this.state.cards});
 
 	    },
@@ -271,7 +276,7 @@
 	    render: function(){
 		var self = this;
 
-		console.log("******", this.state);
+		console.log("**** mainApp.state OnRender: ---> ", this.state);
 		var contentWidth = document.getElementById('content').offsetWidth - 20;
 		var rowHeight = 50;
 		
@@ -288,13 +293,23 @@
 		    return rowHeight * height - 60;
 		};
 
-		var scatterCh = [];
+
+		var creationMenuTabs = [
+		    {kind: "table", title: "Data Table", 
+			options: { 
+			    tables:[this.props.morphoTable],
+			    columns: _.map(self.state.schema.attributes, 
+				function(value, key){return {name: key, included: true};}
+			    )
+			}
+		    }
+		];
 
 		return (
 		    React.createElement("div", {className: "mainApp"}, 
 
 		      React.createElement(Navbar, {brand: "Memcover", fixedTop: true}, 
-			React.createElement(ModalTrigger, {modal: React.createElement(CardCreationMenu, {onCreateCard: this.addCard})}, 
+			React.createElement(ModalTrigger, {modal: React.createElement(CardCreationMenu, {tabs: creationMenuTabs, onCreateCard: this.addCard})}, 
 			  React.createElement(Button, {className: "navbar-btn pull-right", bsStyle: "primary"}, 
 			    React.createElement(Glyphicon, {glyph: "plus"}), " Add Card" 
 			  )
@@ -322,7 +337,8 @@
 				     component = (React.createElement(ScatterChart, React.__spread({},  size,  card.config)));
 				     break;
 				 case "table":
-				     var columnNames = _.keys(self.state.schema.attributes);
+				     // var columnNames = _.keys(self.state.schema.attributes);
+				     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
 				     component = (React.createElement(DataTable, React.__spread({},  size,  card.config, {rows: self.state.measuresData, columnNames: columnNames})));
 				     break;
 			     }
@@ -408,7 +424,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(12), __webpack_require__(13), __webpack_require__(14)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
 
 	    var Context = function(server, path, port){
 		var self = this;
@@ -569,24 +585,24 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var timed = __webpack_require__(17);
-		var array = __webpack_require__(18);
-		var flow = __webpack_require__(19);
-		var fold = __webpack_require__(20);
-		var inspect = __webpack_require__(21);
-		var generate = __webpack_require__(22);
-		var progress = __webpack_require__(23);
-		var withThis = __webpack_require__(24);
-		var unhandledRejection = __webpack_require__(25);
-		var TimeoutError = __webpack_require__(26);
+		var timed = __webpack_require__(9);
+		var array = __webpack_require__(10);
+		var flow = __webpack_require__(11);
+		var fold = __webpack_require__(12);
+		var inspect = __webpack_require__(13);
+		var generate = __webpack_require__(14);
+		var progress = __webpack_require__(15);
+		var withThis = __webpack_require__(16);
+		var unhandledRejection = __webpack_require__(17);
+		var TimeoutError = __webpack_require__(18);
 
 		var Promise = [array, flow, fold, generate, progress,
 			inspect, withThis, timed, unhandledRejection]
 			.reduce(function(Promise, feature) {
 				return feature(Promise);
-			}, __webpack_require__(27));
+			}, __webpack_require__(19));
 
-		var apply = __webpack_require__(28)(Promise);
+		var apply = __webpack_require__(20)(Promise);
 
 		// Public API
 
@@ -785,475 +801,11 @@
 
 		return when;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(33));
+	})(__webpack_require__(21));
 
 
 /***/ },
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ChartContainerMixin = __webpack_require__(31);
-
-	module.exports = function(chart){
-	    return React.createClass({mixins : [ChartContainerMixin, chart]});
-	};
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	Object.assign = Object.assign || __webpack_require__(36);
-	var FixedDataTable = __webpack_require__(42);
-	var _ = __webpack_require__(2);
-
-	var Table = FixedDataTable.Table;
-	var Column = FixedDataTable.Column;
-
-
-	module.exports = React.createClass({displayName: "exports",
-	    getInitialState: function() {
-		 
-		var initialColumnWith = (this.props.columnNames.length) ?
-					Math.round(this.props.width / this.props.columnNames.length)
-		                        : 0;
-		var columnWidths = {};
-		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
-		return {
-		    "columnWidths": columnWidths
-		};
-	    },
-	    getDefaultProps: function(){
-		return {
-		    rows: [],
-		    columnNames: []
-		}
-	    },
-	    _rowGetter: function(i) {return this.props.rows[i];},
-	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
-		this.state.columnWidths[dataKey] = newColumnWidth;
-	//	isColumnResizing = false;
-	    },
-	    render: function(){
-		var columnNames = this.props.columnNames;
-		var initialColumnWith = (this.props.columnNames.length) ?
-					Math.round(this.props.width / this.props.columnNames.length)
-		                        : 0;
-		var columnWidths = {};
-		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
-
-		if (this.props.rows.length == 0) return (React.createElement("div", null));
-
-		return (
-		    React.createElement(Table, {
-			    rowHeight: 50, 
-			    rowGetter: this._rowGetter, 
-			    rowsCount: this.props.rows.length, 
-			    width: this.props.width, 
-			    height: this.props.height, 
-			    headerHeight: 50, 
-			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
-
-		      
-			  this.props.columnNames.map(function(name){
-			      return (
-				  React.createElement(Column, {
-				  label: name, 
-				  width: columnWidths[name], 			  
-				  dataKey: name, 
-				  isResizable: false}
-				  )
-			      );
-			  })
-		       
-		    )
-		);
-	    }
-	});
-
-
-
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var _ = __webpack_require__(2);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	    getDefaultProps: function() {
-		return {
-		    includedRegions: ["SUB", "DG", "CA3", "CA1"]
-		};
-	    },
-
-	    componentDidMount: function() {
-		var container = this.refs.container.getDOMNode();
-
-		container.addEventListener("load", function(){
-		    var svg = d3.select(container.contentDocument);
-
-		    this.update(svg, this.props, this.state);
-		}.bind(this));
-	    },
-
-	    shouldComponentUpdate: function(nextProps, nextState) {
-		var container = this.refs.container.getDOMNode();
-		container.setAttribute("width", nextProps.width);
-		container.setAttribute("height", nextProps.height);
-
-		var svg = d3.select(container.contentDocument);
-
-		this.update(svg, nextProps, nextState);
-		// render is not called again so the container is there until
-		// the end.
-		return false;
-	    },
-
-	    update: function(svg, props, state) {
-		var self = this;
-
-		svg.selectAll("path.region")
-		    .datum(function() { return this.dataset; })
-		    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
-		    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d.region);};})
-		    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "#EEE";});
-
-		svg.selectAll("text")
-		    .datum(function() { return this.className; })
-		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
-		
-		props.includedRegions.forEach(function(region){
-		    svg.selectAll("text."+region)
-			.style("fill", "white");
-		});
-	;
-
-	    },
-
-	    render: function(){
-		return (
-	            React.createElement("div", null, 
-		      React.createElement("object", {ref: "container", id: "svgobject", 
-			      type: "image/svg+xml", 
-			      width: this.props.width, 
-			      height: this.props.heght, 
-			      data: "assets/hipo_foto.svg"}
-		      )
-	            )
-		);
-	    }
-	});
-
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var BarChart = __webpack_require__(32).BarChart;
-
-	var Context = __webpack_require__(4);
-
-	// Data is like: [{value:25, label:"P1"},{value:45, label:"P2"}]
-	module.exports = React.createClass({displayName: "exports",
-	    getInitialState: function() {
-		return {
-		    "data": []
-		};
-	    },
-	    componentDidMount: function() {
-		var rpc = Context.instance().rpc;
-		var self = this;
-		var pipeline = [
-		    {$match : {"tint": "NISSL"}},
-		    {$group : {_id: "$patient", value: {$sum: "$cells/volume (mm3)"} } },
-		    {$project : { label: "$_id", value:1 , _id: 0}},
-		    {$sort : { value: -1 } }
-		];
-		rpc.call('TableSrv.aggregate', [this.props.table, pipeline])
-		    .then(function(view) {
-			return rpc.call("TableSrv.get_data", [view, "rows"])
-		    })
-		    .then(function(rows){
-			self.setState({"data": rows});
-		    })
-		    .catch(function(e){console.error(e);});
-	    },
-	    render: function(){
-		return (
-		    React.createElement(BarChart, {
-			    data: this.state.data, 
-			    width: 600, 
-			    height: 200, 
-			    margins: {top: 20, right: 30, bottom: 30, left: 60}, 
-			    fill: '#3182bd', 
-			    title: "Cells/Vol - NISSL"}
-		    )	
-		);
-	    }
-	});
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var _ = __webpack_require__(2);
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	    render: function() {
-		var title = this.props.title;
-
-		/* var child = React.cloneElement(
-		   React.Children.only(this.props.children), 
-		   {width: this.props.width, height: this.props.height}); */
-
-		return (
-		    React.createElement("div", {className: "card", key: this.props.key}, 
-		      React.createElement("h4", null, React.createElement("div", {className: "card-title"}, title)), 
-		      React.createElement("div", {className: "card-content"}, 
-			this.props.children		
-		      )
-		    )
-		);
-	    }
-	});
-
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var d3 = __webpack_require__(16);
-	var _ = __webpack_require__(2);
-
-	module.exports = {
-	    createChart: function(container, props, state){
-		var margin = this.props.margin;
-		var width = this.props.width - margin.left - margin.right;
-		var height = this.props.height - margin.top - margin.bottom;
-
-		var svg = d3.select(container).append("svg")
-		    .attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom)
-		    .attr("class", "pcp")
-		  .append("g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		svg.append("g").attr("class", "foreground");
-	    },
-
-	    cleanChart: function(container, props, state){
-		// unsubscribe things 
-	    },
-
-	    update: function(container, props, state) {
-		if ( !(props.attributes.length && props.data.length)) {
-		    d3.select(container).html('');
-		    this.createChart(container, props, state);
-		    return null
-		};
-		console.log("UPDATE"); 
-		var self = this;
-		var margin = props.margin;
-		var width = props.width - margin.left - margin.right;
-		var height = props.height - margin.top - margin.bottom;
-
-
-		var axis = d3.svg.axis().orient("left");
-		var scales = this._scales(width, height, props.data, props.attributes);
-		var path = this._path(props.attributes, scales);
-		var dragState = {};
-
-
-		var realSvg = d3.select(container).select("svg");
-		realSvg.attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom);
-
-		var svg = d3.select(container).select("svg > g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		// Add foreground lines.
-		var foreground = svg.select("g.foreground");
-		var foregroundLines = foreground.selectAll("path")
-		  .data(props.data, function(d){return d.measure_id;});
-		foregroundLines.enter().append("path");
-		foregroundLines.attr("d", path)
-		    .attr("class", function(d) {return d.patient;})
-		    .attr("title", function(d) {return d.measure_id;});
-		foregroundLines.exit().remove();
-
-		var brushes = this._brushes(scales, props.attributes, props.onBrush, foreground);
-
-		// Add a group element for each trait.
-		var coordinates = svg.selectAll(".coordinate")
-			.data(_.pluck(props.attributes, "name"), function(d){return d;});
-		coordinates.enter().append("g");
-		coordinates.attr("class", "coordinate")
-			.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
-			.call(d3.behavior.drag()
-			      .origin(function(d) { return {x: scales.x(d)}; })
-			      .on("dragstart", this._dragstart(props.attributes, dragState))
-			      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
-			      .on("dragend", this._dragend(scales, props.attributes, width, path))
-			     )
-			.call(function(g) {
-			    // Add an axis and title.
-			    g.append("g")
-				.attr("class", "axis")
-				.each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); })
-			      .append("text")
-				.attr("text-anchor", "middle")
-				.attr("y", -9)
-				.attr("class", "dimension")
-				.text(function(d){return _.capitalize(String(d));});})
-			.call(function(g) {
-			    // Add a brush for each axis.
-			    g.append("g")
-				.attr("class", "brush")
-				.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
-			       .selectAll("rect")
-				.attr("x", -8)
-				.attr("width", 16);});
-		coordinates.exit().remove();
-
-		return null;
-	    },
-
-	    _dragstart: function(attributes, dragState) {
-		return function dragstart(d) {
-		    dragState.i = _.pluck(attributes, "name").indexOf(d);
-		};
-	    },
-
-	    _drag: function(scales, dragState, attributes, foregroundLines, path, g){
-		var x = scales.x;
-		
-		return function drag(d) {
-		    x.range()[dragState.i] = d3.event.x;
-		    attributes.sort(function(a, b) { return x(a.name) - x(b.name); });
-		    g.attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-		    foregroundLines.attr("d", path);
-		};
-	    },
-
-	    _dragend: function(scales, attributes, width, path) {
-		var x = scales.x;
-
-		return function dragend(d) {
-		    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-		    var t = d3.transition().duration(500);
-		    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-		    t.selectAll(".foreground path").attr("d", path);
-		};
-	    },
-
-	    _scales: function(width, height, data, attributes) {
-		var self = this;
-
-		var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-		var y = {};
-
-		function sortRegions (rows) {
-		    return rows.sort(function(a,b){
-			var order = ["DG", "CA3", "CA1", "SUB"];
-			return d3.descending(order.indexOf(a), order.indexOf(b)); 
-		    })
-		}
-
-		attributes.forEach(function(d) {
-		    var name = d.name;
-		    if (d.attribute_type === 'QUANTITATIVE') {
-			y[name] = d3.scale.linear()
-			    .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
-					      , function(p) { return p[name]; }))
-			    .range([height, 0]);
-		    }
-		    else if (d.attribute_type === 'CATEGORICAL') {
-			var domain = d3.set(_.pluck(data, name)).values();
-			domain = (d.name == "region") ? sortRegions(domain) : domain;
-			y[name] = d3.scale.ordinal()
-			    .domain(domain)
-			    .rangePoints([height, 0]);
-		    }
-		});
-
-		return {x: x, y: y};
-	    },
-
-
-	    _brushes: function(scales, attributes, onBrush, foreground) {
-		if (_.isUndefined(onBrush)) return {};
-		var brushes = {};
-		var brush = this._brush(scales, brushes, foreground, onBrush);
-		var brushstart = function() {d3.event.sourceEvent.stopPropagation();};
-		attributes.forEach(function(d) {
-			var name = d.name;
-			if (d.attribute_type === "QUANTITATIVE") {
-			    brushes[name] = d3.svg.brush()
-				.y(scales.y[name])
-				.on("brushstart", brushstart)
-				.on("brush", brush);
-			}
-			else {//TODO: Add CATEGORICAL support
-			    brushes[name] = function(){};
-			    brushes[name].empty = function(){return true;};
-			}
-		});
-		return brushes;
-	    },
-
-	    _brush: function(scales, brushes, foreground, onBrush){
-		var triggerChangeThrottle = _.throttle(onBrush, 30);
-		// Handles a brush event, toggling the display of foreground lines.
-		return function () {
-		    var actives = _.keys(brushes).filter( function(dim) { return !brushes[dim].empty(); });
-		    var extents = _.zipObject(actives, actives.map(function(dim) { return brushes[dim].extent(); }));
-
-		    foreground.selectAll("path")
-			.attr('display', function(d) {
-			    var isInside = actives.every(function(dim) {
-				    //TODO: CATEGORICAL: console.log(extents[dim][0], "<=", d[dim], "&&",  d[dim], "<=" , extents[dim][1]);
-				    return extents[dim][0] <= d[dim] && d[dim] <= extents[dim][1];
-				});
-			    return isInside ? null : 'none';
-			});
-		    triggerChangeThrottle(extents);
-		};
-	    },
-
-	    // Cousure. Returns the path for a given data point.
-	    _path : function (attributes, scales) {
-		var line = d3.svg.line()
-			.defined(function(d){return !isNaN(d[1]);});
-		return function (d) {
-		    return line(_.pluck(attributes, "name")
-				.map(function(a) { return [scales.x(a), scales.y[a](d[a])]; }));  	
-		};
-	    }
-
-	};
-
-
-/***/ },
-/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;// MIT License:
@@ -1453,11 +1005,11 @@
 
 
 /***/ },
-/* 13 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(12)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
 
 	    var WsRpc = function(server, path, port){
 		var self = this;
@@ -1613,10 +1165,10 @@
 
 
 /***/ },
-/* 14 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(12)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
 
 	    var Hub = function(server, port, rpc, gateway){
 		var self = this;
@@ -1726,21 +1278,7 @@
 
 
 /***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(34);
-	module.exports.Responsive = __webpack_require__(35);
-
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = d3;
-
-/***/ },
-/* 17 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1750,8 +1288,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var env = __webpack_require__(37);
-		var TimeoutError = __webpack_require__(26);
+		var env = __webpack_require__(22);
+		var TimeoutError = __webpack_require__(18);
 
 		function setTimeout(f, ms, x, y) {
 			return env.setTimer(function() {
@@ -1820,11 +1358,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 18 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1834,8 +1372,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var state = __webpack_require__(38);
-		var applier = __webpack_require__(28);
+		var state = __webpack_require__(23);
+		var applier = __webpack_require__(20);
 
 		return function array(Promise) {
 
@@ -2115,11 +1653,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 19 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2281,11 +1819,11 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 20 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2314,11 +1852,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 21 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2328,7 +1866,7 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var inspect = __webpack_require__(38).inspect;
+		var inspect = __webpack_require__(23).inspect;
 
 		return function inspection(Promise) {
 
@@ -2340,11 +1878,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 22 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2411,11 +1949,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 23 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2441,11 +1979,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 24 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2484,12 +2022,12 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 
 /***/ },
-/* 25 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2499,8 +2037,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var setTimer = __webpack_require__(37).setTimer;
-		var format = __webpack_require__(39);
+		var setTimer = __webpack_require__(22).setTimer;
+		var format = __webpack_require__(24);
 
 		return function unhandledRejection(Promise) {
 
@@ -2577,11 +2115,11 @@
 		function noop() {}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 26 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2610,10 +2148,10 @@
 
 		return TimeoutError;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 /***/ },
-/* 27 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2623,20 +2161,20 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var makePromise = __webpack_require__(40);
-		var Scheduler = __webpack_require__(41);
-		var async = __webpack_require__(37).asap;
+		var makePromise = __webpack_require__(25);
+		var Scheduler = __webpack_require__(26);
+		var async = __webpack_require__(22).asap;
 
 		return makePromise({
 			scheduler: new Scheduler(async)
 		});
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(33));
+	})(__webpack_require__(21));
 
 
 /***/ },
-/* 28 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2691,997 +2229,20 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 
 
 /***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.ScatterChart = __webpack_require__(43);
-
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _Accordion = __webpack_require__(44);
-
-	var _Accordion2 = _interopRequireDefault(_Accordion);
-
-	var _Affix = __webpack_require__(45);
-
-	var _Affix2 = _interopRequireDefault(_Affix);
-
-	var _AffixMixin = __webpack_require__(46);
-
-	var _AffixMixin2 = _interopRequireDefault(_AffixMixin);
-
-	var _Alert = __webpack_require__(47);
-
-	var _Alert2 = _interopRequireDefault(_Alert);
-
-	var _BootstrapMixin = __webpack_require__(48);
-
-	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
-
-	var _Badge = __webpack_require__(49);
-
-	var _Badge2 = _interopRequireDefault(_Badge);
-
-	var _Button = __webpack_require__(50);
-
-	var _Button2 = _interopRequireDefault(_Button);
-
-	var _ButtonGroup = __webpack_require__(51);
-
-	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
-
-	var _ButtonInput = __webpack_require__(52);
-
-	var _ButtonInput2 = _interopRequireDefault(_ButtonInput);
-
-	var _ButtonToolbar = __webpack_require__(53);
-
-	var _ButtonToolbar2 = _interopRequireDefault(_ButtonToolbar);
-
-	var _CollapsableNav = __webpack_require__(54);
-
-	var _CollapsableNav2 = _interopRequireDefault(_CollapsableNav);
-
-	var _CollapsibleNav = __webpack_require__(55);
-
-	var _CollapsibleNav2 = _interopRequireDefault(_CollapsibleNav);
-
-	var _Carousel = __webpack_require__(56);
-
-	var _Carousel2 = _interopRequireDefault(_Carousel);
-
-	var _CarouselItem = __webpack_require__(57);
-
-	var _CarouselItem2 = _interopRequireDefault(_CarouselItem);
-
-	var _Col = __webpack_require__(58);
-
-	var _Col2 = _interopRequireDefault(_Col);
-
-	var _CollapsableMixin = __webpack_require__(59);
-
-	var _CollapsableMixin2 = _interopRequireDefault(_CollapsableMixin);
-
-	var _CollapsibleMixin = __webpack_require__(60);
-
-	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
-
-	var _DropdownButton = __webpack_require__(61);
-
-	var _DropdownButton2 = _interopRequireDefault(_DropdownButton);
-
-	var _DropdownMenu = __webpack_require__(62);
-
-	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
-
-	var _DropdownStateMixin = __webpack_require__(63);
-
-	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
-
-	var _FadeMixin = __webpack_require__(64);
-
-	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
-
-	var _Glyphicon = __webpack_require__(65);
-
-	var _Glyphicon2 = _interopRequireDefault(_Glyphicon);
-
-	var _Grid = __webpack_require__(66);
-
-	var _Grid2 = _interopRequireDefault(_Grid);
-
-	var _Input = __webpack_require__(67);
-
-	var _Input2 = _interopRequireDefault(_Input);
-
-	var _Interpolate = __webpack_require__(68);
-
-	var _Interpolate2 = _interopRequireDefault(_Interpolate);
-
-	var _Jumbotron = __webpack_require__(69);
-
-	var _Jumbotron2 = _interopRequireDefault(_Jumbotron);
-
-	var _Label = __webpack_require__(70);
-
-	var _Label2 = _interopRequireDefault(_Label);
-
-	var _ListGroup = __webpack_require__(71);
-
-	var _ListGroup2 = _interopRequireDefault(_ListGroup);
-
-	var _ListGroupItem = __webpack_require__(72);
-
-	var _ListGroupItem2 = _interopRequireDefault(_ListGroupItem);
-
-	var _MenuItem = __webpack_require__(73);
-
-	var _MenuItem2 = _interopRequireDefault(_MenuItem);
-
-	var _Modal = __webpack_require__(74);
-
-	var _Modal2 = _interopRequireDefault(_Modal);
-
-	var _Nav = __webpack_require__(75);
-
-	var _Nav2 = _interopRequireDefault(_Nav);
-
-	var _Navbar = __webpack_require__(76);
-
-	var _Navbar2 = _interopRequireDefault(_Navbar);
-
-	var _NavItem = __webpack_require__(77);
-
-	var _NavItem2 = _interopRequireDefault(_NavItem);
-
-	var _ModalTrigger = __webpack_require__(78);
-
-	var _ModalTrigger2 = _interopRequireDefault(_ModalTrigger);
-
-	var _OverlayTrigger = __webpack_require__(79);
-
-	var _OverlayTrigger2 = _interopRequireDefault(_OverlayTrigger);
-
-	var _OverlayMixin = __webpack_require__(80);
-
-	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
-
-	var _PageHeader = __webpack_require__(81);
-
-	var _PageHeader2 = _interopRequireDefault(_PageHeader);
-
-	var _Panel = __webpack_require__(82);
-
-	var _Panel2 = _interopRequireDefault(_Panel);
-
-	var _PanelGroup = __webpack_require__(83);
-
-	var _PanelGroup2 = _interopRequireDefault(_PanelGroup);
-
-	var _PageItem = __webpack_require__(84);
-
-	var _PageItem2 = _interopRequireDefault(_PageItem);
-
-	var _Pager = __webpack_require__(85);
-
-	var _Pager2 = _interopRequireDefault(_Pager);
-
-	var _Popover = __webpack_require__(86);
-
-	var _Popover2 = _interopRequireDefault(_Popover);
-
-	var _ProgressBar = __webpack_require__(87);
-
-	var _ProgressBar2 = _interopRequireDefault(_ProgressBar);
-
-	var _Row = __webpack_require__(88);
-
-	var _Row2 = _interopRequireDefault(_Row);
-
-	var _SplitButton = __webpack_require__(89);
-
-	var _SplitButton2 = _interopRequireDefault(_SplitButton);
-
-	var _SubNav = __webpack_require__(90);
-
-	var _SubNav2 = _interopRequireDefault(_SubNav);
-
-	var _TabbedArea = __webpack_require__(91);
-
-	var _TabbedArea2 = _interopRequireDefault(_TabbedArea);
-
-	var _Table = __webpack_require__(92);
-
-	var _Table2 = _interopRequireDefault(_Table);
-
-	var _TabPane = __webpack_require__(93);
-
-	var _TabPane2 = _interopRequireDefault(_TabPane);
-
-	var _Thumbnail = __webpack_require__(94);
-
-	var _Thumbnail2 = _interopRequireDefault(_Thumbnail);
-
-	var _Tooltip = __webpack_require__(95);
-
-	var _Tooltip2 = _interopRequireDefault(_Tooltip);
-
-	var _Well = __webpack_require__(96);
-
-	var _Well2 = _interopRequireDefault(_Well);
-
-	var _styleMaps = __webpack_require__(97);
-
-	var _styleMaps2 = _interopRequireDefault(_styleMaps);
-
-	exports['default'] = {
-	  Accordion: _Accordion2['default'],
-	  Affix: _Affix2['default'],
-	  AffixMixin: _AffixMixin2['default'],
-	  Alert: _Alert2['default'],
-	  BootstrapMixin: _BootstrapMixin2['default'],
-	  Badge: _Badge2['default'],
-	  Button: _Button2['default'],
-	  ButtonGroup: _ButtonGroup2['default'],
-	  ButtonInput: _ButtonInput2['default'],
-	  ButtonToolbar: _ButtonToolbar2['default'],
-	  CollapsableNav: _CollapsableNav2['default'],
-	  CollapsibleNav: _CollapsibleNav2['default'],
-	  Carousel: _Carousel2['default'],
-	  CarouselItem: _CarouselItem2['default'],
-	  Col: _Col2['default'],
-	  CollapsableMixin: _CollapsableMixin2['default'],
-	  CollapsibleMixin: _CollapsibleMixin2['default'],
-	  DropdownButton: _DropdownButton2['default'],
-	  DropdownMenu: _DropdownMenu2['default'],
-	  DropdownStateMixin: _DropdownStateMixin2['default'],
-	  FadeMixin: _FadeMixin2['default'],
-	  Glyphicon: _Glyphicon2['default'],
-	  Grid: _Grid2['default'],
-	  Input: _Input2['default'],
-	  Interpolate: _Interpolate2['default'],
-	  Jumbotron: _Jumbotron2['default'],
-	  Label: _Label2['default'],
-	  ListGroup: _ListGroup2['default'],
-	  ListGroupItem: _ListGroupItem2['default'],
-	  MenuItem: _MenuItem2['default'],
-	  Modal: _Modal2['default'],
-	  Nav: _Nav2['default'],
-	  Navbar: _Navbar2['default'],
-	  NavItem: _NavItem2['default'],
-	  ModalTrigger: _ModalTrigger2['default'],
-	  OverlayTrigger: _OverlayTrigger2['default'],
-	  OverlayMixin: _OverlayMixin2['default'],
-	  PageHeader: _PageHeader2['default'],
-	  Panel: _Panel2['default'],
-	  PanelGroup: _PanelGroup2['default'],
-	  PageItem: _PageItem2['default'],
-	  Pager: _Pager2['default'],
-	  Popover: _Popover2['default'],
-	  ProgressBar: _ProgressBar2['default'],
-	  Row: _Row2['default'],
-	  SplitButton: _SplitButton2['default'],
-	  SubNav: _SubNav2['default'],
-	  TabbedArea: _TabbedArea2['default'],
-	  Table: _Table2['default'],
-	  TabPane: _TabPane2['default'],
-	  Thumbnail: _Thumbnail2['default'],
-	  Tooltip: _Tooltip2['default'],
-	  Well: _Well2['default'],
-	  styleMaps: _styleMaps2['default']
-	};
-	module.exports = exports['default'];
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-
-	module.exports = {
-	    getDefaultProps: function() {
-		var margin = {top: 20, right: 10, bottom: 20, left: 10};
-		return {
-		    margin: margin
-		};
-	    },
-
-	    componentDidMount: function() {
-		var container = this.refs.container.getDOMNode();
-		this.createChart(container, this.props, this.state);
-		this.update(container, this.props, this.state);
-	    },
-
-	    componentWillUnmount: function() {
-		var container = this.refs.container.getDOMNode();
-		this.cleanChart(container, this.props, this.state);
-	    },
-
-	    shouldComponentUpdate: function(nextProps, nextState) {
-		var container = this.refs.container.getDOMNode();
-		this.update(container, nextProps, nextState);
-		// render is not called again so the container is there until
-		// the end.
-		return false;
-	    },
-
-	    render: function(){
-		return (
-	            React.createElement("div", {ref: "container"})
-		);
-	    }
-	};
-
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.BarChart = __webpack_require__(98);
-
-
-/***/ },
-/* 33 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var React = __webpack_require__(1);
-	var GridItem = __webpack_require__(100);
-	var utils = __webpack_require__(101);
-	var PureDeepRenderMixin = __webpack_require__(102);
-	var WidthListeningMixin = __webpack_require__(103);
-
-	/**
-	 * A reactive, fluid grid layout with draggable, resizable components.
-	 */
-	var ReactGridLayout = React.createClass({
-	  displayName: 'ReactGridLayout',
-
-	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
-
-	  propTypes: {
-	    //
-	    // Basic props
-	    //
-
-	    // If true, the container height swells and contracts to fit contents
-	    autoSize: React.PropTypes.bool,
-	    // # of cols.
-	    cols: React.PropTypes.number,
-
-	    // A selector that will not be draggable.
-	    draggableCancel: React.PropTypes.string,
-	    // A selector for the draggable handler
-	    draggableHandle: React.PropTypes.string,
-
-	    // layout is an array of object with the format:
-	    // {x: Number, y: Number, w: Number, h: Number}
-	    layout: function layout(props, propName, componentName) {
-	      var layout = props.layout;
-	      // I hope you're setting the _grid property on the grid items
-	      if (layout === undefined) {
-	        return;
-	      }utils.validateLayout(layout, 'layout');
-	    },
-
-	    layouts: function layouts(props, propName, componentName) {
-	      if (props.layouts) {
-	        throw new Error('ReactGridLayout does not use `layouts`: Use ReactGridLayout.Responsive.');
-	      }
-	    },
-
-	    // margin between items [x, y] in px
-	    margin: React.PropTypes.array,
-	    // Rows have a static height, but you can change this based on breakpoints if you like
-	    rowHeight: React.PropTypes.number,
-
-	    //
-	    // Flags
-	    //
-	    isDraggable: React.PropTypes.bool,
-	    isResizable: React.PropTypes.bool,
-	    // Use CSS transforms instead of top/left
-	    useCSSTransforms: React.PropTypes.bool,
-
-	    //
-	    // Callbacks
-	    //
-
-	    // Callback so you can save the layout.
-	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
-	    onLayoutChange: React.PropTypes.func,
-
-	    // Calls when drag starts. Callback is of the signature (layout, oldItem, newItem, placeholder, e).
-	    // All callbacks below have the same signature. 'start' and 'stop' callbacks omit the 'placeholder'.
-	    onDragStart: React.PropTypes.func,
-	    // Calls on each drag movement.
-	    onDrag: React.PropTypes.func,
-	    // Calls when drag is complete.
-	    onDragStop: React.PropTypes.func,
-	    //Calls when resize starts.
-	    onResizeStart: React.PropTypes.func,
-	    // Calls when resize movement happens.
-	    onResize: React.PropTypes.func,
-	    // Calls when resize is complete.
-	    onResizeStop: React.PropTypes.func,
-
-	    //
-	    // Other validations
-	    //
-
-	    // Children must not have duplicate keys.
-	    children: function children(props, propName, componentName) {
-	      React.PropTypes.node.apply(this, arguments);
-	      var children = props[propName];
-
-	      // Check children keys for duplicates. Throw if found.
-	      var keys = {};
-	      React.Children.forEach(children, function (child, i, list) {
-	        if (keys[child.key]) {
-	          throw new Error('Duplicate child key found! This will cause problems in ReactGridLayout.');
-	        }
-	        keys[child.key] = true;
-	      });
-	    }
-	  },
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      autoSize: true,
-	      cols: 12,
-	      rowHeight: 150,
-	      layout: [],
-	      margin: [10, 10],
-	      isDraggable: true,
-	      isResizable: true,
-	      useCSSTransforms: true,
-	      onLayoutChange: function onLayoutChange() {},
-	      onDragStart: function onDragStart() {},
-	      onDrag: function onDrag() {},
-	      onDragStop: function onDragStop() {},
-	      onResizeStart: function onResizeStart() {},
-	      onResize: function onResize() {},
-	      onResizeStop: function onResizeStop() {}
-	    };
-	  },
-
-	  getInitialState: function getInitialState() {
-	    return {
-	      activeDrag: null,
-	      isMounted: false,
-	      layout: utils.synchronizeLayoutWithChildren(this.props.layout, this.props.children, this.props.cols),
-	      width: this.props.initialWidth
-	    };
-	  },
-
-	  componentDidMount: function componentDidMount() {
-	    // Call back with layout on mount. This should be done after correcting the layout width
-	    // to ensure we don't rerender with the wrong width.
-	    this.props.onLayoutChange(this.state.layout);
-	    this.setState({ isMounted: true });
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // This allows you to set the width manually if you like.
-	    // Use manual width changes in combination with `listenToWindowResize: false`
-	    if (nextProps.width !== this.props.width) this.onWidthChange(nextProps.width);
-
-	    // If children change, regenerate the layout.
-	    if (nextProps.children.length !== this.props.children.length) {
-	      this.setState({
-	        layout: utils.synchronizeLayoutWithChildren(this.state.layout, nextProps.children, nextProps.cols)
-	      });
-	    }
-
-	    // Allow parent to set layout directly.
-	    if (nextProps.layout && JSON.stringify(nextProps.layout) !== JSON.stringify(this.state.layout)) {
-	      this.setState({
-	        layout: utils.synchronizeLayoutWithChildren(nextProps.layout, nextProps.children, nextProps.cols)
-	      });
-	    }
-	  },
-
-	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
-	    // Call back so we can store the layout
-	    // Do it only when a resize/drag is not active, otherwise there are way too many callbacks
-	    if (this.state.layout !== prevState.layout && !this.state.activeDrag) {
-	      this.props.onLayoutChange(this.state.layout, this.state.layouts);
-	    }
-	  },
-
-	  /**
-	   * Calculates a pixel value for the container.
-	   * @return {String} Container height in pixels.
-	   */
-	  containerHeight: function containerHeight() {
-	    if (!this.props.autoSize) {
-	      return;
-	    }return utils.bottom(this.state.layout) * this.props.rowHeight + this.props.margin[1] + 'px';
-	  },
-
-	  /**
-	   * When the width changes, save it to state. This helps with left/width calculations.
-	   */
-	  onWidthChange: function onWidthChange(width) {
-	    this.setState({ width: width });
-	  },
-
-	  /**
-	   * When dragging starts
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDragStart: function onDragStart(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-
-	    // No need to clone, `l` hasn't changed.
-	    this.props.onDragStart(layout, l, l, null, e);
-	  },
-	  /**
-	   * Each drag movement create a new dragelement and move the element to the dragged location
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDrag: function onDrag(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    // Clone layout item so we can pass it to the callback.
-	    var oldL = utils.clone(l);
-
-	    // Create placeholder (display only)
-	    var placeholder = {
-	      w: l.w, h: l.h, x: l.x, y: l.y, placeholder: true, i: i
-	    };
-
-	    // Move the element to the dragged location.
-	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
-
-	    this.props.onDrag(layout, oldL, l, placeholder, e);
-
-	    this.setState({
-	      layout: utils.compact(layout),
-	      activeDrag: placeholder
-	    });
-	  },
-
-	  /**
-	   * When dragging stops, figure out which position the element is closest to and update its x and y.
-	   * @param  {Number} i Index of the child.
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDragStop: function onDragStop(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    // Move the element here
-	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
-
-	    this.props.onDragStop(layout, oldL, l, null, e);
-
-	    // Set state
-	    this.setState({ layout: utils.compact(layout), activeDrag: null });
-	  },
-
-	  onResizeStart: function onResizeStart(i, w, h, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-
-	    // No need to clone, item hasn't changed
-	    this.props.onResizeStart(layout, l, l, null, e);
-	  },
-
-	  onResize: function onResize(i, w, h, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    // Set new width and height.
-	    l.w = w;
-	    l.h = h;
-
-	    // Create placeholder element (display only)
-	    var placeholder = {
-	      w: w, h: h, x: l.x, y: l.y, placeholder: true, i: i
-	    };
-
-	    this.props.onResize(layout, oldL, l, placeholder, e);
-
-	    // Re-compact the layout and set the drag placeholder.
-	    this.setState({ layout: utils.compact(layout), activeDrag: placeholder });
-	  },
-
-	  onResizeStop: function onResizeStop(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    this.props.onResizeStop(layout, oldL, l, null, e);
-
-	    this.setState({ activeDrag: null, layout: utils.compact(layout) });
-	  },
-
-	  /**
-	   * Create a placeholder object.
-	   * @return {Element} Placeholder div.
-	   */
-	  placeholder: function placeholder() {
-	    if (!this.state.activeDrag) {
-	      return '';
-	    } // {...this.state.activeDrag} is pretty slow, actually
-	    return React.createElement(
-	      GridItem,
-	      {
-	        w: this.state.activeDrag.w,
-	        h: this.state.activeDrag.h,
-	        x: this.state.activeDrag.x,
-	        y: this.state.activeDrag.y,
-	        i: this.state.activeDrag.i,
-	        isPlaceholder: true,
-	        className: 'react-grid-placeholder',
-	        containerWidth: this.state.width,
-	        cols: this.props.cols,
-	        margin: this.props.margin,
-	        rowHeight: this.props.rowHeight,
-	        isDraggable: false,
-	        isResizable: false,
-	        useCSSTransforms: this.props.useCSSTransforms
-	      },
-	      React.createElement('div', null)
-	    );
-	  },
-
-	  /**
-	   * Given a grid item, set its style attributes & surround in a <Draggable>.
-	   * @param  {Element} child React element.
-	   * @param  {Number}  i     Index of element.
-	   * @return {Element}       Element wrapped in draggable and properly placed.
-	   */
-	  processGridItem: function processGridItem(child) {
-	    var i = child.key;
-	    var l = utils.getLayoutItem(this.state.layout, i);
-
-	    // watchStart property tells Draggable to react to changes in the start param
-	    // Must be turned off on the item we're dragging as the changes in `activeDrag` cause rerenders
-	    var drag = this.state.activeDrag;
-	    var moveOnStartChange = drag && drag.i === i ? false : true;
-
-	    // Parse 'static'. Any properties defined directly on the grid item will take precedence.
-	    var draggable, resizable;
-	    if (l['static'] || this.props.isDraggable === false) draggable = false;
-	    if (l['static'] || this.props.isResizable === false) resizable = false;
-
-	    return React.createElement(
-	      GridItem,
-	      _extends({
-	        containerWidth: this.state.width,
-	        cols: this.props.cols,
-	        margin: this.props.margin,
-	        rowHeight: this.props.rowHeight,
-	        moveOnStartChange: moveOnStartChange,
-	        cancel: this.props.draggableCancel,
-	        handle: this.props.draggableHandle,
-	        onDragStop: this.onDragStop,
-	        onDragStart: this.onDragStart,
-	        onDrag: this.onDrag,
-	        onResizeStart: this.onResizeStart,
-	        onResize: this.onResize,
-	        onResizeStop: this.onResizeStop,
-	        isDraggable: draggable,
-	        isResizable: resizable,
-	        useCSSTransforms: this.props.useCSSTransforms && this.state.isMounted,
-	        usePercentages: !this.state.isMounted
-	      }, l),
-	      child
-	    );
-	  },
-
-	  render: function render() {
-	    // Calculate classname
-	    var _props = this.props;
-	    var className = _props.className;
-
-	    var props = _objectWithoutProperties(_props, ['className']);
-
-	    className = 'react-grid-layout ' + (className || '');
-
-	    return React.createElement(
-	      'div',
-	      _extends({}, props, { className: className, style: { height: this.containerHeight() } }),
-	      React.Children.map(this.props.children, this.processGridItem),
-	      this.placeholder()
-	    );
-	  }
-	});
-
-	module.exports = ReactGridLayout;
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var React = __webpack_require__(1);
-	var utils = __webpack_require__(101);
-	var responsiveUtils = __webpack_require__(104);
-	var PureDeepRenderMixin = __webpack_require__(102);
-	var WidthListeningMixin = __webpack_require__(103);
-	var ReactGridLayout = __webpack_require__(34);
-
-	/**
-	 * A wrapper around ReactGridLayout to support responsive breakpoints.
-	 */
-	var ResponsiveReactGridLayout = React.createClass({
-	  displayName: 'ResponsiveReactGridLayout',
-
-	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
-
-	  propTypes: {
-	    //
-	    // Basic props
-	    //
-
-	    // Optional, but if you are managing width yourself you may want to set the breakpoint
-	    // yourself as well.
-	    breakpoint: React.PropTypes.string,
-
-	    // {name: pxVal}, e.g. {lg: 1200, md: 996, sm: 768, xs: 480}
-	    breakpoints: React.PropTypes.object,
-
-	    // # of cols. This is a breakpoint -> cols map
-	    cols: React.PropTypes.object,
-
-	    // layouts is an object mapping breakpoints to layouts.
-	    // e.g. {lg: Layout, md: Layout, ...}
-	    layouts: function layouts(props, propName, componentName) {
-	      React.PropTypes.object.isRequired.apply(this, arguments);
-
-	      var layouts = props.layouts;
-	      Object.keys(layouts).map(function (k) {
-	        utils.validateLayout(layouts[k], 'layouts.' + k);
-	      });
-	    },
-
-	    //
-	    // Callbacks
-	    //
-
-	    // Calls back with breakpoint and new # cols
-	    onBreakpointChange: React.PropTypes.func,
-
-	    // Callback so you can save the layout.
-	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
-	    onLayoutChange: React.PropTypes.func
-	  },
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-	      cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
-	      layouts: {},
-	      onBreakpointChange: function onBreakpointChange() {},
-	      onLayoutChange: function onLayoutChange() {}
-	    };
-	  },
-
-	  getInitialState: function getInitialState() {
-	    var breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, this.props.initialWidth);
-	    var cols = responsiveUtils.getColsFromBreakpoint(breakpoint, this.props.cols);
-
-	    // Get the initial layout. This can tricky; we try to generate one however possible if one doesn't exist
-	    // for this layout.
-	    var initialLayout = responsiveUtils.findOrGenerateResponsiveLayout(this.props.layouts, this.props.breakpoints, breakpoint, breakpoint, cols);
-
-	    return {
-	      layout: initialLayout,
-	      // storage for layouts obsoleted by breakpoints
-	      layouts: this.props.layouts || {},
-	      breakpoint: breakpoint,
-	      cols: cols,
-	      width: this.props.initialWidth
-	    };
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // This allows you to set the width manually if you like.
-	    // Use manual width changes in combination with `listenToWindowResize: false`
-	    if (nextProps.width) this.onWidthChange(nextProps.width);
-
-	    // Allow parent to set breakpoint directly.
-	    if (nextProps.breakpoint !== this.props.breakpoint) {
-	      this.onWidthChange(this.state.width);
-	    }
-
-	    // Allow parent to set layouts directly.
-	    if (nextProps.layouts && nextProps.layouts !== this.state.layouts) {
-	      // Since we're setting an entirely new layout object, we must generate a new responsive layout
-	      // if one does not exist.
-	      var newLayout = responsiveUtils.findOrGenerateResponsiveLayout(nextProps.layouts, nextProps.breakpoints, this.state.breakpoint, this.state.breakpoint, this.state.cols);
-
-	      this.setState({
-	        layouts: nextProps.layouts,
-	        layout: newLayout
-	      });
-	    }
-	  },
-
-	  /**
-	   * Bubble this up, add `layouts` object.
-	   * @param  {Array} layout Layout from inner Grid.
-	   */
-	  onLayoutChange: function onLayoutChange(layout) {
-	    this.state.layouts[this.state.breakpoint] = layout;
-	    this.setState({ layout: layout, layouts: this.state.layouts });
-	    this.props.onLayoutChange(layout, this.state.layouts);
-	  },
-
-	  /**
-	   * When the width changes work through breakpoints and reset state with the new width & breakpoint.
-	   * Width changes are necessary to figure out the widget widths.
-	   */
-	  onWidthChange: function onWidthChange(width) {
-	    // Set new breakpoint
-	    var newState = { width: width };
-	    newState.breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, newState.width);
-	    newState.cols = responsiveUtils.getColsFromBreakpoint(newState.breakpoint, this.props.cols);
-
-	    // Breakpoint change
-	    if (newState.cols !== this.state.cols) {
-
-	      // Store the current layout
-	      newState.layouts = this.state.layouts;
-	      newState.layouts[this.state.breakpoint] = JSON.parse(JSON.stringify(this.state.layout));
-
-	      // Find or generate a new one.
-	      newState.layout = responsiveUtils.findOrGenerateResponsiveLayout(newState.layouts, this.props.breakpoints, newState.breakpoint, this.state.breakpoint, newState.cols);
-
-	      // This adds missing items.
-	      newState.layout = utils.synchronizeLayoutWithChildren(newState.layout, this.props.children, newState.cols);
-
-	      // Store this new layout as well.
-	      newState.layouts[newState.breakpoint] = newState.layout;
-
-	      this.props.onBreakpointChange(newState.breakpoint, newState.cols);
-	    }
-
-	    this.setState(newState);
-	  },
-
-	  render: function render() {
-	    // Don't pass responsive props to RGL.
-	    /*jshint unused:false*/
-	    var _props = this.props;
-	    var layouts = _props.layouts;
-	    var onBreakpointChange = _props.onBreakpointChange;
-	    var breakpoints = _props.breakpoints;
-
-	    var props = _objectWithoutProperties(_props, ['layouts', 'onBreakpointChange', 'breakpoints']);
-
-	    return React.createElement(
-	      ReactGridLayout,
-	      _extends({}, props, {
-	        layout: this.state.layout,
-	        cols: this.state.cols,
-	        listenToWindowResize: false,
-	        onLayoutChange: this.onLayoutChange,
-	        width: this.state.width }),
-	      this.props.children
-	    );
-	  }
-	});
-
-	module.exports = ResponsiveReactGridLayout;
-
-/***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	function ToObject(val) {
-		if (val == null) {
-			throw new TypeError('Object.assign cannot be called with null or undefined');
-		}
-
-		return Object(val);
-	}
-
-	module.exports = Object.assign || function (target, source) {
-		var from;
-		var keys;
-		var to = ToObject(target);
-
-		for (var s = 1; s < arguments.length; s++) {
-			from = arguments[s];
-			keys = Object.keys(Object(from));
-
-			for (var i = 0; i < keys.length; i++) {
-				to[keys[i]] = from[keys[i]];
-			}
-		}
-
-		return to;
-	};
-
-
-/***/ },
-/* 37 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -3715,7 +2276,7 @@
 
 		} else if (!capturedSetTimeout) { // vert.x
 			var vertxRequire = require;
-			var vertx = __webpack_require__(99);
+			var vertx = __webpack_require__(27);
 			setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 			clearTimer = vertx.cancelTimer;
 			asap = vertx.runOnLoop || vertx.runOnContext;
@@ -3756,12 +2317,12 @@
 			};
 		}
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 38 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -3798,11 +2359,11 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 39 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -3860,11 +2421,11 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
 
 /***/ },
-/* 40 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -4793,12 +3354,12 @@
 			return Promise;
 		};
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 41 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -4880,33 +3441,1660 @@
 		return Scheduler;
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(33)));
+	}(__webpack_require__(21)));
 
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* (ignored) */
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// shim for using process in browser
+
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    draining = true;
+	    var currentQueue;
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        var i = -1;
+	        while (++i < len) {
+	            currentQueue[i]();
+	        }
+	        len = queue.length;
+	    }
+	    draining = false;
+	}
+	process.nextTick = function (fun) {
+	    queue.push(fun);
+	    if (!draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
+
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(40);
+	module.exports.Responsive = __webpack_require__(41);
+
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ChartContainerMixin = __webpack_require__(42);
+
+	module.exports = function(chart){
+	    return React.createClass({mixins : [ChartContainerMixin, chart]});
+	};
+
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	Object.assign = Object.assign || __webpack_require__(99);
+	var FixedDataTable = __webpack_require__(100);
+	var _ = __webpack_require__(2);
+
+	var Table = FixedDataTable.Table;
+	var Column = FixedDataTable.Column;
+
+
+	module.exports = React.createClass({displayName: "exports",
+	    getInitialState: function() {
+		 
+		var initialColumnWith = (this.props.columnNames.length) ?
+					Math.round(this.props.width / this.props.columnNames.length)
+		                        : 0;
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+		return {
+		    "columnWidths": columnWidths
+		};
+	    },
+	    getDefaultProps: function(){
+		return {
+		    rows: [],
+		    columnNames: []
+		}
+	    },
+	    _rowGetter: function(i) {return this.props.rows[i];},
+	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
+		this.state.columnWidths[dataKey] = newColumnWidth;
+	//	isColumnResizing = false;
+	    },
+	    render: function(){
+		var columnNames = this.props.columnNames;
+		var initialColumnWith = (this.props.columnNames.length) ?
+					Math.round(this.props.width / this.props.columnNames.length)
+		                        : 0;
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+
+		if (this.props.rows.length == 0) return (React.createElement("div", null));
+
+		return (
+		    React.createElement(Table, {
+			    rowHeight: 50, 
+			    rowGetter: this._rowGetter, 
+			    rowsCount: this.props.rows.length, 
+			    width: this.props.width, 
+			    height: this.props.height, 
+			    headerHeight: 50, 
+			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
+
+		      
+			  this.props.columnNames.map(function(name){
+			      return (
+				  React.createElement(Column, {
+				  label: name, 
+				  width: columnWidths[name], 			  
+				  dataKey: name, 
+				  isResizable: false}
+				  )
+			      );
+			  })
+		       
+		    )
+		);
+	    }
+	});
+
+
+
+
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+	var _ = __webpack_require__(2);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	    getDefaultProps: function() {
+		return {
+		    includedRegions: ["SUB", "DG", "CA3", "CA1"]
+		};
+	    },
+
+	    componentDidMount: function() {
+		var container = this.refs.container.getDOMNode();
+
+		container.addEventListener("load", function(){
+		    var svg = d3.select(container.contentDocument);
+
+		    this.update(svg, this.props, this.state);
+		}.bind(this));
+	    },
+
+	    shouldComponentUpdate: function(nextProps, nextState) {
+		var container = this.refs.container.getDOMNode();
+		container.setAttribute("width", nextProps.width);
+		container.setAttribute("height", nextProps.height);
+
+		var svg = d3.select(container.contentDocument);
+
+		this.update(svg, nextProps, nextState);
+		// render is not called again so the container is there until
+		// the end.
+		return false;
+	    },
+
+	    update: function(svg, props, state) {
+		var self = this;
+
+		svg.selectAll("path.region")
+		    .datum(function() { return this.dataset; })
+		    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
+		    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d.region);};})
+		    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "#EEE";});
+
+		svg.selectAll("text")
+		    .datum(function() { return this.className; })
+		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
+		
+		props.includedRegions.forEach(function(region){
+		    svg.selectAll("text."+region)
+			.style("fill", "white");
+		});
+	;
+
+	    },
+
+	    render: function(){
+		return (
+	            React.createElement("div", null, 
+		      React.createElement("object", {ref: "container", id: "svgobject", 
+			      type: "image/svg+xml", 
+			      width: this.props.width, 
+			      height: this.props.heght, 
+			      data: "assets/hipo_foto.svg"}
+		      )
+	            )
+		);
+	    }
+	});
+
+
+/***/ },
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var BarChart = __webpack_require__(43).BarChart;
+
+	var Context = __webpack_require__(4);
+
+	// Data is like: [{value:25, label:"P1"},{value:45, label:"P2"}]
+	module.exports = React.createClass({displayName: "exports",
+	    getInitialState: function() {
+		return {
+		    "data": []
+		};
+	    },
+	    componentDidMount: function() {
+		var rpc = Context.instance().rpc;
+		var self = this;
+		var pipeline = [
+		    {$match : {"tint": "NISSL"}},
+		    {$group : {_id: "$patient", value: {$sum: "$cells/volume (mm3)"} } },
+		    {$project : { label: "$_id", value:1 , _id: 0}},
+		    {$sort : { value: -1 } }
+		];
+		rpc.call('TableSrv.aggregate', [this.props.table, pipeline])
+		    .then(function(view) {
+			return rpc.call("TableSrv.get_data", [view, "rows"])
+		    })
+		    .then(function(rows){
+			self.setState({"data": rows});
+		    })
+		    .catch(function(e){console.error(e);});
+	    },
+	    render: function(){
+		return (
+		    React.createElement(BarChart, {
+			    data: this.state.data, 
+			    width: 600, 
+			    height: 200, 
+			    margins: {top: 20, right: 30, bottom: 30, left: 60}, 
+			    fill: '#3182bd', 
+			    title: "Cells/Vol - NISSL"}
+		    )	
+		);
+	    }
+	});
+
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var _ = __webpack_require__(2);
+
+
+	module.exports = React.createClass({displayName: "exports",
+
+	    render: function() {
+		var title = this.props.title;
+
+		/* var child = React.cloneElement(
+		   React.Children.only(this.props.children), 
+		   {width: this.props.width, height: this.props.height}); */
+
+		return (
+		    React.createElement("div", {className: "card", key: this.props.key}, 
+		      React.createElement("h4", null, React.createElement("div", {className: "card-title"}, title)), 
+		      React.createElement("div", {className: "card-content"}, 
+			this.props.children		
+		      )
+		    )
+		);
+	    }
+	});
+
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var _ = __webpack_require__(2);
+
+	/**
+	 *  Bootstrap requires
+	 */
+	var BS = __webpack_require__(38);
+	var Button = BS.Button;
+	var Modal = BS.Modal;
+	var TabbedArea = BS.TabbedArea;
+	var TabPane = BS.TabPane;
+	var Input = BS.Input;
+
+
+	var CardCreationMenu = React.createClass({displayName: "CardCreationMenu",
+	    getInitialState: function() {
+		return {
+		    activeTab: "table"
+		};
+	    },
+
+	    handleCreateCard: function() {
+		var card = null;
+
+		var config = this.refs[this.state.activeTab].getConfig();
+		switch (this.state.activeTab) {
+		    case "table":
+			card = {kind:"table", title: config.table, config: config}
+			break;
+		}
+
+		this.props.onRequestHide();
+		this.props.onCreateCard(card);
+	    },
+
+	    handleSelectTab: function(activeTab) {
+		this.setState({activeTab: activeTab});
+	    },
+
+	    render: function(){ 
+		var tabs = this.props.tabs
+
+		return (
+		    React.createElement(Modal, React.__spread({},  this.props, {bsSize: "large", title: "Select a card to be added", animation: true}), 
+		      React.createElement("div", {className: "modal-body"}, 
+			
+			React.createElement(TabbedArea, {activeKey: this.state.activeTab, onSelect: this.handleSelectTab}, 
+			  
+			      tabs.map(function(tab) {
+				  var tabNode = null;
+				  switch (tab.kind) {
+				      case "table":
+					  tabNode = React.createElement(DataTableMenu, {ref: tab.kind, options: tab.options});
+					  break;
+				  }
+				  return (
+				      React.createElement(TabPane, {eventKey: tab.kind, tab: tab.title}, 
+					tabNode
+				      )			  
+				  );
+			      })
+			  
+			)
+			
+		      ), 
+		      React.createElement("div", {className: "modal-footer"}, 
+			React.createElement(Button, {onClick: this.props.onRequestHide}, "Close"), 
+			React.createElement(Button, {onClick: this.handleCreateCard, bsStyle: "primary"}, "Create Card")
+		      )
+		    )
+		);
+	    }
+	});
+
+	module.exports = CardCreationMenu;
+
+	var DataTableMenu = React.createClass({displayName: "DataTableMenu",
+
+	    // options: { 
+	    //     tables:["morpho", "clinic"],
+	    //     columns:[
+	    // 	     {name: "col1", included: true}, 
+	    // 	     {name: "col2", included: false}
+	    //     ]
+	    // }
+	    mixins: [React.addons.LinkedStateMixin],
+
+	    getInitialState: function() {
+		return {
+		    table: this.props.options.table,
+		    columns: this.props.options.columns
+		};
+	    },
+
+	    componentWillReceiveProps: function(nextProps) {
+		this.setState({
+		    table: nextProps.options.table,
+		    columns: nextProps.options.columns
+		});
+	    },
+
+	    getConfig: function() {
+		var self = this;
+		return {
+		    table: this.refs.table.getValue(),
+		    columns: this.props.options.columns.map(
+			function(column, i){return {name: column.name, included: self.refs["col"+i].getChecked()};})
+		};
+	    },
+
+	    render: function() {
+		var options = this.props.options;
+		return (
+	            React.createElement("form", null, 
+		      React.createElement(Input, {type: "select", label: "Data Table", ref: "table"}, 
+		        
+			    options.tables.map(function(table){
+				return (React.createElement("option", {value: table}, " ", table, " "));
+			    })
+			 
+	              ), 
+	              React.createElement("label", null, " Columns: "), 
+		      
+			  options.columns.map(function(column, i){
+			      return (React.createElement(Input, {type: "checkbox", ref: "col" + i, 
+					      label: column.name, defaultChecked: column.included}));
+			  })
+		      
+	            )
+		);
+
+	    }
+	});
+
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var d3 = __webpack_require__(39);
+	var _ = __webpack_require__(2);
+
+	module.exports = {
+	    createChart: function(container, props, state){
+		var margin = this.props.margin;
+		var width = this.props.width - margin.left - margin.right;
+		var height = this.props.height - margin.top - margin.bottom;
+
+		var svg = d3.select(container).append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		    .attr("class", "pcp")
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		svg.append("g").attr("class", "foreground");
+	    },
+
+	    cleanChart: function(container, props, state){
+		// unsubscribe things 
+	    },
+
+	    update: function(container, props, state) {
+		if ( !(props.attributes.length && props.data.length)) {
+		    d3.select(container).html('');
+		    this.createChart(container, props, state);
+		    return null
+		};
+		console.log("UPDATE"); 
+		var self = this;
+		var margin = props.margin;
+		var width = props.width - margin.left - margin.right;
+		var height = props.height - margin.top - margin.bottom;
+
+
+		var axis = d3.svg.axis().orient("left");
+		var scales = this._scales(width, height, props.data, props.attributes);
+		var path = this._path(props.attributes, scales);
+		var dragState = {};
+
+
+		var realSvg = d3.select(container).select("svg");
+		realSvg.attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom);
+
+		var svg = d3.select(container).select("svg > g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		// Add foreground lines.
+		var foreground = svg.select("g.foreground");
+		var foregroundLines = foreground.selectAll("path")
+		  .data(props.data, function(d){return d.measure_id;});
+		foregroundLines.enter().append("path");
+		foregroundLines.attr("d", path)
+		    .attr("class", function(d) {return d.patient;})
+		    .attr("title", function(d) {return d.measure_id;});
+		foregroundLines.exit().remove();
+
+		var brushes = this._brushes(scales, props.attributes, props.onBrush, foreground);
+
+		// Add a group element for each trait.
+		var coordinates = svg.selectAll(".coordinate")
+			.data(_.pluck(props.attributes, "name"), function(d){return d;});
+		coordinates.enter().append("g");
+		coordinates.attr("class", "coordinate")
+			.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
+			.call(d3.behavior.drag()
+			      .origin(function(d) { return {x: scales.x(d)}; })
+			      .on("dragstart", this._dragstart(props.attributes, dragState))
+			      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
+			      .on("dragend", this._dragend(scales, props.attributes, width, path))
+			     )
+			.call(function(g) {
+			    // Add an axis and title.
+			    g.append("g")
+				.attr("class", "axis")
+				.each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); })
+			      .append("text")
+				.attr("text-anchor", "middle")
+				.attr("y", -9)
+				.attr("class", "dimension")
+				.text(function(d){return _.capitalize(String(d));});})
+			.call(function(g) {
+			    // Add a brush for each axis.
+			    g.append("g")
+				.attr("class", "brush")
+				.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
+			       .selectAll("rect")
+				.attr("x", -8)
+				.attr("width", 16);});
+		coordinates.exit().remove();
+
+		return null;
+	    },
+
+	    _dragstart: function(attributes, dragState) {
+		return function dragstart(d) {
+		    dragState.i = _.pluck(attributes, "name").indexOf(d);
+		};
+	    },
+
+	    _drag: function(scales, dragState, attributes, foregroundLines, path, g){
+		var x = scales.x;
+		
+		return function drag(d) {
+		    x.range()[dragState.i] = d3.event.x;
+		    attributes.sort(function(a, b) { return x(a.name) - x(b.name); });
+		    g.attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+		    foregroundLines.attr("d", path);
+		};
+	    },
+
+	    _dragend: function(scales, attributes, width, path) {
+		var x = scales.x;
+
+		return function dragend(d) {
+		    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+		    var t = d3.transition().duration(500);
+		    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+		    t.selectAll(".foreground path").attr("d", path);
+		};
+	    },
+
+	    _scales: function(width, height, data, attributes) {
+		var self = this;
+
+		var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+		var y = {};
+
+		function sortRegions (rows) {
+		    return rows.sort(function(a,b){
+			var order = ["DG", "CA3", "CA1", "SUB"];
+			return d3.descending(order.indexOf(a), order.indexOf(b)); 
+		    })
+		}
+
+		attributes.forEach(function(d) {
+		    var name = d.name;
+		    if (d.attribute_type === 'QUANTITATIVE') {
+			y[name] = d3.scale.linear()
+			    .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
+					      , function(p) { return p[name]; }))
+			    .range([height, 0]);
+		    }
+		    else if (d.attribute_type === 'CATEGORICAL') {
+			var domain = d3.set(_.pluck(data, name)).values();
+			domain = (d.name == "region") ? sortRegions(domain) : domain;
+			y[name] = d3.scale.ordinal()
+			    .domain(domain)
+			    .rangePoints([height, 0]);
+		    }
+		});
+
+		return {x: x, y: y};
+	    },
+
+
+	    _brushes: function(scales, attributes, onBrush, foreground) {
+		if (_.isUndefined(onBrush)) return {};
+		var brushes = {};
+		var brush = this._brush(scales, brushes, foreground, onBrush);
+		var brushstart = function() {d3.event.sourceEvent.stopPropagation();};
+		attributes.forEach(function(d) {
+			var name = d.name;
+			if (d.attribute_type === "QUANTITATIVE") {
+			    brushes[name] = d3.svg.brush()
+				.y(scales.y[name])
+				.on("brushstart", brushstart)
+				.on("brush", brush);
+			}
+			else {//TODO: Add CATEGORICAL support
+			    brushes[name] = function(){};
+			    brushes[name].empty = function(){return true;};
+			}
+		});
+		return brushes;
+	    },
+
+	    _brush: function(scales, brushes, foreground, onBrush){
+		var triggerChangeThrottle = _.throttle(onBrush, 30);
+		// Handles a brush event, toggling the display of foreground lines.
+		return function () {
+		    var actives = _.keys(brushes).filter( function(dim) { return !brushes[dim].empty(); });
+		    var extents = _.zipObject(actives, actives.map(function(dim) { return brushes[dim].extent(); }));
+
+		    foreground.selectAll("path")
+			.attr('display', function(d) {
+			    var isInside = actives.every(function(dim) {
+				    //TODO: CATEGORICAL: console.log(extents[dim][0], "<=", d[dim], "&&",  d[dim], "<=" , extents[dim][1]);
+				    return extents[dim][0] <= d[dim] && d[dim] <= extents[dim][1];
+				});
+			    return isInside ? null : 'none';
+			});
+		    triggerChangeThrottle(extents);
+		};
+	    },
+
+	    // Cousure. Returns the path for a given data point.
+	    _path : function (attributes, scales) {
+		var line = d3.svg.line()
+			.defined(function(d){return !isNaN(d[1]);});
+		return function (d) {
+		    return line(_.pluck(attributes, "name")
+				.map(function(a) { return [scales.x(a), scales.y[a](d[a])]; }));  	
+		};
+	    }
+
+	};
+
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.ScatterChart = __webpack_require__(44);
+
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _Accordion = __webpack_require__(45);
+
+	var _Accordion2 = _interopRequireDefault(_Accordion);
+
+	var _Affix = __webpack_require__(46);
+
+	var _Affix2 = _interopRequireDefault(_Affix);
+
+	var _AffixMixin = __webpack_require__(47);
+
+	var _AffixMixin2 = _interopRequireDefault(_AffixMixin);
+
+	var _Alert = __webpack_require__(48);
+
+	var _Alert2 = _interopRequireDefault(_Alert);
+
+	var _BootstrapMixin = __webpack_require__(49);
+
+	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
+
+	var _Badge = __webpack_require__(50);
+
+	var _Badge2 = _interopRequireDefault(_Badge);
+
+	var _Button = __webpack_require__(51);
+
+	var _Button2 = _interopRequireDefault(_Button);
+
+	var _ButtonGroup = __webpack_require__(52);
+
+	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
+
+	var _ButtonInput = __webpack_require__(53);
+
+	var _ButtonInput2 = _interopRequireDefault(_ButtonInput);
+
+	var _ButtonToolbar = __webpack_require__(54);
+
+	var _ButtonToolbar2 = _interopRequireDefault(_ButtonToolbar);
+
+	var _CollapsableNav = __webpack_require__(55);
+
+	var _CollapsableNav2 = _interopRequireDefault(_CollapsableNav);
+
+	var _CollapsibleNav = __webpack_require__(56);
+
+	var _CollapsibleNav2 = _interopRequireDefault(_CollapsibleNav);
+
+	var _Carousel = __webpack_require__(57);
+
+	var _Carousel2 = _interopRequireDefault(_Carousel);
+
+	var _CarouselItem = __webpack_require__(58);
+
+	var _CarouselItem2 = _interopRequireDefault(_CarouselItem);
+
+	var _Col = __webpack_require__(59);
+
+	var _Col2 = _interopRequireDefault(_Col);
+
+	var _CollapsableMixin = __webpack_require__(60);
+
+	var _CollapsableMixin2 = _interopRequireDefault(_CollapsableMixin);
+
+	var _CollapsibleMixin = __webpack_require__(61);
+
+	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
+
+	var _DropdownButton = __webpack_require__(62);
+
+	var _DropdownButton2 = _interopRequireDefault(_DropdownButton);
+
+	var _DropdownMenu = __webpack_require__(63);
+
+	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
+
+	var _DropdownStateMixin = __webpack_require__(64);
+
+	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
+
+	var _FadeMixin = __webpack_require__(65);
+
+	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
+
+	var _Glyphicon = __webpack_require__(66);
+
+	var _Glyphicon2 = _interopRequireDefault(_Glyphicon);
+
+	var _Grid = __webpack_require__(67);
+
+	var _Grid2 = _interopRequireDefault(_Grid);
+
+	var _Input = __webpack_require__(68);
+
+	var _Input2 = _interopRequireDefault(_Input);
+
+	var _Interpolate = __webpack_require__(69);
+
+	var _Interpolate2 = _interopRequireDefault(_Interpolate);
+
+	var _Jumbotron = __webpack_require__(70);
+
+	var _Jumbotron2 = _interopRequireDefault(_Jumbotron);
+
+	var _Label = __webpack_require__(71);
+
+	var _Label2 = _interopRequireDefault(_Label);
+
+	var _ListGroup = __webpack_require__(72);
+
+	var _ListGroup2 = _interopRequireDefault(_ListGroup);
+
+	var _ListGroupItem = __webpack_require__(73);
+
+	var _ListGroupItem2 = _interopRequireDefault(_ListGroupItem);
+
+	var _MenuItem = __webpack_require__(74);
+
+	var _MenuItem2 = _interopRequireDefault(_MenuItem);
+
+	var _Modal = __webpack_require__(75);
+
+	var _Modal2 = _interopRequireDefault(_Modal);
+
+	var _Nav = __webpack_require__(76);
+
+	var _Nav2 = _interopRequireDefault(_Nav);
+
+	var _Navbar = __webpack_require__(77);
+
+	var _Navbar2 = _interopRequireDefault(_Navbar);
+
+	var _NavItem = __webpack_require__(78);
+
+	var _NavItem2 = _interopRequireDefault(_NavItem);
+
+	var _ModalTrigger = __webpack_require__(79);
+
+	var _ModalTrigger2 = _interopRequireDefault(_ModalTrigger);
+
+	var _OverlayTrigger = __webpack_require__(80);
+
+	var _OverlayTrigger2 = _interopRequireDefault(_OverlayTrigger);
+
+	var _OverlayMixin = __webpack_require__(81);
+
+	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
+
+	var _PageHeader = __webpack_require__(82);
+
+	var _PageHeader2 = _interopRequireDefault(_PageHeader);
+
+	var _Panel = __webpack_require__(83);
+
+	var _Panel2 = _interopRequireDefault(_Panel);
+
+	var _PanelGroup = __webpack_require__(84);
+
+	var _PanelGroup2 = _interopRequireDefault(_PanelGroup);
+
+	var _PageItem = __webpack_require__(85);
+
+	var _PageItem2 = _interopRequireDefault(_PageItem);
+
+	var _Pager = __webpack_require__(86);
+
+	var _Pager2 = _interopRequireDefault(_Pager);
+
+	var _Popover = __webpack_require__(87);
+
+	var _Popover2 = _interopRequireDefault(_Popover);
+
+	var _ProgressBar = __webpack_require__(88);
+
+	var _ProgressBar2 = _interopRequireDefault(_ProgressBar);
+
+	var _Row = __webpack_require__(89);
+
+	var _Row2 = _interopRequireDefault(_Row);
+
+	var _SplitButton = __webpack_require__(90);
+
+	var _SplitButton2 = _interopRequireDefault(_SplitButton);
+
+	var _SubNav = __webpack_require__(91);
+
+	var _SubNav2 = _interopRequireDefault(_SubNav);
+
+	var _TabbedArea = __webpack_require__(92);
+
+	var _TabbedArea2 = _interopRequireDefault(_TabbedArea);
+
+	var _Table = __webpack_require__(93);
+
+	var _Table2 = _interopRequireDefault(_Table);
+
+	var _TabPane = __webpack_require__(94);
+
+	var _TabPane2 = _interopRequireDefault(_TabPane);
+
+	var _Thumbnail = __webpack_require__(95);
+
+	var _Thumbnail2 = _interopRequireDefault(_Thumbnail);
+
+	var _Tooltip = __webpack_require__(96);
+
+	var _Tooltip2 = _interopRequireDefault(_Tooltip);
+
+	var _Well = __webpack_require__(97);
+
+	var _Well2 = _interopRequireDefault(_Well);
+
+	var _styleMaps = __webpack_require__(98);
+
+	var _styleMaps2 = _interopRequireDefault(_styleMaps);
+
+	exports['default'] = {
+	  Accordion: _Accordion2['default'],
+	  Affix: _Affix2['default'],
+	  AffixMixin: _AffixMixin2['default'],
+	  Alert: _Alert2['default'],
+	  BootstrapMixin: _BootstrapMixin2['default'],
+	  Badge: _Badge2['default'],
+	  Button: _Button2['default'],
+	  ButtonGroup: _ButtonGroup2['default'],
+	  ButtonInput: _ButtonInput2['default'],
+	  ButtonToolbar: _ButtonToolbar2['default'],
+	  CollapsableNav: _CollapsableNav2['default'],
+	  CollapsibleNav: _CollapsibleNav2['default'],
+	  Carousel: _Carousel2['default'],
+	  CarouselItem: _CarouselItem2['default'],
+	  Col: _Col2['default'],
+	  CollapsableMixin: _CollapsableMixin2['default'],
+	  CollapsibleMixin: _CollapsibleMixin2['default'],
+	  DropdownButton: _DropdownButton2['default'],
+	  DropdownMenu: _DropdownMenu2['default'],
+	  DropdownStateMixin: _DropdownStateMixin2['default'],
+	  FadeMixin: _FadeMixin2['default'],
+	  Glyphicon: _Glyphicon2['default'],
+	  Grid: _Grid2['default'],
+	  Input: _Input2['default'],
+	  Interpolate: _Interpolate2['default'],
+	  Jumbotron: _Jumbotron2['default'],
+	  Label: _Label2['default'],
+	  ListGroup: _ListGroup2['default'],
+	  ListGroupItem: _ListGroupItem2['default'],
+	  MenuItem: _MenuItem2['default'],
+	  Modal: _Modal2['default'],
+	  Nav: _Nav2['default'],
+	  Navbar: _Navbar2['default'],
+	  NavItem: _NavItem2['default'],
+	  ModalTrigger: _ModalTrigger2['default'],
+	  OverlayTrigger: _OverlayTrigger2['default'],
+	  OverlayMixin: _OverlayMixin2['default'],
+	  PageHeader: _PageHeader2['default'],
+	  Panel: _Panel2['default'],
+	  PanelGroup: _PanelGroup2['default'],
+	  PageItem: _PageItem2['default'],
+	  Pager: _Pager2['default'],
+	  Popover: _Popover2['default'],
+	  ProgressBar: _ProgressBar2['default'],
+	  Row: _Row2['default'],
+	  SplitButton: _SplitButton2['default'],
+	  SubNav: _SubNav2['default'],
+	  TabbedArea: _TabbedArea2['default'],
+	  Table: _Table2['default'],
+	  TabPane: _TabPane2['default'],
+	  Thumbnail: _Thumbnail2['default'],
+	  Tooltip: _Tooltip2['default'],
+	  Well: _Well2['default'],
+	  styleMaps: _styleMaps2['default']
+	};
+	module.exports = exports['default'];
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = d3;
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var React = __webpack_require__(1);
+	var GridItem = __webpack_require__(101);
+	var utils = __webpack_require__(102);
+	var PureDeepRenderMixin = __webpack_require__(103);
+	var WidthListeningMixin = __webpack_require__(104);
+
+	/**
+	 * A reactive, fluid grid layout with draggable, resizable components.
+	 */
+	var ReactGridLayout = React.createClass({
+	  displayName: 'ReactGridLayout',
+
+	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
+
+	  propTypes: {
+	    //
+	    // Basic props
+	    //
+
+	    // If true, the container height swells and contracts to fit contents
+	    autoSize: React.PropTypes.bool,
+	    // # of cols.
+	    cols: React.PropTypes.number,
+
+	    // A selector that will not be draggable.
+	    draggableCancel: React.PropTypes.string,
+	    // A selector for the draggable handler
+	    draggableHandle: React.PropTypes.string,
+
+	    // layout is an array of object with the format:
+	    // {x: Number, y: Number, w: Number, h: Number}
+	    layout: function layout(props, propName, componentName) {
+	      var layout = props.layout;
+	      // I hope you're setting the _grid property on the grid items
+	      if (layout === undefined) {
+	        return;
+	      }utils.validateLayout(layout, 'layout');
+	    },
+
+	    layouts: function layouts(props, propName, componentName) {
+	      if (props.layouts) {
+	        throw new Error('ReactGridLayout does not use `layouts`: Use ReactGridLayout.Responsive.');
+	      }
+	    },
+
+	    // margin between items [x, y] in px
+	    margin: React.PropTypes.array,
+	    // Rows have a static height, but you can change this based on breakpoints if you like
+	    rowHeight: React.PropTypes.number,
+
+	    //
+	    // Flags
+	    //
+	    isDraggable: React.PropTypes.bool,
+	    isResizable: React.PropTypes.bool,
+	    // Use CSS transforms instead of top/left
+	    useCSSTransforms: React.PropTypes.bool,
+
+	    //
+	    // Callbacks
+	    //
+
+	    // Callback so you can save the layout.
+	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
+	    onLayoutChange: React.PropTypes.func,
+
+	    // Calls when drag starts. Callback is of the signature (layout, oldItem, newItem, placeholder, e).
+	    // All callbacks below have the same signature. 'start' and 'stop' callbacks omit the 'placeholder'.
+	    onDragStart: React.PropTypes.func,
+	    // Calls on each drag movement.
+	    onDrag: React.PropTypes.func,
+	    // Calls when drag is complete.
+	    onDragStop: React.PropTypes.func,
+	    //Calls when resize starts.
+	    onResizeStart: React.PropTypes.func,
+	    // Calls when resize movement happens.
+	    onResize: React.PropTypes.func,
+	    // Calls when resize is complete.
+	    onResizeStop: React.PropTypes.func,
+
+	    //
+	    // Other validations
+	    //
+
+	    // Children must not have duplicate keys.
+	    children: function children(props, propName, componentName) {
+	      React.PropTypes.node.apply(this, arguments);
+	      var children = props[propName];
+
+	      // Check children keys for duplicates. Throw if found.
+	      var keys = {};
+	      React.Children.forEach(children, function (child, i, list) {
+	        if (keys[child.key]) {
+	          throw new Error('Duplicate child key found! This will cause problems in ReactGridLayout.');
+	        }
+	        keys[child.key] = true;
+	      });
+	    }
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      autoSize: true,
+	      cols: 12,
+	      rowHeight: 150,
+	      layout: [],
+	      margin: [10, 10],
+	      isDraggable: true,
+	      isResizable: true,
+	      useCSSTransforms: true,
+	      onLayoutChange: function onLayoutChange() {},
+	      onDragStart: function onDragStart() {},
+	      onDrag: function onDrag() {},
+	      onDragStop: function onDragStop() {},
+	      onResizeStart: function onResizeStart() {},
+	      onResize: function onResize() {},
+	      onResizeStop: function onResizeStop() {}
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      activeDrag: null,
+	      isMounted: false,
+	      layout: utils.synchronizeLayoutWithChildren(this.props.layout, this.props.children, this.props.cols),
+	      width: this.props.initialWidth
+	    };
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    // Call back with layout on mount. This should be done after correcting the layout width
+	    // to ensure we don't rerender with the wrong width.
+	    this.props.onLayoutChange(this.state.layout);
+	    this.setState({ isMounted: true });
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    // This allows you to set the width manually if you like.
+	    // Use manual width changes in combination with `listenToWindowResize: false`
+	    if (nextProps.width !== this.props.width) this.onWidthChange(nextProps.width);
+
+	    // If children change, regenerate the layout.
+	    if (nextProps.children.length !== this.props.children.length) {
+	      this.setState({
+	        layout: utils.synchronizeLayoutWithChildren(this.state.layout, nextProps.children, nextProps.cols)
+	      });
+	    }
+
+	    // Allow parent to set layout directly.
+	    if (nextProps.layout && JSON.stringify(nextProps.layout) !== JSON.stringify(this.state.layout)) {
+	      this.setState({
+	        layout: utils.synchronizeLayoutWithChildren(nextProps.layout, nextProps.children, nextProps.cols)
+	      });
+	    }
+	  },
+
+	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+	    // Call back so we can store the layout
+	    // Do it only when a resize/drag is not active, otherwise there are way too many callbacks
+	    if (this.state.layout !== prevState.layout && !this.state.activeDrag) {
+	      this.props.onLayoutChange(this.state.layout, this.state.layouts);
+	    }
+	  },
+
+	  /**
+	   * Calculates a pixel value for the container.
+	   * @return {String} Container height in pixels.
+	   */
+	  containerHeight: function containerHeight() {
+	    if (!this.props.autoSize) {
+	      return;
+	    }return utils.bottom(this.state.layout) * this.props.rowHeight + this.props.margin[1] + 'px';
+	  },
+
+	  /**
+	   * When the width changes, save it to state. This helps with left/width calculations.
+	   */
+	  onWidthChange: function onWidthChange(width) {
+	    this.setState({ width: width });
+	  },
+
+	  /**
+	   * When dragging starts
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDragStart: function onDragStart(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+
+	    // No need to clone, `l` hasn't changed.
+	    this.props.onDragStart(layout, l, l, null, e);
+	  },
+	  /**
+	   * Each drag movement create a new dragelement and move the element to the dragged location
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDrag: function onDrag(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    // Clone layout item so we can pass it to the callback.
+	    var oldL = utils.clone(l);
+
+	    // Create placeholder (display only)
+	    var placeholder = {
+	      w: l.w, h: l.h, x: l.x, y: l.y, placeholder: true, i: i
+	    };
+
+	    // Move the element to the dragged location.
+	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
+
+	    this.props.onDrag(layout, oldL, l, placeholder, e);
+
+	    this.setState({
+	      layout: utils.compact(layout),
+	      activeDrag: placeholder
+	    });
+	  },
+
+	  /**
+	   * When dragging stops, figure out which position the element is closest to and update its x and y.
+	   * @param  {Number} i Index of the child.
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDragStop: function onDragStop(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    // Move the element here
+	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
+
+	    this.props.onDragStop(layout, oldL, l, null, e);
+
+	    // Set state
+	    this.setState({ layout: utils.compact(layout), activeDrag: null });
+	  },
+
+	  onResizeStart: function onResizeStart(i, w, h, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+
+	    // No need to clone, item hasn't changed
+	    this.props.onResizeStart(layout, l, l, null, e);
+	  },
+
+	  onResize: function onResize(i, w, h, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    // Set new width and height.
+	    l.w = w;
+	    l.h = h;
+
+	    // Create placeholder element (display only)
+	    var placeholder = {
+	      w: w, h: h, x: l.x, y: l.y, placeholder: true, i: i
+	    };
+
+	    this.props.onResize(layout, oldL, l, placeholder, e);
+
+	    // Re-compact the layout and set the drag placeholder.
+	    this.setState({ layout: utils.compact(layout), activeDrag: placeholder });
+	  },
+
+	  onResizeStop: function onResizeStop(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    this.props.onResizeStop(layout, oldL, l, null, e);
+
+	    this.setState({ activeDrag: null, layout: utils.compact(layout) });
+	  },
+
+	  /**
+	   * Create a placeholder object.
+	   * @return {Element} Placeholder div.
+	   */
+	  placeholder: function placeholder() {
+	    if (!this.state.activeDrag) {
+	      return '';
+	    } // {...this.state.activeDrag} is pretty slow, actually
+	    return React.createElement(
+	      GridItem,
+	      {
+	        w: this.state.activeDrag.w,
+	        h: this.state.activeDrag.h,
+	        x: this.state.activeDrag.x,
+	        y: this.state.activeDrag.y,
+	        i: this.state.activeDrag.i,
+	        isPlaceholder: true,
+	        className: 'react-grid-placeholder',
+	        containerWidth: this.state.width,
+	        cols: this.props.cols,
+	        margin: this.props.margin,
+	        rowHeight: this.props.rowHeight,
+	        isDraggable: false,
+	        isResizable: false,
+	        useCSSTransforms: this.props.useCSSTransforms
+	      },
+	      React.createElement('div', null)
+	    );
+	  },
+
+	  /**
+	   * Given a grid item, set its style attributes & surround in a <Draggable>.
+	   * @param  {Element} child React element.
+	   * @param  {Number}  i     Index of element.
+	   * @return {Element}       Element wrapped in draggable and properly placed.
+	   */
+	  processGridItem: function processGridItem(child) {
+	    var i = child.key;
+	    var l = utils.getLayoutItem(this.state.layout, i);
+
+	    // watchStart property tells Draggable to react to changes in the start param
+	    // Must be turned off on the item we're dragging as the changes in `activeDrag` cause rerenders
+	    var drag = this.state.activeDrag;
+	    var moveOnStartChange = drag && drag.i === i ? false : true;
+
+	    // Parse 'static'. Any properties defined directly on the grid item will take precedence.
+	    var draggable, resizable;
+	    if (l['static'] || this.props.isDraggable === false) draggable = false;
+	    if (l['static'] || this.props.isResizable === false) resizable = false;
+
+	    return React.createElement(
+	      GridItem,
+	      _extends({
+	        containerWidth: this.state.width,
+	        cols: this.props.cols,
+	        margin: this.props.margin,
+	        rowHeight: this.props.rowHeight,
+	        moveOnStartChange: moveOnStartChange,
+	        cancel: this.props.draggableCancel,
+	        handle: this.props.draggableHandle,
+	        onDragStop: this.onDragStop,
+	        onDragStart: this.onDragStart,
+	        onDrag: this.onDrag,
+	        onResizeStart: this.onResizeStart,
+	        onResize: this.onResize,
+	        onResizeStop: this.onResizeStop,
+	        isDraggable: draggable,
+	        isResizable: resizable,
+	        useCSSTransforms: this.props.useCSSTransforms && this.state.isMounted,
+	        usePercentages: !this.state.isMounted
+	      }, l),
+	      child
+	    );
+	  },
+
+	  render: function render() {
+	    // Calculate classname
+	    var _props = this.props;
+	    var className = _props.className;
+
+	    var props = _objectWithoutProperties(_props, ['className']);
+
+	    className = 'react-grid-layout ' + (className || '');
+
+	    return React.createElement(
+	      'div',
+	      _extends({}, props, { className: className, style: { height: this.containerHeight() } }),
+	      React.Children.map(this.props.children, this.processGridItem),
+	      this.placeholder()
+	    );
+	  }
+	});
+
+	module.exports = ReactGridLayout;
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var React = __webpack_require__(1);
+	var utils = __webpack_require__(102);
+	var responsiveUtils = __webpack_require__(105);
+	var PureDeepRenderMixin = __webpack_require__(103);
+	var WidthListeningMixin = __webpack_require__(104);
+	var ReactGridLayout = __webpack_require__(40);
+
+	/**
+	 * A wrapper around ReactGridLayout to support responsive breakpoints.
+	 */
+	var ResponsiveReactGridLayout = React.createClass({
+	  displayName: 'ResponsiveReactGridLayout',
+
+	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
+
+	  propTypes: {
+	    //
+	    // Basic props
+	    //
+
+	    // Optional, but if you are managing width yourself you may want to set the breakpoint
+	    // yourself as well.
+	    breakpoint: React.PropTypes.string,
+
+	    // {name: pxVal}, e.g. {lg: 1200, md: 996, sm: 768, xs: 480}
+	    breakpoints: React.PropTypes.object,
+
+	    // # of cols. This is a breakpoint -> cols map
+	    cols: React.PropTypes.object,
+
+	    // layouts is an object mapping breakpoints to layouts.
+	    // e.g. {lg: Layout, md: Layout, ...}
+	    layouts: function layouts(props, propName, componentName) {
+	      React.PropTypes.object.isRequired.apply(this, arguments);
+
+	      var layouts = props.layouts;
+	      Object.keys(layouts).map(function (k) {
+	        utils.validateLayout(layouts[k], 'layouts.' + k);
+	      });
+	    },
+
+	    //
+	    // Callbacks
+	    //
+
+	    // Calls back with breakpoint and new # cols
+	    onBreakpointChange: React.PropTypes.func,
+
+	    // Callback so you can save the layout.
+	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
+	    onLayoutChange: React.PropTypes.func
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
+	      cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+	      layouts: {},
+	      onBreakpointChange: function onBreakpointChange() {},
+	      onLayoutChange: function onLayoutChange() {}
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    var breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, this.props.initialWidth);
+	    var cols = responsiveUtils.getColsFromBreakpoint(breakpoint, this.props.cols);
+
+	    // Get the initial layout. This can tricky; we try to generate one however possible if one doesn't exist
+	    // for this layout.
+	    var initialLayout = responsiveUtils.findOrGenerateResponsiveLayout(this.props.layouts, this.props.breakpoints, breakpoint, breakpoint, cols);
+
+	    return {
+	      layout: initialLayout,
+	      // storage for layouts obsoleted by breakpoints
+	      layouts: this.props.layouts || {},
+	      breakpoint: breakpoint,
+	      cols: cols,
+	      width: this.props.initialWidth
+	    };
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    // This allows you to set the width manually if you like.
+	    // Use manual width changes in combination with `listenToWindowResize: false`
+	    if (nextProps.width) this.onWidthChange(nextProps.width);
+
+	    // Allow parent to set breakpoint directly.
+	    if (nextProps.breakpoint !== this.props.breakpoint) {
+	      this.onWidthChange(this.state.width);
+	    }
+
+	    // Allow parent to set layouts directly.
+	    if (nextProps.layouts && nextProps.layouts !== this.state.layouts) {
+	      // Since we're setting an entirely new layout object, we must generate a new responsive layout
+	      // if one does not exist.
+	      var newLayout = responsiveUtils.findOrGenerateResponsiveLayout(nextProps.layouts, nextProps.breakpoints, this.state.breakpoint, this.state.breakpoint, this.state.cols);
+
+	      this.setState({
+	        layouts: nextProps.layouts,
+	        layout: newLayout
+	      });
+	    }
+	  },
+
+	  /**
+	   * Bubble this up, add `layouts` object.
+	   * @param  {Array} layout Layout from inner Grid.
+	   */
+	  onLayoutChange: function onLayoutChange(layout) {
+	    this.state.layouts[this.state.breakpoint] = layout;
+	    this.setState({ layout: layout, layouts: this.state.layouts });
+	    this.props.onLayoutChange(layout, this.state.layouts);
+	  },
+
+	  /**
+	   * When the width changes work through breakpoints and reset state with the new width & breakpoint.
+	   * Width changes are necessary to figure out the widget widths.
+	   */
+	  onWidthChange: function onWidthChange(width) {
+	    // Set new breakpoint
+	    var newState = { width: width };
+	    newState.breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, newState.width);
+	    newState.cols = responsiveUtils.getColsFromBreakpoint(newState.breakpoint, this.props.cols);
+
+	    // Breakpoint change
+	    if (newState.cols !== this.state.cols) {
+
+	      // Store the current layout
+	      newState.layouts = this.state.layouts;
+	      newState.layouts[this.state.breakpoint] = JSON.parse(JSON.stringify(this.state.layout));
+
+	      // Find or generate a new one.
+	      newState.layout = responsiveUtils.findOrGenerateResponsiveLayout(newState.layouts, this.props.breakpoints, newState.breakpoint, this.state.breakpoint, newState.cols);
+
+	      // This adds missing items.
+	      newState.layout = utils.synchronizeLayoutWithChildren(newState.layout, this.props.children, newState.cols);
+
+	      // Store this new layout as well.
+	      newState.layouts[newState.breakpoint] = newState.layout;
+
+	      this.props.onBreakpointChange(newState.breakpoint, newState.cols);
+	    }
+
+	    this.setState(newState);
+	  },
+
+	  render: function render() {
+	    // Don't pass responsive props to RGL.
+	    /*jshint unused:false*/
+	    var _props = this.props;
+	    var layouts = _props.layouts;
+	    var onBreakpointChange = _props.onBreakpointChange;
+	    var breakpoints = _props.breakpoints;
+
+	    var props = _objectWithoutProperties(_props, ['layouts', 'onBreakpointChange', 'breakpoints']);
+
+	    return React.createElement(
+	      ReactGridLayout,
+	      _extends({}, props, {
+	        layout: this.state.layout,
+	        cols: this.state.cols,
+	        listenToWindowResize: false,
+	        onLayoutChange: this.onLayoutChange,
+	        width: this.state.width }),
+	      this.props.children
+	    );
+	  }
+	});
+
+	module.exports = ResponsiveReactGridLayout;
 
 /***/ },
 /* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(105);
+	'use strict'
+
+	var React = __webpack_require__(1);
+
+	module.exports = {
+	    getDefaultProps: function() {
+		var margin = {top: 20, right: 10, bottom: 20, left: 10};
+		return {
+		    margin: margin
+		};
+	    },
+
+	    componentDidMount: function() {
+		var container = this.refs.container.getDOMNode();
+		this.createChart(container, this.props, this.state);
+		this.update(container, this.props, this.state);
+	    },
+
+	    componentWillUnmount: function() {
+		var container = this.refs.container.getDOMNode();
+		this.cleanChart(container, this.props, this.state);
+	    },
+
+	    shouldComponentUpdate: function(nextProps, nextState) {
+		var container = this.refs.container.getDOMNode();
+		this.update(container, nextProps, nextState);
+		// render is not called again so the container is there until
+		// the end.
+		return false;
+	    },
+
+	    render: function(){
+		return (
+	            React.createElement("div", {ref: "container"})
+		);
+	    }
+	};
 
 
 /***/ },
 /* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
+	
+	exports.BarChart = __webpack_require__(106);
+
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var common = __webpack_require__(119);
+	var d3 = __webpack_require__(39);
+	var common = __webpack_require__(121);
 	var Chart = common.Chart;
 	var XAxis = common.XAxis;
 	var YAxis = common.YAxis;
 	var Voronoi = common.Voronoi;
-	var utils = __webpack_require__(120);
-	var immstruct = __webpack_require__(124);
-	var DataSeries = __webpack_require__(106);
-	var CartesianChartPropsMixin = __webpack_require__(121).CartesianChartPropsMixin;
+	var utils = __webpack_require__(122);
+	var immstruct = __webpack_require__(126);
+	var DataSeries = __webpack_require__(107);
+	var CartesianChartPropsMixin = __webpack_require__(123).CartesianChartPropsMixin;
 
 	module.exports = React.createClass({displayName: "exports",
 
@@ -5053,7 +5241,7 @@
 
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5070,7 +5258,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _PanelGroup = __webpack_require__(83);
+	var _PanelGroup = __webpack_require__(84);
 
 	var _PanelGroup2 = _interopRequireDefault(_PanelGroup);
 
@@ -5090,7 +5278,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5107,15 +5295,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _AffixMixin = __webpack_require__(46);
+	var _AffixMixin = __webpack_require__(47);
 
 	var _AffixMixin2 = _interopRequireDefault(_AffixMixin);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -5145,7 +5333,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5160,11 +5348,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsEventListener = __webpack_require__(108);
+	var _utilsEventListener = __webpack_require__(109);
 
 	var _utilsEventListener2 = _interopRequireDefault(_utilsEventListener);
 
@@ -5296,7 +5484,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5313,11 +5501,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -5379,7 +5567,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5390,11 +5578,11 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _styleMaps = __webpack_require__(97);
+	var _styleMaps = __webpack_require__(98);
 
 	var _styleMaps2 = _interopRequireDefault(_styleMaps);
 
-	var _utilsCustomPropTypes = __webpack_require__(109);
+	var _utilsCustomPropTypes = __webpack_require__(110);
 
 	var _utilsCustomPropTypes2 = _interopRequireDefault(_utilsCustomPropTypes);
 
@@ -5437,7 +5625,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5454,11 +5642,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -5491,7 +5679,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5508,11 +5696,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -5602,7 +5790,7 @@
 	// eslint-disable-line object-shorthand
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5619,11 +5807,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -5662,7 +5850,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5687,15 +5875,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Button = __webpack_require__(50);
+	var _Button = __webpack_require__(51);
 
 	var _Button2 = _interopRequireDefault(_Button);
 
-	var _FormGroup = __webpack_require__(111);
+	var _FormGroup = __webpack_require__(112);
 
 	var _FormGroup2 = _interopRequireDefault(_FormGroup);
 
-	var _InputBase2 = __webpack_require__(112);
+	var _InputBase2 = __webpack_require__(113);
 
 	var _InputBase3 = _interopRequireDefault(_InputBase2);
 
@@ -5772,7 +5960,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -5789,11 +5977,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -5825,43 +6013,6 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 54 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _utilsDeprecationWarning = __webpack_require__(115);
-
-	var _utilsDeprecationWarning2 = _interopRequireDefault(_utilsDeprecationWarning);
-
-	var _utilsObjectAssign = __webpack_require__(116);
-
-	var _utilsObjectAssign2 = _interopRequireDefault(_utilsObjectAssign);
-
-	var _CollapsibleNav = __webpack_require__(55);
-
-	var specCollapsableNav = (0, _utilsObjectAssign2['default'])({}, _CollapsibleNav.specCollapsibleNav, {
-	  componentDidMount: function componentDidMount() {
-	    (0, _utilsDeprecationWarning2['default'])('CollapsableNav', 'CollapsibleNav', 'https://github.com/react-bootstrap/react-bootstrap/issues/425#issuecomment-97110963');
-	  }
-	});
-
-	var CollapsableNav = _react2['default'].createClass(specCollapsableNav);
-
-	exports['default'] = CollapsableNav;
-	module.exports = exports['default'];
-
-/***/ },
 /* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -5877,31 +6028,68 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _utilsDeprecationWarning = __webpack_require__(114);
+
+	var _utilsDeprecationWarning2 = _interopRequireDefault(_utilsDeprecationWarning);
+
+	var _utilsObjectAssign = __webpack_require__(115);
+
+	var _utilsObjectAssign2 = _interopRequireDefault(_utilsObjectAssign);
+
+	var _CollapsibleNav = __webpack_require__(56);
+
+	var specCollapsableNav = (0, _utilsObjectAssign2['default'])({}, _CollapsibleNav.specCollapsibleNav, {
+	  componentDidMount: function componentDidMount() {
+	    (0, _utilsDeprecationWarning2['default'])('CollapsableNav', 'CollapsibleNav', 'https://github.com/react-bootstrap/react-bootstrap/issues/425#issuecomment-97110963');
+	  }
+	});
+
+	var CollapsableNav = _react2['default'].createClass(specCollapsableNav);
+
+	exports['default'] = CollapsableNav;
+	module.exports = exports['default'];
+
+/***/ },
+/* 56 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _CollapsibleMixin = __webpack_require__(60);
+	var _CollapsibleMixin = __webpack_require__(61);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsDeprecatedProperty = __webpack_require__(113);
+	var _utilsDeprecatedProperty = __webpack_require__(116);
 
 	var _utilsDeprecatedProperty2 = _interopRequireDefault(_utilsDeprecatedProperty);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
@@ -5919,7 +6107,7 @@
 	  },
 
 	  getCollapsibleDOMNode: function getCollapsibleDOMNode() {
-	    return this.getDOMNode();
+	    return _react2['default'].findDOMNode(this);
 	  },
 
 	  getCollapsibleDimensionValue: function getCollapsibleDimensionValue() {
@@ -5928,7 +6116,7 @@
 	    for (var key in nodes) {
 	      if (nodes.hasOwnProperty(key)) {
 
-	        var n = nodes[key].getDOMNode(),
+	        var n = _react2['default'].findDOMNode(nodes[key]),
 	            h = n.offsetHeight,
 	            computedStyles = _utilsDomUtils2['default'].getComputedStyles(n);
 
@@ -6010,7 +6198,7 @@
 	exports['default'] = CollapsibleNav;
 
 /***/ },
-/* 56 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6027,15 +6215,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
@@ -6308,7 +6496,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 57 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6325,11 +6513,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsTransitionEvents = __webpack_require__(117);
+	var _utilsTransitionEvents = __webpack_require__(118);
 
 	var _utilsTransitionEvents2 = _interopRequireDefault(_utilsTransitionEvents);
 
@@ -6425,7 +6613,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 58 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6442,11 +6630,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _styleMaps = __webpack_require__(97);
+	var _styleMaps = __webpack_require__(98);
 
 	var _styleMaps2 = _interopRequireDefault(_styleMaps);
 
@@ -6523,7 +6711,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 59 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6534,15 +6722,15 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _utilsObjectAssign = __webpack_require__(116);
+	var _utilsObjectAssign = __webpack_require__(115);
 
 	var _utilsObjectAssign2 = _interopRequireDefault(_utilsObjectAssign);
 
-	var _utilsDeprecationWarning = __webpack_require__(115);
+	var _utilsDeprecationWarning = __webpack_require__(114);
 
 	var _utilsDeprecationWarning2 = _interopRequireDefault(_utilsDeprecationWarning);
 
-	var _CollapsibleMixin = __webpack_require__(60);
+	var _CollapsibleMixin = __webpack_require__(61);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
@@ -6573,7 +6761,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6588,11 +6776,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsTransitionEvents = __webpack_require__(117);
+	var _utilsTransitionEvents = __webpack_require__(118);
 
 	var _utilsTransitionEvents2 = _interopRequireDefault(_utilsTransitionEvents);
 
-	var _utilsDeprecationWarning = __webpack_require__(115);
+	var _utilsDeprecationWarning = __webpack_require__(114);
 
 	var _utilsDeprecationWarning2 = _interopRequireDefault(_utilsDeprecationWarning);
 
@@ -6766,7 +6954,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6783,35 +6971,35 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _DropdownStateMixin = __webpack_require__(63);
+	var _DropdownStateMixin = __webpack_require__(64);
 
 	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
 
-	var _Button = __webpack_require__(50);
+	var _Button = __webpack_require__(51);
 
 	var _Button2 = _interopRequireDefault(_Button);
 
-	var _ButtonGroup = __webpack_require__(51);
+	var _ButtonGroup = __webpack_require__(52);
 
 	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
 
-	var _DropdownMenu = __webpack_require__(62);
+	var _DropdownMenu = __webpack_require__(63);
 
 	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
@@ -6924,7 +7112,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6941,15 +7129,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
@@ -6991,7 +7179,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7006,11 +7194,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsEventListener = __webpack_require__(108);
+	var _utilsEventListener = __webpack_require__(109);
 
 	var _utilsEventListener2 = _interopRequireDefault(_utilsEventListener);
 
@@ -7094,7 +7282,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7109,7 +7297,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -7186,7 +7374,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7203,15 +7391,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _styleMaps = __webpack_require__(97);
+	var _styleMaps = __webpack_require__(98);
 
 	var _styleMaps2 = _interopRequireDefault(_styleMaps);
 
@@ -7247,7 +7435,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7264,7 +7452,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -7299,7 +7487,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7322,15 +7510,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _InputBase2 = __webpack_require__(112);
+	var _InputBase2 = __webpack_require__(113);
 
 	var _InputBase3 = _interopRequireDefault(_InputBase2);
 
-	var _ButtonInput = __webpack_require__(52);
+	var _ButtonInput = __webpack_require__(53);
 
 	var _ButtonInput2 = _interopRequireDefault(_ButtonInput);
 
-	var _utilsDeprecationWarning = __webpack_require__(115);
+	var _utilsDeprecationWarning = __webpack_require__(114);
 
 	var _utilsDeprecationWarning2 = _interopRequireDefault(_utilsDeprecationWarning);
 
@@ -7366,7 +7554,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// https://www.npmjs.org/package/react-interpolate-component
@@ -7384,11 +7572,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _utilsObjectAssign = __webpack_require__(116);
+	var _utilsObjectAssign = __webpack_require__(115);
 
 	var _utilsObjectAssign2 = _interopRequireDefault(_utilsObjectAssign);
 
@@ -7468,7 +7656,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7485,7 +7673,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -7505,7 +7693,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7522,11 +7710,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -7557,7 +7745,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7580,11 +7768,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
@@ -7674,7 +7862,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7691,11 +7879,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -7793,7 +7981,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 73 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7810,7 +7998,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -7877,7 +8065,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 74 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7894,23 +8082,23 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _FadeMixin = __webpack_require__(64);
+	var _FadeMixin = __webpack_require__(65);
 
 	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsEventListener = __webpack_require__(108);
+	var _utilsEventListener = __webpack_require__(109);
 
 	var _utilsEventListener2 = _interopRequireDefault(_utilsEventListener);
 
@@ -7930,7 +8118,8 @@
 	    keyboard: _react2['default'].PropTypes.bool,
 	    closeButton: _react2['default'].PropTypes.bool,
 	    animation: _react2['default'].PropTypes.bool,
-	    onRequestHide: _react2['default'].PropTypes.func.isRequired
+	    onRequestHide: _react2['default'].PropTypes.func.isRequired,
+	    dialogClassName: _react2['default'].PropTypes.string
 	  },
 
 	  getDefaultProps: function getDefaultProps() {
@@ -7967,7 +8156,7 @@
 	        ref: 'modal' }),
 	      _react2['default'].createElement(
 	        'div',
-	        { className: (0, _classnames2['default'])(dialogClasses) },
+	        { className: (0, _classnames2['default'])(this.props.dialogClassName, dialogClasses) },
 	        _react2['default'].createElement(
 	          'div',
 	          { className: 'modal-content' },
@@ -8074,7 +8263,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 75 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8091,31 +8280,31 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _CollapsibleMixin = __webpack_require__(60);
+	var _CollapsibleMixin = __webpack_require__(61);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsDeprecatedProperty = __webpack_require__(113);
+	var _utilsDeprecatedProperty = __webpack_require__(116);
 
 	var _utilsDeprecatedProperty2 = _interopRequireDefault(_utilsDeprecatedProperty);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
@@ -8225,7 +8414,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 76 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8242,19 +8431,19 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
@@ -8399,7 +8588,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 77 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8418,11 +8607,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -8501,7 +8690,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 78 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8516,15 +8705,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _OverlayMixin = __webpack_require__(80);
+	var _OverlayMixin = __webpack_require__(81);
 
 	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
-	var _utilsCreateContextWrapper = __webpack_require__(118);
+	var _utilsCreateContextWrapper = __webpack_require__(119);
 
 	var _utilsCreateContextWrapper2 = _interopRequireDefault(_utilsCreateContextWrapper);
 
@@ -8605,7 +8794,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 79 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8620,25 +8809,29 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _OverlayMixin = __webpack_require__(80);
+	var _OverlayMixin = __webpack_require__(81);
 
 	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _RootCloseWrapper = __webpack_require__(120);
 
-	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
+	var _RootCloseWrapper2 = _interopRequireDefault(_RootCloseWrapper);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
-	var _utilsObjectAssign = __webpack_require__(116);
-
-	var _utilsObjectAssign2 = _interopRequireDefault(_utilsObjectAssign);
-
-	var _utilsCreateContextWrapper = __webpack_require__(118);
+	var _utilsCreateContextWrapper = __webpack_require__(119);
 
 	var _utilsCreateContextWrapper2 = _interopRequireDefault(_utilsCreateContextWrapper);
+
+	var _utilsDomUtils = __webpack_require__(108);
+
+	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
+
+	var _utilsObjectAssign = __webpack_require__(115);
+
+	var _utilsObjectAssign2 = _interopRequireDefault(_utilsObjectAssign);
 
 	/**
 	 * Check if value one is inside or equal to the of value
@@ -8667,7 +8860,8 @@
 	    delayHide: _react2['default'].PropTypes.number,
 	    defaultOverlayShown: _react2['default'].PropTypes.bool,
 	    overlay: _react2['default'].PropTypes.node.isRequired,
-	    containerPadding: _react2['default'].PropTypes.number
+	    containerPadding: _react2['default'].PropTypes.number,
+	    rootClose: _react2['default'].PropTypes.bool
 	  },
 
 	  getDefaultProps: function getDefaultProps() {
@@ -8715,7 +8909,7 @@
 	      return _react2['default'].createElement('span', null);
 	    }
 
-	    return (0, _react.cloneElement)(this.props.overlay, {
+	    var overlay = (0, _react.cloneElement)(this.props.overlay, {
 	      onRequestHide: this.hide,
 	      placement: this.props.placement,
 	      positionLeft: this.state.overlayLeft,
@@ -8723,6 +8917,16 @@
 	      arrowOffsetLeft: this.state.arrowOffsetLeft,
 	      arrowOffsetTop: this.state.arrowOffsetTop
 	    });
+
+	    if (this.props.rootClose) {
+	      return _react2['default'].createElement(
+	        _RootCloseWrapper2['default'],
+	        { onRootClose: this.hide },
+	        overlay
+	      );
+	    } else {
+	      return overlay;
+	    }
 	  },
 
 	  render: function render() {
@@ -8941,7 +9145,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 80 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8956,11 +9160,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsCustomPropTypes = __webpack_require__(109);
+	var _utilsCustomPropTypes = __webpack_require__(110);
 
 	var _utilsCustomPropTypes2 = _interopRequireDefault(_utilsCustomPropTypes);
 
-	var _utilsDomUtils = __webpack_require__(107);
+	var _utilsDomUtils = __webpack_require__(108);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -9030,7 +9234,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 81 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9047,7 +9251,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -9071,7 +9275,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 82 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9088,19 +9292,19 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _CollapsibleMixin = __webpack_require__(60);
+	var _CollapsibleMixin = __webpack_require__(61);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
-	var _utilsDeprecatedProperty = __webpack_require__(113);
+	var _utilsDeprecatedProperty = __webpack_require__(116);
 
 	var _utilsDeprecatedProperty2 = _interopRequireDefault(_utilsDeprecatedProperty);
 
@@ -9313,7 +9517,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 83 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* eslint react/prop-types: [1, {ignore: ["children", "className", "bsStyle"]}]*/
@@ -9332,15 +9536,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
@@ -9425,7 +9629,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 84 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9442,7 +9646,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -9505,7 +9709,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 85 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9522,15 +9726,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
@@ -9562,7 +9766,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 86 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9581,15 +9785,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _FadeMixin = __webpack_require__(64);
+	var _FadeMixin = __webpack_require__(65);
 
 	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
 
@@ -9660,7 +9864,7 @@
 	// in class will be added by the FadeMixin when the animation property is true
 
 /***/ },
-/* 87 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9677,19 +9881,19 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Interpolate = __webpack_require__(68);
+	var _Interpolate = __webpack_require__(69);
 
 	var _Interpolate2 = _interopRequireDefault(_Interpolate);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
@@ -9815,7 +10019,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 88 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9832,7 +10036,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -9864,7 +10068,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 89 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* eslint react/prop-types: [1, {ignore: ["children", "className", "bsSize"]}]*/
@@ -9883,27 +10087,27 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _DropdownStateMixin = __webpack_require__(63);
+	var _DropdownStateMixin = __webpack_require__(64);
 
 	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
 
-	var _Button = __webpack_require__(50);
+	var _Button = __webpack_require__(51);
 
 	var _Button2 = _interopRequireDefault(_Button);
 
-	var _ButtonGroup = __webpack_require__(51);
+	var _ButtonGroup = __webpack_require__(52);
 
 	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
 
-	var _DropdownMenu = __webpack_require__(62);
+	var _DropdownMenu = __webpack_require__(63);
 
 	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
 
@@ -10019,7 +10223,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 90 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10036,19 +10240,19 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _utilsCreateChainedFunction = __webpack_require__(114);
+	var _utilsCreateChainedFunction = __webpack_require__(117);
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -10184,7 +10388,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 91 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10201,19 +10405,19 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _utilsValidComponentChildren = __webpack_require__(110);
+	var _utilsValidComponentChildren = __webpack_require__(111);
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _Nav = __webpack_require__(75);
+	var _Nav = __webpack_require__(76);
 
 	var _Nav2 = _interopRequireDefault(_Nav);
 
-	var _NavItem = __webpack_require__(77);
+	var _NavItem = __webpack_require__(78);
 
 	var _NavItem2 = _interopRequireDefault(_NavItem);
 
@@ -10354,7 +10558,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 92 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10371,7 +10575,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -10412,7 +10616,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 93 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10429,11 +10633,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsTransitionEvents = __webpack_require__(117);
+	var _utilsTransitionEvents = __webpack_require__(118);
 
 	var _utilsTransitionEvents2 = _interopRequireDefault(_utilsTransitionEvents);
 
@@ -10523,7 +10727,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 94 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10540,11 +10744,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -10595,7 +10799,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 95 */
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10614,15 +10818,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _FadeMixin = __webpack_require__(64);
+	var _FadeMixin = __webpack_require__(65);
 
 	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
 
@@ -10682,7 +10886,7 @@
 	// in class will be added by the FadeMixin when the animation property is true
 
 /***/ },
-/* 96 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10699,11 +10903,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(48);
+	var _BootstrapMixin = __webpack_require__(49);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -10733,7 +10937,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 97 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10791,120 +10995,55 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 98 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var DataSeries = __webpack_require__(123);
-	var common = __webpack_require__(119);
-	var Chart = common.Chart;
-	var XAxis = common.XAxis;
-	var YAxis = common.YAxis;
+	function ToObject(val) {
+		if (val == null) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
 
-	module.exports = React.createClass({displayName: "exports",
+		return Object(val);
+	}
 
-	  propTypes: {
-	    data: React.PropTypes.array,
-	    yAxisTickCount: React.PropTypes.number,
-	    width: React.PropTypes.number,
-	    margins: React.PropTypes.object,
-	    height: React.PropTypes.number,
-	    fill: React.PropTypes.string,
-	    title: React.PropTypes.string
-	  },
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var keys;
+		var to = ToObject(target);
 
-	  getDefaultProps:function() {
-	    return {
-	      data: [],
-	      yAxisTickCount: 4,
-	      width: 500,
-	      height: 200,
-	      margins: {top: 20, right: 30, bottom: 30, left: 30},
-	      fill: "#3182bd",
-	      title: ''
-	    };
-	  },
+		for (var s = 1; s < arguments.length; s++) {
+			from = arguments[s];
+			keys = Object.keys(Object(from));
 
-	  render:function() {
+			for (var i = 0; i < keys.length; i++) {
+				to[keys[i]] = from[keys[i]];
+			}
+		}
 
-	    var props = this.props;
+		return to;
+	};
 
-	    var values = props.data.map( function(item)  {return item.value;} );
-
-	    var labels = props.data.map( function(item)  {return item.label;} );
-
-	    var margins = props.margins;
-
-	    var sideMargins = margins.left + margins.right;
-	    var topBottomMargins = margins.top + margins.bottom;
-
-	    var yScale = d3.scale.linear()
-	      .domain([d3.min([d3.min(values), 0]), d3.max(values)])
-	      .range([props.height - topBottomMargins, 0]);
-
-	    var xScale = d3.scale.ordinal()
-	        .domain(labels)
-	        .rangeRoundBands([0, props.width - sideMargins], 0.1);
-
-	    var trans = ("translate(" +  margins.left + "," +  margins.top + ")");
-
-	    return (
-	      React.createElement(Chart, {width: props.width, height: props.height, title: props.title}, 
-	        React.createElement("g", {transform: trans, className: "rd3-barchart"}, 
-	          React.createElement(DataSeries, {
-	            values: values, 
-	            yScale: yScale, 
-	            xScale: yScale, 
-	            margins: margins, 
-	            data: props.data, 
-	            width: props.width - sideMargins, 
-	            height: props.height - topBottomMargins, 
-	            fill: props.fill}
-	          ), 
-	          React.createElement(YAxis, {
-	            yAxisClassName: "rd3-barchart-yaxis", 
-	            yScale: yScale, 
-	            margins: margins, 
-	            yAxisTickCount: props.yAxisTickCount, 
-	            width: props.width - sideMargins, 
-	            height: props.height - topBottomMargins}
-	          ), 
-	          React.createElement(XAxis, {
-	            xAxisClassName: "rd3-barchart-xaxis", 
-	            xScale: xScale, 
-	            data: props.data, 
-	            margins: margins, 
-	            width: props.width - sideMargins, 
-	            height: props.height - topBottomMargins}
-	          )
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 99 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* (ignored) */
 
 /***/ },
 /* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = __webpack_require__(125);
+
+
+/***/ },
+/* 101 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 	var React = __webpack_require__(1);
-	var cloneWithProps = __webpack_require__(141);
-	var utils = __webpack_require__(101);
+	var cloneWithProps = __webpack_require__(138);
+	var utils = __webpack_require__(102);
 	var Draggable = __webpack_require__(134);
-	var Resizable = __webpack_require__(136).Resizable;
-	var PureDeepRenderMixin = __webpack_require__(102);
+	var Resizable = __webpack_require__(135).Resizable;
+	var PureDeepRenderMixin = __webpack_require__(103);
 
 	/**
 	 * An individual item within a ReactGridLayout.
@@ -11242,12 +11381,12 @@
 	module.exports = GridItem;
 
 /***/ },
-/* 101 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assign = __webpack_require__(135);
+	var assign = __webpack_require__(136);
 
 	var utils = module.exports = {
 
@@ -11625,7 +11764,7 @@
 	};
 
 /***/ },
-/* 102 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11641,7 +11780,7 @@
 	module.exports = PureDeepRenderMixin;
 
 /***/ },
-/* 103 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11694,12 +11833,12 @@
 	module.exports = WidthListeningMixin;
 
 /***/ },
-/* 104 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(101);
+	var utils = __webpack_require__(102);
 
 	var responsiveUtils = module.exports = {
 
@@ -11780,58 +11919,111 @@
 	};
 
 /***/ },
-/* 105 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableRoot
-	 */
-
-	"use strict";
-
-	if (process.env.NODE_ENV !== 'production') {
-	  var ExecutionEnvironment = __webpack_require__(126);
-	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
-
-	    if (!Object.assign) {
-	      console.error(
-	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
-	      );
-	    }
-	  }
-	}
-
-	var FixedDataTable = __webpack_require__(127);
-	var FixedDataTableColumn = __webpack_require__(128);
-	var FixedDataTableColumnGroup = __webpack_require__(129);
-
-	var FixedDataTableRoot = {
-	  Column: FixedDataTableColumn,
-	  ColumnGroup: FixedDataTableColumnGroup,
-	  Table: FixedDataTable,
-	};
-
-	FixedDataTableRoot.version = '0.1.2';
-
-	module.exports = FixedDataTableRoot;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
-
-/***/ },
 /* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var Circle = __webpack_require__(130);
+	var d3 = __webpack_require__(39);
+	var DataSeries = __webpack_require__(127);
+	var common = __webpack_require__(121);
+	var Chart = common.Chart;
+	var XAxis = common.XAxis;
+	var YAxis = common.YAxis;
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    data: React.PropTypes.array,
+	    yAxisTickCount: React.PropTypes.number,
+	    width: React.PropTypes.number,
+	    margins: React.PropTypes.object,
+	    height: React.PropTypes.number,
+	    fill: React.PropTypes.string,
+	    title: React.PropTypes.string
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      data: [],
+	      yAxisTickCount: 4,
+	      width: 500,
+	      height: 200,
+	      margins: {top: 20, right: 30, bottom: 30, left: 30},
+	      fill: "#3182bd",
+	      title: ''
+	    };
+	  },
+
+	  render:function() {
+
+	    var props = this.props;
+
+	    var values = props.data.map( function(item)  {return item.value;} );
+
+	    var labels = props.data.map( function(item)  {return item.label;} );
+
+	    var margins = props.margins;
+
+	    var sideMargins = margins.left + margins.right;
+	    var topBottomMargins = margins.top + margins.bottom;
+
+	    var yScale = d3.scale.linear()
+	      .domain([d3.min([d3.min(values), 0]), d3.max(values)])
+	      .range([props.height - topBottomMargins, 0]);
+
+	    var xScale = d3.scale.ordinal()
+	        .domain(labels)
+	        .rangeRoundBands([0, props.width - sideMargins], 0.1);
+
+	    var trans = ("translate(" +  margins.left + "," +  margins.top + ")");
+
+	    return (
+	      React.createElement(Chart, {width: props.width, height: props.height, title: props.title}, 
+	        React.createElement("g", {transform: trans, className: "rd3-barchart"}, 
+	          React.createElement(DataSeries, {
+	            values: values, 
+	            yScale: yScale, 
+	            xScale: yScale, 
+	            margins: margins, 
+	            data: props.data, 
+	            width: props.width - sideMargins, 
+	            height: props.height - topBottomMargins, 
+	            fill: props.fill}
+	          ), 
+	          React.createElement(YAxis, {
+	            yAxisClassName: "rd3-barchart-yaxis", 
+	            yScale: yScale, 
+	            margins: margins, 
+	            yAxisTickCount: props.yAxisTickCount, 
+	            width: props.width - sideMargins, 
+	            height: props.height - topBottomMargins}
+	          ), 
+	          React.createElement(XAxis, {
+	            xAxisClassName: "rd3-barchart-xaxis", 
+	            xScale: xScale, 
+	            data: props.data, 
+	            margins: margins, 
+	            width: props.width - sideMargins, 
+	            height: props.height - topBottomMargins}
+	          )
+	        )
+	      )
+	    );
+	  }
+
+	});
+
+
+/***/ },
+/* 107 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var Circle = __webpack_require__(128);
 
 
 	module.exports = React.createClass({displayName: "exports",
@@ -11905,7 +12097,7 @@
 
 
 /***/ },
-/* 107 */
+/* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12041,7 +12233,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 108 */
+/* 109 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -12106,7 +12298,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 109 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12190,7 +12382,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 110 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12298,7 +12490,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 111 */
+/* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12319,7 +12511,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -12380,7 +12572,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 112 */
+/* 113 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12403,11 +12595,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(125);
+	var _classnames = __webpack_require__(124);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _FormGroup = __webpack_require__(111);
+	var _FormGroup = __webpack_require__(112);
 
 	var _FormGroup2 = _interopRequireDefault(_FormGroup);
 
@@ -12652,79 +12844,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 113 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports['default'] = collapsable;
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _deprecationWarning = __webpack_require__(115);
-
-	var _deprecationWarning2 = _interopRequireDefault(_deprecationWarning);
-
-	function collapsable(props, propName, componentName) {
-	  if (props[propName] !== undefined) {
-	    (0, _deprecationWarning2['default'])('' + propName + ' in ' + componentName, 'collapsible', 'https://github.com/react-bootstrap/react-bootstrap/issues/425');
-	  }
-	  return _react2['default'].PropTypes.bool.call(null, props, propName, componentName);
-	}
-
-	module.exports = exports['default'];
-
-/***/ },
 /* 114 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Safe chained function
-	 *
-	 * Will only create a new function if needed,
-	 * otherwise will pass back existing functions or null.
-	 *
-	 * @param {function} one
-	 * @param {function} two
-	 * @returns {function|null}
-	 */
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	function createChainedFunction(one, two) {
-	  var hasOne = typeof one === 'function';
-	  var hasTwo = typeof two === 'function';
-
-	  if (!hasOne && !hasTwo) {
-	    return null;
-	  }
-	  if (!hasOne) {
-	    return two;
-	  }
-	  if (!hasTwo) {
-	    return one;
-	  }
-
-	  return function chainedFunction() {
-	    one.apply(this, arguments);
-	    two.apply(this, arguments);
-	  };
-	}
-
-	exports['default'] = createChainedFunction;
-	module.exports = exports['default'];
-
-/***/ },
-/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -12750,10 +12870,10 @@
 	}
 
 	module.exports = exports['default'];
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 116 */
+/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -12811,7 +12931,79 @@
 	module.exports = exports['default'];
 
 /***/ },
+/* 116 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports['default'] = collapsable;
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _deprecationWarning = __webpack_require__(114);
+
+	var _deprecationWarning2 = _interopRequireDefault(_deprecationWarning);
+
+	function collapsable(props, propName, componentName) {
+	  if (props[propName] !== undefined) {
+	    (0, _deprecationWarning2['default'])('' + propName + ' in ' + componentName, 'collapsible', 'https://github.com/react-bootstrap/react-bootstrap/issues/425');
+	  }
+	  return _react2['default'].PropTypes.bool.call(null, props, propName, componentName);
+	}
+
+	module.exports = exports['default'];
+
+/***/ },
 /* 117 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Safe chained function
+	 *
+	 * Will only create a new function if needed,
+	 * otherwise will pass back existing functions or null.
+	 *
+	 * @param {function} one
+	 * @param {function} two
+	 * @returns {function|null}
+	 */
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	function createChainedFunction(one, two) {
+	  var hasOne = typeof one === 'function';
+	  var hasTwo = typeof two === 'function';
+
+	  if (!hasOne && !hasTwo) {
+	    return null;
+	  }
+	  if (!hasOne) {
+	    return two;
+	  }
+	  if (!hasTwo) {
+	    return one;
+	  }
+
+	  return function chainedFunction() {
+	    one.apply(this, arguments);
+	    two.apply(this, arguments);
+	  };
+	}
+
+	exports['default'] = createChainedFunction;
+	module.exports = exports['default'];
+
+/***/ },
+/* 118 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -12931,7 +13123,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 118 */
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13039,23 +13231,151 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 119 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.XAxis = __webpack_require__(139).XAxis;
-	exports.YAxis = __webpack_require__(139).YAxis;
-	exports.Chart = __webpack_require__(140).Chart;
-	exports.LegendChart = __webpack_require__(140).LegendChart;
-	exports.Legend = __webpack_require__(131);
-	exports.Voronoi = __webpack_require__(132);
-
-
-/***/ },
 /* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var d3 = __webpack_require__(16);
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _utilsDomUtils = __webpack_require__(108);
+
+	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
+
+	var _utilsEventListener = __webpack_require__(109);
+
+	var _utilsEventListener2 = _interopRequireDefault(_utilsEventListener);
+
+	// TODO: Merge this logic with dropdown logic once #526 is done.
+
+	/**
+	 * Checks whether a node is within
+	 * a root nodes tree
+	 *
+	 * @param {DOMElement} node
+	 * @param {DOMElement} root
+	 * @returns {boolean}
+	 */
+	function isNodeInRoot(node, root) {
+	  while (node) {
+	    if (node === root) {
+	      return true;
+	    }
+	    node = node.parentNode;
+	  }
+
+	  return false;
+	}
+
+	var RootCloseWrapper = (function (_React$Component) {
+	  function RootCloseWrapper(props) {
+	    _classCallCheck(this, RootCloseWrapper);
+
+	    _get(Object.getPrototypeOf(RootCloseWrapper.prototype), 'constructor', this).call(this, props);
+
+	    this.handleDocumentClick = this.handleDocumentClick.bind(this);
+	    this.handleDocumentKeyUp = this.handleDocumentKeyUp.bind(this);
+	  }
+
+	  _inherits(RootCloseWrapper, _React$Component);
+
+	  _createClass(RootCloseWrapper, [{
+	    key: 'bindRootCloseHandlers',
+	    value: function bindRootCloseHandlers() {
+	      var doc = _utilsDomUtils2['default'].ownerDocument(this);
+
+	      this._onDocumentClickListener = _utilsEventListener2['default'].listen(doc, 'click', this.handleDocumentClick);
+	      this._onDocumentKeyupListener = _utilsEventListener2['default'].listen(doc, 'keyup', this.handleDocumentKeyUp);
+	    }
+	  }, {
+	    key: 'handleDocumentClick',
+	    value: function handleDocumentClick(e) {
+	      // If the click originated from within this component, don't do anything.
+	      if (isNodeInRoot(e.target, _react2['default'].findDOMNode(this))) {
+	        return;
+	      }
+
+	      this.props.onRootClose();
+	    }
+	  }, {
+	    key: 'handleDocumentKeyUp',
+	    value: function handleDocumentKeyUp(e) {
+	      if (e.keyCode === 27) {
+	        this.props.onRootClose();
+	      }
+	    }
+	  }, {
+	    key: 'unbindRootCloseHandlers',
+	    value: function unbindRootCloseHandlers() {
+	      if (this._onDocumentClickListener) {
+	        this._onDocumentClickListener.remove();
+	      }
+
+	      if (this._onDocumentKeyupListener) {
+	        this._onDocumentKeyupListener.remove();
+	      }
+	    }
+	  }, {
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.bindRootCloseHandlers();
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2['default'].Children.only(this.props.children);
+	    }
+	  }, {
+	    key: 'componentWillUnmount',
+	    value: function componentWillUnmount() {
+	      this.unbindRootCloseHandlers();
+	    }
+	  }]);
+
+	  return RootCloseWrapper;
+	})(_react2['default'].Component);
+
+	exports['default'] = RootCloseWrapper;
+
+	RootCloseWrapper.propTypes = {
+	  onRootClose: _react2['default'].PropTypes.func.isRequired
+	};
+	module.exports = exports['default'];
+
+/***/ },
+/* 121 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.XAxis = __webpack_require__(131).XAxis;
+	exports.YAxis = __webpack_require__(131).YAxis;
+	exports.Chart = __webpack_require__(132).Chart;
+	exports.LegendChart = __webpack_require__(132).LegendChart;
+	exports.Legend = __webpack_require__(129);
+	exports.Voronoi = __webpack_require__(130);
+
+
+/***/ },
+/* 122 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var d3 = __webpack_require__(39);
 
 
 	exports.calculateScales = function(chartWidth, chartHeight, xValues, yValues)  {
@@ -13203,7 +13523,7 @@
 
 
 /***/ },
-/* 121 */
+/* 123 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -13211,129 +13531,108 @@
 
 
 /***/ },
-/* 122 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    draining = true;
-	    var currentQueue;
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        var i = -1;
-	        while (++i < len) {
-	            currentQueue[i]();
-	        }
-	        len = queue.length;
-	    }
-	    draining = false;
-	}
-	process.nextTick = function (fun) {
-	    queue.push(fun);
-	    if (!draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
-
-/***/ },
-/* 123 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var Bar = __webpack_require__(138);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    fill: React.PropTypes.string,
-	    title: React.PropTypes.string,
-	    padding: React.PropTypes.number,
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    offset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      padding: 0.1,
-	      data: []
-	    };
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-
-	    var xScale = d3.scale.ordinal()
-	      .domain(d3.range(props.values.length))
-	      .rangeRoundBands([0, props.width], props.padding);
-
-	    var bars = props.values.map(function(point, i) {
-	      return (
-	        React.createElement(Bar, {
-	          height: props.yScale(0) - props.yScale(point), 
-	          width: xScale.rangeBand(), 
-	          offset: xScale(i), 
-	          availableHeight: props.height, 
-	          fill: props.fill, key: i}
-	        )
-	      );
-	    });
-
-	    return (
-	      React.createElement("g", null, bars)
-	    );
-	  }
-	});
-
-
-/***/ },
 /* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Structure = __webpack_require__(142);
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	  Copyright (c) 2015 Jed Watson.
+	  Licensed under the MIT License (MIT), see
+	  http://jedwatson.github.io/classnames
+	*/
+
+	function classNames () {
+		'use strict';
+
+		var classes = '';
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if ('string' === argType || 'number' === argType) {
+				classes += ' ' + arg;
+
+			} else if (Array.isArray(arg)) {
+				classes += ' ' + classNames.apply(null, arg);
+
+			} else if ('object' === argType) {
+				for (var key in arg) {
+					if (arg.hasOwnProperty(key) && arg[key]) {
+						classes += ' ' + key;
+					}
+				}
+			}
+		}
+
+		return classes.substr(1);
+	}
+
+	// safely export classNames for node / browserify
+	if (typeof module !== 'undefined' && module.exports) {
+		module.exports = classNames;
+	}
+
+	/* global define */
+	// safely export classNames for RequireJS
+	if (true) {
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
+			return classNames;
+		}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	}
+
+
+/***/ },
+/* 125 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableRoot
+	 */
+
+	"use strict";
+
+	if (process.env.NODE_ENV !== 'production') {
+	  var ExecutionEnvironment = __webpack_require__(139);
+	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
+
+	    if (!Object.assign) {
+	      console.error(
+	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
+	      );
+	    }
+	  }
+	}
+
+	var FixedDataTable = __webpack_require__(140);
+	var FixedDataTableColumn = __webpack_require__(141);
+	var FixedDataTableColumnGroup = __webpack_require__(142);
+
+	var FixedDataTableRoot = {
+	  Column: FixedDataTableColumn,
+	  ColumnGroup: FixedDataTableColumnGroup,
+	  Table: FixedDataTable,
+	};
+
+	FixedDataTableRoot.version = '0.1.2';
+
+	module.exports = FixedDataTableRoot;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+
+/***/ },
+/* 126 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Structure = __webpack_require__(143);
 
 	function Immstruct () {
 	  if (!(this instanceof Immstruct)) {
@@ -13409,60 +13708,581 @@
 	}
 
 /***/ },
-/* 125 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	  Copyright (c) 2015 Jed Watson.
-	  Licensed under the MIT License (MIT), see
-	  http://jedwatson.github.io/classnames
-	*/
+	'use strict';
 
-	function classNames () {
-		'use strict';
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+	var Bar = __webpack_require__(144);
 
-		var classes = '';
+	module.exports = React.createClass({displayName: "exports",
 
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (!arg) continue;
+	  propTypes: {
+	    fill: React.PropTypes.string,
+	    title: React.PropTypes.string,
+	    padding: React.PropTypes.number,
+	    width: React.PropTypes.number,
+	    height: React.PropTypes.number,
+	    offset: React.PropTypes.number
+	  },
 
-			var argType = typeof arg;
+	  getDefaultProps:function() {
+	    return {
+	      padding: 0.1,
+	      data: []
+	    };
+	  },
 
-			if ('string' === argType || 'number' === argType) {
-				classes += ' ' + arg;
+	  render:function() {
 
-			} else if (Array.isArray(arg)) {
-				classes += ' ' + classNames.apply(null, arg);
+	    var props = this.props;
 
-			} else if ('object' === argType) {
-				for (var key in arg) {
-					if (arg.hasOwnProperty(key) && arg[key]) {
-						classes += ' ' + key;
-					}
-				}
+	    var xScale = d3.scale.ordinal()
+	      .domain(d3.range(props.values.length))
+	      .rangeRoundBands([0, props.width], props.padding);
+
+	    var bars = props.values.map(function(point, i) {
+	      return (
+	        React.createElement(Bar, {
+	          height: props.yScale(0) - props.yScale(point), 
+	          width: xScale.rangeBand(), 
+	          offset: xScale(i), 
+	          availableHeight: props.height, 
+	          fill: props.fill, key: i}
+	        )
+	      );
+	    });
+
+	    return (
+	      React.createElement("g", null, bars)
+	    );
+	  }
+	});
+
+
+/***/ },
+/* 128 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+	var utils = __webpack_require__(122);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    id: React.PropTypes.string,
+	    cx: React.PropTypes.number,
+	    cy: React.PropTypes.number,
+	    r: React.PropTypes.number,
+	    fill: React.PropTypes.string,
+	    stroke: React.PropTypes.string,
+	    strokeWidth: React.PropTypes.number,
+	    strokeOpacity: React.PropTypes.number,
+	    hoverAnimation: React.PropTypes.bool
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      fill: '#1f77b4',
+	      className: 'rd3-scatterchart-circle'
+	    };
+	  },
+
+	  getInitialState:function() {
+	    // state for animation usage
+	    return {
+	      circleRadius: this.props.r,
+	      circleFill: this.props.fill
+	    };
+	  },
+
+	  componentDidMount:function() {
+	    var props = this.props;
+	    // The circle reference is observed when both it is set to
+	    // active, and to inactive, so we have to check which one
+	    var unobserve = props.voronoiRef.observe(function()  {
+	      var circleStatus = props.voronoiRef.cursor().deref();
+	      if (circleStatus === 'active') {
+	        this._animateCircle(props.id);
+	      } else if (circleStatus === 'inactive') {
+	        this._restoreCircle(props.id);
+	      }
+	    }.bind(this));
+	  },
+
+	  componentWillUnmount:function() {
+	    this.props.voronoiRef.destroy();
+	  },
+
+	  render:function() {
+	    return (
+	      React.createElement("circle", {
+	        fill: this.state.circleFill, 
+	        cx: this.props.cx, 
+	        cy: this.props.cy, 
+	        r: this.state.circleRadius, 
+	        id: this.props.id, 
+	        className: this.props.className}
+	      )
+	    );
+	  },
+
+	  _animateCircle:function(id) {
+	    this.setState({ 
+	      circleRadius: this.state.circleRadius * ( 5 / 4 ),
+	      circleFill: utils.shade(this.props.fill, -0.2)
+	    });
+	  },
+
+	  _restoreCircle:function(id) {
+	    this.setState({ 
+	      circleRadius: this.props.r,
+	      circleFill: this.props.fill
+	    });
+	  }
+
+	});
+
+
+/***/ },
+/* 129 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    width: React.PropTypes.number,
+	    height: React.PropTypes.number,
+	    margins: React.PropTypes.object,
+	    text: React.PropTypes.string,
+	    colors: React.PropTypes.func
+	  },
+
+	  getDefaultProps: function() {
+	    return {
+	      text: "#000",
+	      colors: d3.scale.category20c()
+	    };
+	  },
+
+	  render: function() {
+
+	    var props = this.props;
+
+	    var textStyle = {
+	      'color': 'black',
+	      'fontSize': '50%',
+	      'verticalAlign': 'top'
+	    };
+
+	    var legendItems = [];
+
+	    props.data.forEach( function(series, idx)  {
+
+	      var itemStyle = {
+	        'color': props.colors(idx),
+	        'lineHeight': '60%',
+	        'fontSize': '200%'
+	      };
+
+	      legendItems.push(
+	            React.createElement("li", {style: itemStyle, key: idx}, 
+	              React.createElement("span", {style: textStyle}, series.name)
+	            )
+	          );
+
+	    });
+
+	    // In preparation for legend positioning
+	    var legendFloat = 'right';
+
+	    var topMargin = props.margins.top;
+
+	    var legendBlockStyle = {
+	      'wordWrap': 'break-word',
+	      'width': props.sideOffset,
+	      'paddingLeft': '0',
+	      'marginBottom': '0',
+	      'marginTop': topMargin,
+	      'float': legendFloat
+	    };
+
+	    return React.createElement("ul", {style: legendBlockStyle}, legendItems);
+	  }
+
+	});
+
+
+
+/***/ },
+/* 130 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+
+	var Polygon = React.createClass({displayName: "Polygon",
+
+	  _animateCircle: function() {
+	    this.props.structure.cursor('voronoi').cursor(this.props.id).update(function(){return 'active';});
+	    // this.props.pubsub.emit('animate', this.props.id);
+	  },
+
+	  _restoreCircle: function() {
+	    this.props.structure.cursor('voronoi').cursor(this.props.id).update(function(){return 'inactive';});
+	    // this.props.pubsub.emit('restore', this.props.id);
+	  },
+
+	  _drawPath: function(d) {
+	    if(d === undefined) {
+	      return; 
+	    }  
+	    return 'M' + d.join(',') + 'Z';
+	  },
+
+	  render: function() {
+	    return React.createElement("path", {
+	      onMouseOver: this._animateCircle, 
+	      onMouseOut: this._restoreCircle, 
+	      fill: "white", 
+	      opacity: "0", 
+	      d: this._drawPath(this.props.vnode)});
+	  }
+
+	});
+
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  render: function() {
+	    var xScale = this.props.xScale;
+	    var yScale = this.props.yScale;
+
+	    var voronoi = d3.geom.voronoi()
+	      .x(function(d){ return xScale(d.coord.x); })
+	      .y(function(d){ return yScale(d.coord.y); })
+	      .clipExtent([[0, 0], [ this.props.width , this.props.height]]);
+
+	    var regions = voronoi(this.props.data).map(function(vnode, idx) {
+	      return React.createElement(Polygon, {structure: this.props.structure, key: idx, id: vnode.point.id, vnode: vnode});
+	    }.bind(this));
+
+	    return (
+	      React.createElement("g", null, 
+	        regions
+	      )
+	    );
+	  }
+
+	});
+
+
+/***/ },
+/* 131 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.XAxis = __webpack_require__(145);
+	exports.YAxis = __webpack_require__(146);
+
+
+/***/ },
+/* 132 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	exports.BasicChart = __webpack_require__(147);
+	exports.Chart = __webpack_require__(148);
+	exports.LegendChart = __webpack_require__(149);
+
+
+/***/ },
+/* 133 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+
+	module.exports =  {
+
+	  propTypes: {
+	    axesColor: React.PropTypes.string,
+	    colors: React.PropTypes.func,
+	    data: React.PropTypes.oneOfType([
+	      React.PropTypes.array,
+	      React.PropTypes.object
+	    ]).isRequired,
+	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
+	    yOrient: React.PropTypes.oneOf(['left', 'right']),
+	    yAxisTickCount: React.PropTypes.number,
+	    yAxisLabel: React.PropTypes.string,
+	    yAxisLabelOffset: React.PropTypes.number,
+	    xAxisTickInterval: React.PropTypes.object,
+	    xAxisLabel: React.PropTypes.string,
+	    xAxisLabelOffset: React.PropTypes.number,
+	    legend: React.PropTypes.bool,
+	    legendOffset: React.PropTypes.number,
+	    width: React.PropTypes.number,
+	    height: React.PropTypes.number,
+	    xAccessor: React.PropTypes.func,
+	    yAccessor: React.PropTypes.func,
+	    title: React.PropTypes.string,
+	    viewBox: React.PropTypes.string
+	  },
+
+	  getDefaultProps: function() {
+	    return {
+	      data: [],
+	      xOrient: 'bottom',
+	      xAxisLabel: '',
+	      xAxisLabelOffset: 38,
+	      yOrient: 'left',
+	      yAxisLabel: '',
+	      yAxisLabelOffset: 35,
+	      legend: false,
+	      legendOffset: 120,
+	      width: 400,
+	      height: 200,
+	      axesColor: '#000',
+	      title: '',
+	      colors: d3.scale.category20c(),
+	      xAccessor: function(d)  {return d.x;},
+	      yAccessor: function(d)  {return d.y;}
+	    };
+	  }
+
+	};
+
+
+/***/ },
+/* 134 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(150);
+
+
+/***/ },
+/* 135 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function() {
+	  throw new Error("Don't instantiate Resizable directly! Use require('react-resizable').Resizable");
+	};
+
+	module.exports.Resizable = __webpack_require__(151);
+	module.exports.ResizableBox = __webpack_require__(152);
+
+
+/***/ },
+/* 136 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	function ToObject(val) {
+		if (val == null) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+
+		return Object(val);
+	}
+
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var keys;
+		var to = ToObject(target);
+
+		for (var s = 1; s < arguments.length; s++) {
+			from = arguments[s];
+			keys = Object.keys(Object(from));
+
+			for (var i = 0; i < keys.length; i++) {
+				to[keys[i]] = from[keys[i]];
 			}
 		}
 
-		return classes.substr(1);
+		return to;
+	};
+
+
+/***/ },
+/* 137 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var pSlice = Array.prototype.slice;
+	var objectKeys = __webpack_require__(153);
+	var isArguments = __webpack_require__(154);
+
+	var deepEqual = module.exports = function (actual, expected, opts) {
+	  if (!opts) opts = {};
+	  // 7.1. All identical values are equivalent, as determined by ===.
+	  if (actual === expected) {
+	    return true;
+
+	  } else if (actual instanceof Date && expected instanceof Date) {
+	    return actual.getTime() === expected.getTime();
+
+	  // 7.3. Other pairs that do not both pass typeof value == 'object',
+	  // equivalence is determined by ==.
+	  } else if (typeof actual != 'object' && typeof expected != 'object') {
+	    return opts.strict ? actual === expected : actual == expected;
+
+	  // 7.4. For all other Object pairs, including Array objects, equivalence is
+	  // determined by having the same number of owned properties (as verified
+	  // with Object.prototype.hasOwnProperty.call), the same set of keys
+	  // (although not necessarily the same order), equivalent values for every
+	  // corresponding key, and an identical 'prototype' property. Note: this
+	  // accounts for both named and indexed properties on Arrays.
+	  } else {
+	    return objEquiv(actual, expected, opts);
+	  }
 	}
 
-	// safely export classNames for node / browserify
-	if (typeof module !== 'undefined' && module.exports) {
-		module.exports = classNames;
+	function isUndefinedOrNull(value) {
+	  return value === null || value === undefined;
 	}
 
-	/* global define */
-	// safely export classNames for RequireJS
-	if (true) {
-		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
-			return classNames;
-		}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	function isBuffer (x) {
+	  if (!x || typeof x !== 'object' || typeof x.length !== 'number') return false;
+	  if (typeof x.copy !== 'function' || typeof x.slice !== 'function') {
+	    return false;
+	  }
+	  if (x.length > 0 && typeof x[0] !== 'number') return false;
+	  return true;
+	}
+
+	function objEquiv(a, b, opts) {
+	  var i, key;
+	  if (isUndefinedOrNull(a) || isUndefinedOrNull(b))
+	    return false;
+	  // an identical 'prototype' property.
+	  if (a.prototype !== b.prototype) return false;
+	  //~~~I've managed to break Object.keys through screwy arguments passing.
+	  //   Converting to array solves the problem.
+	  if (isArguments(a)) {
+	    if (!isArguments(b)) {
+	      return false;
+	    }
+	    a = pSlice.call(a);
+	    b = pSlice.call(b);
+	    return deepEqual(a, b, opts);
+	  }
+	  if (isBuffer(a)) {
+	    if (!isBuffer(b)) {
+	      return false;
+	    }
+	    if (a.length !== b.length) return false;
+	    for (i = 0; i < a.length; i++) {
+	      if (a[i] !== b[i]) return false;
+	    }
+	    return true;
+	  }
+	  try {
+	    var ka = objectKeys(a),
+	        kb = objectKeys(b);
+	  } catch (e) {//happens when one is a string literal and the other isn't
+	    return false;
+	  }
+	  // having the same number of owned properties (keys incorporates
+	  // hasOwnProperty)
+	  if (ka.length != kb.length)
+	    return false;
+	  //the same set of keys (although not necessarily the same order),
+	  ka.sort();
+	  kb.sort();
+	  //~~~cheap key test
+	  for (i = ka.length - 1; i >= 0; i--) {
+	    if (ka[i] != kb[i])
+	      return false;
+	  }
+	  //equivalent values for every corresponding key, and
+	  //~~~possibly expensive deep test
+	  for (i = ka.length - 1; i >= 0; i--) {
+	    key = ka[i];
+	    if (!deepEqual(a[key], b[key], opts)) return false;
+	  }
+	  return typeof a === typeof b;
 	}
 
 
 /***/ },
-/* 126 */
+/* 138 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @typechecks static-only
+	 * @providesModule cloneWithProps
+	 */
+
+	'use strict';
+
+	var ReactElement = __webpack_require__(155);
+	var ReactPropTransferer = __webpack_require__(156);
+
+	var keyOf = __webpack_require__(157);
+	var warning = __webpack_require__(158);
+
+	var CHILDREN_PROP = keyOf({children: null});
+
+	/**
+	 * Sometimes you want to change the props of a child passed to you. Usually
+	 * this is to add a CSS class.
+	 *
+	 * @param {ReactElement} child child element you'd like to clone
+	 * @param {object} props props you'd like to modify. className and style will be
+	 * merged automatically.
+	 * @return {ReactElement} a clone of child with props merged in.
+	 */
+	function cloneWithProps(child, props) {
+	  if ("production" !== process.env.NODE_ENV) {
+	    ("production" !== process.env.NODE_ENV ? warning(
+	      !child.ref,
+	      'You are calling cloneWithProps() on a child with a ref. This is ' +
+	      'dangerous because you\'re creating a new child which will not be ' +
+	      'added as a ref to its parent.'
+	    ) : null);
+	  }
+
+	  var newProps = ReactPropTransferer.mergeProps(props, child.props);
+
+	  // Use `child.props.children` if it is provided.
+	  if (!newProps.hasOwnProperty(CHILDREN_PROP) &&
+	      child.props.hasOwnProperty(CHILDREN_PROP)) {
+	    newProps.children = child.props.children;
+	  }
+
+	  // The current API doesn't retain _owner and _context, which is why this
+	  // doesn't use ReactElement.cloneAndReplaceProps.
+	  return ReactElement.createElement(child.type, newProps);
+	}
+
+	module.exports = cloneWithProps;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+
+/***/ },
+/* 139 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -13511,7 +14331,7 @@
 
 
 /***/ },
-/* 127 */
+/* 140 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -13528,25 +14348,25 @@
 
 	/* jslint bitwise: true */
 
-	var FixedDataTableHelper = __webpack_require__(143);
-	var Locale = __webpack_require__(144);
-	var React = __webpack_require__(145);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(146);
-	var ReactWheelHandler = __webpack_require__(147);
-	var Scrollbar = __webpack_require__(148);
-	var FixedDataTableBufferedRows = __webpack_require__(149);
-	var FixedDataTableColumnResizeHandle = __webpack_require__(150);
-	var FixedDataTableRow = __webpack_require__(151);
-	var FixedDataTableScrollHelper = __webpack_require__(152);
-	var FixedDataTableWidthHelper = __webpack_require__(153);
+	var FixedDataTableHelper = __webpack_require__(159);
+	var Locale = __webpack_require__(160);
+	var React = __webpack_require__(161);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(162);
+	var ReactWheelHandler = __webpack_require__(163);
+	var Scrollbar = __webpack_require__(164);
+	var FixedDataTableBufferedRows = __webpack_require__(165);
+	var FixedDataTableColumnResizeHandle = __webpack_require__(166);
+	var FixedDataTableRow = __webpack_require__(167);
+	var FixedDataTableScrollHelper = __webpack_require__(168);
+	var FixedDataTableWidthHelper = __webpack_require__(169);
 
-	var cloneWithProps = __webpack_require__(154);
-	var cx = __webpack_require__(155);
-	var debounceCore = __webpack_require__(156);
-	var emptyFunction = __webpack_require__(157);
-	var invariant = __webpack_require__(158);
-	var shallowEqual = __webpack_require__(159);
-	var translateDOMPositionXY = __webpack_require__(160);
+	var cloneWithProps = __webpack_require__(170);
+	var cx = __webpack_require__(171);
+	var debounceCore = __webpack_require__(172);
+	var emptyFunction = __webpack_require__(173);
+	var invariant = __webpack_require__(174);
+	var shallowEqual = __webpack_require__(175);
+	var translateDOMPositionXY = __webpack_require__(176);
 
 	var PropTypes = React.PropTypes;
 	var ReactChildren = React.Children;
@@ -14543,7 +15363,7 @@
 
 
 /***/ },
-/* 128 */
+/* 141 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -14558,7 +15378,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(145);
+	var React = __webpack_require__(161);
 
 	var PropTypes = React.PropTypes;
 
@@ -14698,10 +15518,10 @@
 
 	module.exports = FixedDataTableColumn;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 129 */
+/* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -14716,7 +15536,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(145);
+	var React = __webpack_require__(161);
 
 	var PropTypes = React.PropTypes;
 
@@ -14778,574 +15598,17 @@
 
 	module.exports = FixedDataTableColumnGroup;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 130 */
+/* 143 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var utils = __webpack_require__(120);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    id: React.PropTypes.string,
-	    cx: React.PropTypes.number,
-	    cy: React.PropTypes.number,
-	    r: React.PropTypes.number,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.number,
-	    strokeOpacity: React.PropTypes.number,
-	    hoverAnimation: React.PropTypes.bool
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      fill: '#1f77b4',
-	      className: 'rd3-scatterchart-circle'
-	    };
-	  },
-
-	  getInitialState:function() {
-	    // state for animation usage
-	    return {
-	      circleRadius: this.props.r,
-	      circleFill: this.props.fill
-	    };
-	  },
-
-	  componentDidMount:function() {
-	    var props = this.props;
-	    // The circle reference is observed when both it is set to
-	    // active, and to inactive, so we have to check which one
-	    var unobserve = props.voronoiRef.observe(function()  {
-	      var circleStatus = props.voronoiRef.cursor().deref();
-	      if (circleStatus === 'active') {
-	        this._animateCircle(props.id);
-	      } else if (circleStatus === 'inactive') {
-	        this._restoreCircle(props.id);
-	      }
-	    }.bind(this));
-	  },
-
-	  componentWillUnmount:function() {
-	    this.props.voronoiRef.destroy();
-	  },
-
-	  render:function() {
-	    return (
-	      React.createElement("circle", {
-	        fill: this.state.circleFill, 
-	        cx: this.props.cx, 
-	        cy: this.props.cy, 
-	        r: this.state.circleRadius, 
-	        id: this.props.id, 
-	        className: this.props.className}
-	      )
-	    );
-	  },
-
-	  _animateCircle:function(id) {
-	    this.setState({ 
-	      circleRadius: this.state.circleRadius * ( 5 / 4 ),
-	      circleFill: utils.shade(this.props.fill, -0.2)
-	    });
-	  },
-
-	  _restoreCircle:function(id) {
-	    this.setState({ 
-	      circleRadius: this.props.r,
-	      circleFill: this.props.fill
-	    });
-	  }
-
-	});
-
-
-/***/ },
-/* 131 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    margins: React.PropTypes.object,
-	    text: React.PropTypes.string,
-	    colors: React.PropTypes.func
-	  },
-
-	  getDefaultProps: function() {
-	    return {
-	      text: "#000",
-	      colors: d3.scale.category20c()
-	    };
-	  },
-
-	  render: function() {
-
-	    var props = this.props;
-
-	    var textStyle = {
-	      'color': 'black',
-	      'fontSize': '50%',
-	      'verticalAlign': 'top'
-	    };
-
-	    var legendItems = [];
-
-	    props.data.forEach( function(series, idx)  {
-
-	      var itemStyle = {
-	        'color': props.colors(idx),
-	        'lineHeight': '60%',
-	        'fontSize': '200%'
-	      };
-
-	      legendItems.push(
-	            React.createElement("li", {style: itemStyle, key: idx}, 
-	              React.createElement("span", {style: textStyle}, series.name)
-	            )
-	          );
-
-	    });
-
-	    // In preparation for legend positioning
-	    var legendFloat = 'right';
-
-	    var topMargin = props.margins.top;
-
-	    var legendBlockStyle = {
-	      'wordWrap': 'break-word',
-	      'width': props.sideOffset,
-	      'paddingLeft': '0',
-	      'marginBottom': '0',
-	      'marginTop': topMargin,
-	      'float': legendFloat
-	    };
-
-	    return React.createElement("ul", {style: legendBlockStyle}, legendItems);
-	  }
-
-	});
-
-
-
-/***/ },
-/* 132 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-
-	var Polygon = React.createClass({displayName: "Polygon",
-
-	  _animateCircle: function() {
-	    this.props.structure.cursor('voronoi').cursor(this.props.id).update(function(){return 'active';});
-	    // this.props.pubsub.emit('animate', this.props.id);
-	  },
-
-	  _restoreCircle: function() {
-	    this.props.structure.cursor('voronoi').cursor(this.props.id).update(function(){return 'inactive';});
-	    // this.props.pubsub.emit('restore', this.props.id);
-	  },
-
-	  _drawPath: function(d) {
-	    if(d === undefined) {
-	      return; 
-	    }  
-	    return 'M' + d.join(',') + 'Z';
-	  },
-
-	  render: function() {
-	    return React.createElement("path", {
-	      onMouseOver: this._animateCircle, 
-	      onMouseOut: this._restoreCircle, 
-	      fill: "white", 
-	      opacity: "0", 
-	      d: this._drawPath(this.props.vnode)});
-	  }
-
-	});
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  render: function() {
-	    var xScale = this.props.xScale;
-	    var yScale = this.props.yScale;
-
-	    var voronoi = d3.geom.voronoi()
-	      .x(function(d){ return xScale(d.coord.x); })
-	      .y(function(d){ return yScale(d.coord.y); })
-	      .clipExtent([[0, 0], [ this.props.width , this.props.height]]);
-
-	    var regions = voronoi(this.props.data).map(function(vnode, idx) {
-	      return React.createElement(Polygon, {structure: this.props.structure, key: idx, id: vnode.point.id, vnode: vnode});
-	    }.bind(this));
-
-	    return (
-	      React.createElement("g", null, 
-	        regions
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 133 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-
-	module.exports =  {
-
-	  propTypes: {
-	    axesColor: React.PropTypes.string,
-	    colors: React.PropTypes.func,
-	    data: React.PropTypes.oneOfType([
-	      React.PropTypes.array,
-	      React.PropTypes.object
-	    ]).isRequired,
-	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
-	    yOrient: React.PropTypes.oneOf(['left', 'right']),
-	    yAxisTickCount: React.PropTypes.number,
-	    yAxisLabel: React.PropTypes.string,
-	    yAxisLabelOffset: React.PropTypes.number,
-	    xAxisTickInterval: React.PropTypes.object,
-	    xAxisLabel: React.PropTypes.string,
-	    xAxisLabelOffset: React.PropTypes.number,
-	    legend: React.PropTypes.bool,
-	    legendOffset: React.PropTypes.number,
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    xAccessor: React.PropTypes.func,
-	    yAccessor: React.PropTypes.func,
-	    title: React.PropTypes.string,
-	    viewBox: React.PropTypes.string
-	  },
-
-	  getDefaultProps: function() {
-	    return {
-	      data: [],
-	      xOrient: 'bottom',
-	      xAxisLabel: '',
-	      xAxisLabelOffset: 38,
-	      yOrient: 'left',
-	      yAxisLabel: '',
-	      yAxisLabelOffset: 35,
-	      legend: false,
-	      legendOffset: 120,
-	      width: 400,
-	      height: 200,
-	      axesColor: '#000',
-	      title: '',
-	      colors: d3.scale.category20c(),
-	      xAccessor: function(d)  {return d.x;},
-	      yAccessor: function(d)  {return d.y;}
-	    };
-	  }
-
-	};
-
-
-/***/ },
-/* 134 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(161);
-
-
-/***/ },
-/* 135 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	function ToObject(val) {
-		if (val == null) {
-			throw new TypeError('Object.assign cannot be called with null or undefined');
-		}
-
-		return Object(val);
-	}
-
-	module.exports = Object.assign || function (target, source) {
-		var from;
-		var keys;
-		var to = ToObject(target);
-
-		for (var s = 1; s < arguments.length; s++) {
-			from = arguments[s];
-			keys = Object.keys(Object(from));
-
-			for (var i = 0; i < keys.length; i++) {
-				to[keys[i]] = from[keys[i]];
-			}
-		}
-
-		return to;
-	};
-
-
-/***/ },
-/* 136 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function() {
-	  throw new Error("Don't instantiate Resizable directly! Use require('react-resizable').Resizable");
-	};
-
-	module.exports.Resizable = __webpack_require__(162);
-	module.exports.ResizableBox = __webpack_require__(163);
-
-
-/***/ },
-/* 137 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var pSlice = Array.prototype.slice;
-	var objectKeys = __webpack_require__(164);
-	var isArguments = __webpack_require__(165);
-
-	var deepEqual = module.exports = function (actual, expected, opts) {
-	  if (!opts) opts = {};
-	  // 7.1. All identical values are equivalent, as determined by ===.
-	  if (actual === expected) {
-	    return true;
-
-	  } else if (actual instanceof Date && expected instanceof Date) {
-	    return actual.getTime() === expected.getTime();
-
-	  // 7.3. Other pairs that do not both pass typeof value == 'object',
-	  // equivalence is determined by ==.
-	  } else if (typeof actual != 'object' && typeof expected != 'object') {
-	    return opts.strict ? actual === expected : actual == expected;
-
-	  // 7.4. For all other Object pairs, including Array objects, equivalence is
-	  // determined by having the same number of owned properties (as verified
-	  // with Object.prototype.hasOwnProperty.call), the same set of keys
-	  // (although not necessarily the same order), equivalent values for every
-	  // corresponding key, and an identical 'prototype' property. Note: this
-	  // accounts for both named and indexed properties on Arrays.
-	  } else {
-	    return objEquiv(actual, expected, opts);
-	  }
-	}
-
-	function isUndefinedOrNull(value) {
-	  return value === null || value === undefined;
-	}
-
-	function isBuffer (x) {
-	  if (!x || typeof x !== 'object' || typeof x.length !== 'number') return false;
-	  if (typeof x.copy !== 'function' || typeof x.slice !== 'function') {
-	    return false;
-	  }
-	  if (x.length > 0 && typeof x[0] !== 'number') return false;
-	  return true;
-	}
-
-	function objEquiv(a, b, opts) {
-	  var i, key;
-	  if (isUndefinedOrNull(a) || isUndefinedOrNull(b))
-	    return false;
-	  // an identical 'prototype' property.
-	  if (a.prototype !== b.prototype) return false;
-	  //~~~I've managed to break Object.keys through screwy arguments passing.
-	  //   Converting to array solves the problem.
-	  if (isArguments(a)) {
-	    if (!isArguments(b)) {
-	      return false;
-	    }
-	    a = pSlice.call(a);
-	    b = pSlice.call(b);
-	    return deepEqual(a, b, opts);
-	  }
-	  if (isBuffer(a)) {
-	    if (!isBuffer(b)) {
-	      return false;
-	    }
-	    if (a.length !== b.length) return false;
-	    for (i = 0; i < a.length; i++) {
-	      if (a[i] !== b[i]) return false;
-	    }
-	    return true;
-	  }
-	  try {
-	    var ka = objectKeys(a),
-	        kb = objectKeys(b);
-	  } catch (e) {//happens when one is a string literal and the other isn't
-	    return false;
-	  }
-	  // having the same number of owned properties (keys incorporates
-	  // hasOwnProperty)
-	  if (ka.length != kb.length)
-	    return false;
-	  //the same set of keys (although not necessarily the same order),
-	  ka.sort();
-	  kb.sort();
-	  //~~~cheap key test
-	  for (i = ka.length - 1; i >= 0; i--) {
-	    if (ka[i] != kb[i])
-	      return false;
-	  }
-	  //equivalent values for every corresponding key, and
-	  //~~~possibly expensive deep test
-	  for (i = ka.length - 1; i >= 0; i--) {
-	    key = ka[i];
-	    if (!deepEqual(a[key], b[key], opts)) return false;
-	  }
-	  return typeof a === typeof b;
-	}
-
-
-/***/ },
-/* 138 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    fill: React.PropTypes.string,
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    offset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      offset: 0
-	    };
-	  },
-
-	  render:function() {
-	    return (
-	      React.createElement("rect", {
-	        fill: this.props.fill, 
-	        width: this.props.width, 
-	        height: this.props.height, 
-	        x: this.props.offset, 
-	        y: this.props.availableHeight  - this.props.height, 
-	        className: "rd3-barchart-bar"}
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 139 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.XAxis = __webpack_require__(166);
-	exports.YAxis = __webpack_require__(167);
-
-
-/***/ },
-/* 140 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.BasicChart = __webpack_require__(168);
-	exports.Chart = __webpack_require__(169);
-	exports.LegendChart = __webpack_require__(170);
-
-
-/***/ },
-/* 141 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @typechecks static-only
-	 * @providesModule cloneWithProps
-	 */
-
-	'use strict';
-
-	var ReactElement = __webpack_require__(171);
-	var ReactPropTransferer = __webpack_require__(172);
-
-	var keyOf = __webpack_require__(173);
-	var warning = __webpack_require__(174);
-
-	var CHILDREN_PROP = keyOf({children: null});
-
-	/**
-	 * Sometimes you want to change the props of a child passed to you. Usually
-	 * this is to add a CSS class.
-	 *
-	 * @param {ReactElement} child child element you'd like to clone
-	 * @param {object} props props you'd like to modify. className and style will be
-	 * merged automatically.
-	 * @return {ReactElement} a clone of child with props merged in.
-	 */
-	function cloneWithProps(child, props) {
-	  if ("production" !== process.env.NODE_ENV) {
-	    ("production" !== process.env.NODE_ENV ? warning(
-	      !child.ref,
-	      'You are calling cloneWithProps() on a child with a ref. This is ' +
-	      'dangerous because you\'re creating a new child which will not be ' +
-	      'added as a ref to its parent.'
-	    ) : null);
-	  }
-
-	  var newProps = ReactPropTransferer.mergeProps(props, child.props);
-
-	  // Use `child.props.children` if it is provided.
-	  if (!newProps.hasOwnProperty(CHILDREN_PROP) &&
-	      child.props.hasOwnProperty(CHILDREN_PROP)) {
-	    newProps.children = child.props.children;
-	  }
-
-	  // The current API doesn't retain _owner and _context, which is why this
-	  // doesn't use ReactElement.cloneAndReplaceProps.
-	  return ReactElement.createElement(child.type, newProps);
-	}
-
-	module.exports = cloneWithProps;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
-
-/***/ },
-/* 142 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Immutable = __webpack_require__(199);
-	var Cursor = __webpack_require__(197);
-	var EventEmitter = __webpack_require__(198).EventEmitter;
-	var inherits = __webpack_require__(200);
-	var utils = __webpack_require__(175);
+	var Immutable = __webpack_require__(201);
+	var Cursor = __webpack_require__(181);
+	var EventEmitter = __webpack_require__(182).EventEmitter;
+	var inherits = __webpack_require__(202);
+	var utils = __webpack_require__(177);
 
 	/************************************
 	 *
@@ -15674,2106 +15937,344 @@
 
 
 /***/ },
-/* 143 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableHelper
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var Locale = __webpack_require__(144);
-	var React = __webpack_require__(145);
-	var FixedDataTableColumnGroup = __webpack_require__(129);
-	var FixedDataTableColumn = __webpack_require__(128);
-
-	var cloneWithProps = __webpack_require__(154);
-
-	var DIR_SIGN = (Locale.isRTL() ? -1 : +1);
-	// A cell up to 5px outside of the visible area will still be considered visible
-	var CELL_VISIBILITY_TOLERANCE = 5; // used for flyouts
-
-	function renderToString(value) /*string*/ {
-	  if (value === null || value === undefined) {
-	    return '';
-	  } else {
-	    return String(value);
-	  }
-	}
-
-	/**
-	 * Helper method to execute a callback against all columns given the children
-	 * of a table.
-	 * @param {?object|array} children
-	 *    Children of a table.
-	 * @param {function} callback
-	 *    Function to excecute for each column. It is passed the column.
-	 */
-	function forEachColumn(children, callback) {
-	  React.Children.forEach(children, function(child)  {
-	    if (child.type === FixedDataTableColumnGroup.type) {
-	      forEachColumn(child.props.children, callback);
-	    } else if (child.type === FixedDataTableColumn.type) {
-	      callback(child);
-	    }
-	  });
-	}
-
-	/**
-	 * Helper method to map columns to new columns. This takes into account column
-	 * groups and will generate a new column group if its columns change.
-	 * @param {?object|array} children
-	 *    Children of a table.
-	 * @param {function} callback
-	 *    Function to excecute for each column. It is passed the column and should
-	 *    return a result column.
-	 */
-	function mapColumns(children, callback) {
-	  var newChildren = [];
-	  React.Children.forEach(children, function(originalChild)  {
-	    var newChild = originalChild;
-
-	    // The child is either a column group or a column. If it is a column group
-	    // we need to iterate over its columns and then potentially generate a
-	    // new column group
-	    if (originalChild.type === FixedDataTableColumnGroup.type) {
-	      var haveColumnsChanged = false;
-	      var newColumns = [];
-
-	      forEachColumn(originalChild.props.children, function(originalcolumn)  {
-	        var newColumn = callback(originalcolumn);
-	        if (newColumn !== originalcolumn) {
-	          haveColumnsChanged = true;
-	        }
-	        newColumns.push(newColumn);
-	      });
-
-	      // If the column groups columns have changed clone the group and supply
-	      // new children
-	      if (haveColumnsChanged) {
-	        newChild = cloneWithProps(originalChild, {children: newColumns});
-	      }
-	    } else if (originalChild.type === FixedDataTableColumn.type) {
-	      newChild = callback(originalChild);
-	    }
-
-	    newChildren.push(newChild);
-	  });
-
-	  return newChildren;
-	}
-
-	var FixedDataTableHelper = {
-	  DIR_SIGN:DIR_SIGN,
-	  CELL_VISIBILITY_TOLERANCE:CELL_VISIBILITY_TOLERANCE,
-	  renderToString:renderToString,
-	  forEachColumn:forEachColumn,
-	  mapColumns:mapColumns,
-	};
-
-	module.exports = FixedDataTableHelper;
-
-
-/***/ },
 /* 144 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Locale
-	 */
+	'use strict';
 
-	"use strict";
+	var React = __webpack_require__(1);
 
-	// Hard code this for now.
-	var Locale = {
-	  isRTL: function()  {return false;},
-	  getDirection: function()  {return 'LTR';}
-	};
+	module.exports = React.createClass({displayName: "exports",
 
-	module.exports = Locale;
+	  propTypes: {
+	    fill: React.PropTypes.string,
+	    width: React.PropTypes.number,
+	    height: React.PropTypes.number,
+	    offset: React.PropTypes.number
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      offset: 0
+	    };
+	  },
+
+	  render:function() {
+	    return (
+	      React.createElement("rect", {
+	        fill: this.props.fill, 
+	        width: this.props.width, 
+	        height: this.props.height, 
+	        x: this.props.offset, 
+	        y: this.props.availableHeight  - this.props.height, 
+	        className: "rd3-barchart-bar"}
+	      )
+	    );
+	  }
+	});
 
 
 /***/ },
 /* 145 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule React
-	 */
+	'use strict';
 
-	module.exports = __webpack_require__(1);
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+	var AxisTicks = __webpack_require__(178);
+	var AxisLine = __webpack_require__(179);
+	var Label = __webpack_require__(180);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    xAxisClassName: React.PropTypes.string.isRequired,
+	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
+	    xScale: React.PropTypes.func.isRequired,
+	    height: React.PropTypes.number.isRequired,
+	    fill: React.PropTypes.string,
+	    stroke: React.PropTypes.string,
+	    tickStroke: React.PropTypes.string,
+	    strokeWidth: React.PropTypes.string,
+	    xAxisOffset: React.PropTypes.number
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      xAxisClassName: 'x axis',
+	      xAxisLabelOffset: 10,
+	      xOrient: 'bottom',
+	      fill: 'none',
+	      stroke: 'none',
+	      tickStroke: '#000',
+	      strokeWidth: 'none',
+	      xAxisOffset: 0,
+	      label: ''
+	    };
+	  },
+
+	  render:function() {
+	    var props = this.props;
+
+	    var t = ("translate(0," + (props.xAxisOffset + props.height) + ")");
+
+	    var tickArguments;
+	    if (typeof props.xAxisTickCount !== 'undefined') {
+	      tickArguments = [props.xAxisTickCount];
+	    }
+	    
+	    if (typeof props.xAxisTickInterval !== 'undefined') {
+	      tickArguments = [d3.time[props.xAxisTickInterval.unit], props.xAxisTickInterval.interval];
+	    }
+
+	    return (
+	      React.createElement("g", {
+	        className: props.xAxisClassName, 
+	        transform: t
+	      }, 
+	        React.createElement(Label, {
+	          label: props.xAxisLabel, 
+	          offset: props.xAxisLabelOffset, 
+	          orient: props.xOrient, 
+	          margins: props.margins, 
+	          width: props.width}
+	        ), 
+	        React.createElement(AxisTicks, {
+	          tickFormatting: props.tickFormatting, 
+	          tickArguments: tickArguments, 
+	          xScale: props.xScale, 
+	          orient: props.xOrient}
+	        ), 
+	        React.createElement(AxisLine, React.__spread({
+	          scale: props.xScale, 
+	          orient: props.xOrient}, 
+	          props)
+	        )
+	      )
+	    );
+	  }
+
+	});
 
 
 /***/ },
 /* 146 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactComponentWithPureRenderMixin
-	 */
+	'use strict';
 
-	module.exports = __webpack_require__(178);
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(39);
+	var AxisTicks = __webpack_require__(178);
+	var AxisLine = __webpack_require__(179);
+	var Label = __webpack_require__(180);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	  propTypes: {
+	    yAxisClassName: React.PropTypes.string,
+	    yOrient: React.PropTypes.oneOf(['left', 'right']),
+	    yScale: React.PropTypes.func.isRequired,
+	    fill: React.PropTypes.string,
+	    stroke: React.PropTypes.string,
+	    tickStroke: React.PropTypes.string,
+	    strokeWidth: React.PropTypes.string,
+	    yAxisOffset: React.PropTypes.number
+	  },
+
+	  getDefaultProps:function() {
+	    return {
+	      yAxisClassName: 'y axis',
+	      yOrient: 'left',
+	      fill: 'none',
+	      stroke: '#000',
+	      tickStroke: '#000',
+	      strokeWidth: '1',
+	      yAxisOffset: 0
+	    };
+	  },
+
+	  render:function() {
+
+	    var props = this.props;
+
+	    var t;
+	    if (props.yOrient === 'right') {
+	       t = ("translate(" + (props.yAxisOffset + props.width) + ",0)");
+	    } else {
+	       t = ("translate(" + props.yAxisOffset + ",0)");
+	    }
+
+	    var tickArguments;
+	    if (props.yAxisTickCount) {
+	      tickArguments = [props.yAxisTickCount];
+	    }
+	    
+	    if (props.yAxisTickInterval) {
+	      tickArguments = [d3.time[props.yAxisTickInterval.unit], props.yAxisTickInterval.interval];
+	    }
+
+	    return (
+	      React.createElement("g", {
+	        className: props.yAxisClassName, 
+	        transform: t
+	      }, 
+	        React.createElement(AxisTicks, {
+	          tickFormatting: props.tickFormatting, 
+	          tickArguments: tickArguments, 
+	          yScale: props.yScale, 
+	          orient: props.yOrient, 
+	          height: props.height, 
+	          width: props.width}
+	        ), 
+	        React.createElement(AxisLine, React.__spread({
+	          scale: props.yScale, 
+	          orient: props.yOrient}, 
+	          props)
+	        ), 
+	        React.createElement(Label, {
+	          label: props.yAxisLabel, 
+	          offset: props.yAxisLabelOffset, 
+	          orient: props.yOrient, 
+	          margins: props.margins, 
+	          height: props.height, 
+	          width: props.width}
+	        )
+	      )
+	    );
+	  }
+
+	});
 
 
 /***/ },
 /* 147 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactWheelHandler
-	 * @typechecks
-	 */
+	'use strict';
 
-	"use strict";
+	var React = __webpack_require__(1);
 
-	var normalizeWheel = __webpack_require__(176);
-	var requestAnimationFramePolyfill = __webpack_require__(177);
-
-
-	  /**
-	   * onWheel is the callback that will be called with right frame rate if
-	   * any wheel events happened
-	   * onWheel should is to be called with two arguments: deltaX and deltaY in
-	   * this order
-	   */
-	  function ReactWheelHandler(
-	onWheel,
-	    /*boolean*/ handleScrollX,
-	    /*boolean*/ handleScrollY,
-	    /*?boolean*/ stopPropagation)
-	   {
-	    this.$ReactWheelHandler_animationFrameID = null;
-	    this.$ReactWheelHandler_deltaX = 0;
-	    this.$ReactWheelHandler_deltaY = 0;
-	    this.$ReactWheelHandler_didWheel = this.$ReactWheelHandler_didWheel.bind(this);
-	    this.$ReactWheelHandler_handleScrollX = handleScrollX;
-	    this.$ReactWheelHandler_handleScrollY = handleScrollY;
-	    this.$ReactWheelHandler_stopPropagation = !!stopPropagation;
-	    this.$ReactWheelHandler_onWheelCallback = onWheel;
-	    this.onWheel = this.onWheel.bind(this);
+	module.exports = React.createClass({displayName: "exports",
+	  render: function() {
+	    return (
+	      React.createElement("div", null, 
+	        React.createElement("h4", null, this.props.title), 
+	        React.createElement("svg", {
+	          viewBox: this.props.viewBox, 
+	          width: this.props.width, 
+	          height: this.props.height
+	        }, this.props.children)
+	      )
+	    );
 	  }
-
-	  ReactWheelHandler.prototype.onWheel=function(event) {
-	    if (this.$ReactWheelHandler_handleScrollX || this.$ReactWheelHandler_handleScrollY) {
-	      event.preventDefault();
-	    }
-	    var normalizedEvent = normalizeWheel(event);
-
-	    this.$ReactWheelHandler_deltaX += this.$ReactWheelHandler_handleScrollX ? normalizedEvent.pixelX : 0;
-	    this.$ReactWheelHandler_deltaY += this.$ReactWheelHandler_handleScrollY ? normalizedEvent.pixelY : 0;
-
-	    var changed;
-	    if (this.$ReactWheelHandler_deltaX !== 0 || this.$ReactWheelHandler_deltaY !== 0) {
-	      if (this.$ReactWheelHandler_stopPropagation) {
-	        event.stopPropagation();
-	      }
-	      changed = true;
-	    }
-
-	    if (changed === true && this.$ReactWheelHandler_animationFrameID === null) {
-	      this.$ReactWheelHandler_animationFrameID = requestAnimationFramePolyfill(this.$ReactWheelHandler_didWheel);
-	    }
-	  };
-
-	  ReactWheelHandler.prototype.$ReactWheelHandler_didWheel=function() {
-	    this.$ReactWheelHandler_animationFrameID = null;
-	    this.$ReactWheelHandler_onWheelCallback(this.$ReactWheelHandler_deltaX, this.$ReactWheelHandler_deltaY);
-	    this.$ReactWheelHandler_deltaX = 0;
-	    this.$ReactWheelHandler_deltaY = 0;
-	  };
-
-
-	module.exports = ReactWheelHandler;
+	});
 
 
 /***/ },
 /* 148 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Scrollbar.react
-	 * @typechecks
-	 */
+	'use strict';
 
-	var DOMMouseMoveTracker = __webpack_require__(179);
-	var Keys = __webpack_require__(180);
-	var React = __webpack_require__(145);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(146);
-	var ReactWheelHandler = __webpack_require__(147);
+	var React = __webpack_require__(1);
+	var LegendChart = __webpack_require__(149);
+	var BasicChart = __webpack_require__(147);
 
-	var cssVar = __webpack_require__(181);
-	var cx = __webpack_require__(155);
-	var emptyFunction = __webpack_require__(157);
-	var translateDOMPositionXY = __webpack_require__(160);
-
-	var PropTypes = React.PropTypes;
-
-	var UNSCROLLABLE_STATE = {
-	  position: 0,
-	  scrollable: false,
-	};
-
-	var FACE_MARGIN = parseInt(cssVar('scrollbar-face-margin'), 10);
-	var FACE_MARGIN_2 = FACE_MARGIN * 2;
-	var FACE_SIZE_MIN = 30;
-	var KEYBOARD_SCROLL_AMOUNT = 40;
-
-	var _lastScrolledScrollbar = null;
-
-	var Scrollbar = React.createClass({displayName: "Scrollbar",
-	  mixins: [ReactComponentWithPureRenderMixin],
+	module.exports = React.createClass({displayName: "exports",
 
 	  propTypes: {
-	    contentSize: PropTypes.number.isRequired,
-	    defaultPosition: PropTypes.number,
-	    isOpaque: PropTypes.bool,
-	    orientation: PropTypes.oneOf(['vertical', 'horizontal']),
-	    onScroll: PropTypes.func,
-	    position: PropTypes.number,
-	    size: PropTypes.number.isRequired,
-	    trackColor: PropTypes.oneOf(['gray']),
-	    zIndex: PropTypes.number,
+	    legend: React.PropTypes.bool,
+	    viewBox: React.PropTypes.string
 	  },
 
-	  getInitialState:function() /*object*/ {
-	    var props = this.props;
-	    return this._calculateState(
-	      props.position || props.defaultPosition || 0,
-	      props.size,
-	      props.contentSize,
-	      props.orientation
-	    );
-	  },
-
-	  componentWillReceiveProps:function(/*object*/ nextProps) {
-	    var controlledPosition = nextProps.position;
-	    if (controlledPosition === undefined) {
-	      this._setNextState(
-	        this._calculateState(
-	          this.state.position,
-	          nextProps.size,
-	          nextProps.contentSize,
-	          nextProps.orientation
-	        )
-	      );
-	    } else {
-	      this._setNextState(
-	        this._calculateState(
-	          controlledPosition,
-	          nextProps.size,
-	          nextProps.contentSize,
-	          nextProps.orientation
-	        ),
-	        nextProps
-	      );
-	    }
-	  },
-
-	  getDefaultProps:function() /*object*/ {
+	  getDefaultProps: function() {
 	    return {
-	      defaultPosition: 0,
-	      isOpaque: false,
-	      onScroll: emptyFunction,
-	      orientation: 'vertical',
-	      zIndex: 99,
+	      legend: false
 	    };
 	  },
 
-	  render:function() /*?object*/ {
-	    if (!this.state.scrollable) {
-	      return null;
+	  render: function() {
+	    if (this.props.legend) {
+	      return React.createElement(LegendChart, React.__spread({},  this.props));
 	    }
+	    return React.createElement(BasicChart, React.__spread({},  this.props));
+	  }
 
-	    var size = this.props.size;
-	    var mainStyle;
-	    var faceStyle;
-	    var isHorizontal = this.state.isHorizontal;
-	    var isVertical = !isHorizontal;
-	    var isActive = this.state.focused || this.state.isDragging;
-	    var faceSize = this.state.faceSize;
-	    var isOpaque = this.props.isOpaque;
-
-	    var mainClassName = cx({
-	      'public/Scrollbar/main': true,
-	      'public/Scrollbar/mainHorizontal': isHorizontal,
-	      'public/Scrollbar/mainVertical': isVertical,
-	      'Scrollbar/mainActive': isActive,
-	      'Scrollbar/mainOpaque': isOpaque,
-	    });
-
-	    var faceClassName = cx({
-	      'Scrollbar/face': true,
-	      'Scrollbar/faceHorizontal': isHorizontal,
-	      'Scrollbar/faceVertical': isVertical,
-	      'Scrollbar/faceActive': isActive,
-	    });
-
-	    var position = this.state.position * this.state.scale + FACE_MARGIN;
-
-	    if (isHorizontal) {
-	      mainStyle = {
-	        width: size,
-	      };
-	      faceStyle = {
-	        width: faceSize - FACE_MARGIN_2
-	      };
-	      translateDOMPositionXY(faceStyle, position, 0);
-	    } else {
-	      mainStyle = {
-	        height: size,
-	      };
-	      faceStyle = {
-	        height: faceSize - FACE_MARGIN_2,
-	      };
-	      translateDOMPositionXY(faceStyle, 0, position);
-	    }
-
-	    mainStyle.zIndex = this.props.zIndex;
-
-	    if (this.props.trackColor === 'gray') {
-	      mainStyle.backgroundColor = cssVar('ads-cf-bg-color-gray');
-	    }
-
-	    return (
-	      React.createElement("div", {
-	        onFocus: this._onFocus, 
-	        onBlur: this._onBlur, 
-	        onKeyDown: this._onKeyDown, 
-	        onMouseDown: this._onMouseDown, 
-	        onWheel: this._wheelHandler.onWheel, 
-	        className: mainClassName, 
-	        style: mainStyle, 
-	        tabIndex: 0}, 
-	        React.createElement("div", {
-	          ref: "face", 
-	          className: faceClassName, 
-	          style: faceStyle}
-	        )
-	      )
-	    );
-	  },
-
-	  componentWillMount:function() {
-	    var isHorizontal = this.props.orientation === 'horizontal';
-	    var onWheel = isHorizontal ? this._onWheelX : this._onWheelY;
-
-	    this._wheelHandler = new ReactWheelHandler(
-	      onWheel,
-	      isHorizontal, // Should hanlde horizontal scroll
-	      !isHorizontal // Should handle vertical scroll
-	    );
-	  },
-
-	  componentDidMount:function() {
-	    this._mouseMoveTracker = new DOMMouseMoveTracker(
-	      this._onMouseMove,
-	      this._onMouseMoveEnd,
-	      document.documentElement
-	    );
-
-	    if (this.props.position !== undefined &&
-	      this.state.position !== this.props.position) {
-	      this._didScroll();
-	    }
-	  },
-
-	  componentWillUnmount:function() {
-	    this._nextState = null;
-	    this._mouseMoveTracker.releaseMouseMoves();
-	    if (_lastScrolledScrollbar === this) {
-	      _lastScrolledScrollbar = null;
-	    }
-	    delete this._mouseMoveTracker;
-	  },
-
-	  scrollBy:function(/*number*/ delta) {
-	    this._onWheel(delta);
-	  },
-
-	  _calculateState:function(
-	    /*?number*/ position,
-	    /*number*/ size,
-	    /*number*/ contentSize,
-	    /*string*/ orientation
-	    ) /*object*/ {
-
-	    if (size < 1 || contentSize <= size) {
-	      return UNSCROLLABLE_STATE;
-	    }
-
-	    position = position || 0;
-
-	    // There are two types of positions here.
-	    // 1) Phisical position: changed by mouse / keyboard
-	    // 2) Logical position: changed by props.
-	    // The logical position will be kept as as internal state and the `render()`
-	    // function will translate it into physical position to render.
-
-	    var isHorizontal = orientation === 'horizontal';
-	    var scale = size / contentSize;
-	    var faceSize = Math.round(size * scale);
-
-	    if (faceSize < FACE_SIZE_MIN) {
-	      scale = (size - FACE_SIZE_MIN) / (contentSize - FACE_SIZE_MIN);
-	      faceSize = FACE_SIZE_MIN;
-	    }
-
-	    var scrollable = true;
-	    var maxPosition = contentSize - size;
-
-	    if (position < 0) {
-	      position = 0;
-	    } else if (position > maxPosition) {
-	      position = maxPosition;
-	    }
-
-	    var isDragging = this._mouseMoveTracker ?
-	      this._mouseMoveTracker.isDragging() :
-	      false;
-
-	    position = Math.round(position);
-	    faceSize = Math.round(faceSize);
-
-	    // This function should only return flat values that can be compared quiclky
-	    // by `ReactComponentWithPureRenderMixin`.
-	    return {
-	      faceSize:faceSize,
-	      isDragging:isDragging,
-	      isHorizontal:isHorizontal,
-	      position:position,
-	      scale:scale,
-	      scrollable:scrollable,
-	    };
-	  },
-
-	  _onWheelY:function(/*number*/ deltaX, /*number*/ deltaY) {
-	    this._onWheel(deltaY);
-	  },
-
-	  _onWheelX:function(/*number*/ deltaX, /*number*/ deltaY) {
-	    this._onWheel(deltaX);
-	  },
-
-	  _onWheel:function(/*number*/ delta){
-	    var props = this.props;
-
-	    // The mouse may move faster then the animation frame does.
-	    // Use `requestAnimationFrame` to avoid over-updating.
-	    this._setNextState(
-	      this._calculateState(
-	        this.state.position + delta,
-	        props.size,
-	        props.contentSize,
-	        props.orientation
-	      )
-	    );
-	  },
-
-	  _onMouseDown:function(/*object*/ event) {
-	    var nextState;
-
-	    if (event.target !== this.refs.face.getDOMNode()) {
-	      // Both `offsetX` and `layerX` are non-standard DOM property but they are
-	      // magically available for browsers somehow.
-	      var nativeEvent = event.nativeEvent;
-	      var position = this.state.isHorizontal ?
-	        nativeEvent.offsetX || nativeEvent.layerX :
-	        nativeEvent.offsetY || nativeEvent.layerY;
-
-	      // MouseDown on the scroll-track directly, move the center of the
-	      // scroll-face to the mouse position.
-	      var props = this.props;
-	      position = position / this.state.scale;
-	      nextState = this._calculateState(
-	        position - (this.state.faceSize * 0.5 / this.state.scale),
-	        props.size,
-	        props.contentSize,
-	        props.orientation
-	      );
-	    } else {
-	      nextState = {};
-	    }
-
-	    nextState.focused = true;
-	    this._setNextState(nextState);
-
-	    this._mouseMoveTracker.captureMouseMoves(event);
-	    // Focus the node so it may receive keyboard event.
-	    this.getDOMNode().focus();
-	  },
-
-	  _onMouseMove:function(/*number*/ deltaX, /*number*/ deltaY) {
-	    var props = this.props;
-	    var delta = this.state.isHorizontal ? deltaX : deltaY;
-	    delta = delta / this.state.scale;
-
-	    this._setNextState(
-	      this._calculateState(
-	        this.state.position + delta,
-	        props.size,
-	        props.contentSize,
-	        props.orientation
-	      )
-	    );
-	  },
-
-	  _onMouseMoveEnd:function() {
-	    this._nextState = null;
-	    this._mouseMoveTracker.releaseMouseMoves();
-	    this.setState({isDragging: false});
-	  },
-
-	  _onKeyDown:function(/*object*/ event) {
-	    var keyCode = event.keyCode;
-
-	    if (keyCode === Keys.TAB) {
-	      // Let focus move off the scrollbar.
-	      return;
-	    }
-
-	    var distance = KEYBOARD_SCROLL_AMOUNT;
-	    var direction = 0;
-
-	    if (this.state.isHorizontal) {
-	      switch (keyCode) {
-	        case Keys.HOME:
-	          direction = -1;
-	          distance = this.props.contentSize;
-	          break;
-
-	        case Keys.LEFT:
-	          direction = -1;
-	          break;
-
-	        case Keys.RIGHT:
-	          direction = 1;
-	          break;
-
-	        default:
-	          return;
-	      }
-	    }
-
-	    if (!this.state.isHorizontal) {
-	      switch (keyCode) {
-	        case Keys.SPACE:
-	          if (event.shiftKey) {
-	            direction = -1;
-	          } else {
-	            direction = 1;
-	          }
-	          break;
-
-	        case Keys.HOME:
-	          direction = -1;
-	          distance = this.props.contentSize;
-	          break;
-
-	        case Keys.UP:
-	          direction = -1;
-	          break;
-
-	        case Keys.DOWN:
-	          direction = 1;
-	          break;
-
-	        case Keys.PAGE_UP:
-	          direction = -1;
-	          distance = this.props.size;
-	          break;
-
-	        case Keys.PAGE_DOWN:
-	          direction = 1;
-	          distance = this.props.size;
-	          break;
-
-	        default:
-	          return;
-	      }
-	    }
-
-	    event.preventDefault();
-
-	    var props = this.props;
-	    this._setNextState(
-	      this._calculateState(
-	        this.state.position + (distance * direction),
-	        props.size,
-	        props.contentSize,
-	        props.orientation
-	      )
-	    );
-	  },
-
-	  _onFocus:function() {
-	    this.setState({
-	      focused: true,
-	    });
-	  },
-
-	  _onBlur:function() {
-	    this.setState({
-	      focused: false,
-	    });
-	  },
-
-	  _blur:function() {
-	    if (this.isMounted()) {
-	      try {
-	        this._onBlur();
-	        this.getDOMNode().blur();
-	      } catch (oops) {
-	        // pass
-	      }
-	    }
-	  },
-
-	  _setNextState:function(/*object*/ nextState, /*?object*/ props) {
-	    props = props || this.props;
-	    var controlledPosition = props.position;
-	    var willScroll = this.state.position !== nextState.position;
-	    if (controlledPosition === undefined) {
-	      var callback = willScroll ? this._didScroll : undefined;
-	      this.setState(nextState, callback);
-	    } else if (controlledPosition === nextState.position) {
-	      this.setState(nextState);
-	    } else {
-	      // Scrolling is controlled. Don't update the state and let the owner
-	      // to update the scrollbar instead.
-	      if (nextState.position !== undefined &&
-	        nextState.position !== this.state.position) {
-	        this.props.onScroll(nextState.position);
-	      }
-	      return;
-	    }
-
-	    if (willScroll && _lastScrolledScrollbar !== this) {
-	      _lastScrolledScrollbar && _lastScrolledScrollbar._blur();
-	      _lastScrolledScrollbar = this;
-	    }
-	  },
-
-	  _didScroll:function() {
-	    this.props.onScroll(this.state.position);
-	  },
 	});
 
-	Scrollbar.KEYBOARD_SCROLL_AMOUNT = KEYBOARD_SCROLL_AMOUNT;
-	Scrollbar.SIZE = parseInt(cssVar('scrollbar-size'), 10);
-
-	module.exports = Scrollbar;
 
 
 /***/ },
 /* 149 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableBufferedRows.react
-	 * @typechecks
-	 */
+	'use strict';
 
-	var React = __webpack_require__(145);
-	var FixedDataTableRowBuffer = __webpack_require__(182);
-	var FixedDataTableRow = __webpack_require__(151);
+	var React = __webpack_require__(1);
+	var Legend = __webpack_require__(129);
 
-	var cx = __webpack_require__(155);
-	var emptyFunction = __webpack_require__(157);
-	var joinClasses = __webpack_require__(183);
-
-	var PropTypes = React.PropTypes;
-
-	var FixedDataTableBufferedRows = React.createClass({displayName: "FixedDataTableBufferedRows",
+	module.exports = React.createClass({displayName: "exports",
 
 	  propTypes: {
-	    defaultRowHeight: PropTypes.number.isRequired,
-	    firstRowIndex: PropTypes.number.isRequired,
-	    firstRowOffset: PropTypes.number.isRequired,
-	    fixedColumns: PropTypes.array.isRequired,
-	    height: PropTypes.number.isRequired,
-	    offsetTop: PropTypes.number.isRequired,
-	    onRowClick: PropTypes.func,
-	    onRowMouseDown: PropTypes.func,
-	    onRowMouseEnter: PropTypes.func,
-	    rowClassNameGetter: PropTypes.func,
-	    rowsCount: PropTypes.number.isRequired,
-	    rowGetter: PropTypes.func.isRequired,
-	    rowHeightGetter: PropTypes.func,
-	    scrollLeft: PropTypes.number.isRequired,
-	    scrollableColumns: PropTypes.array.isRequired,
-	    showLastRowBorder: PropTypes.bool,
-	    width: PropTypes.number.isRequired,
+	    legend: React.PropTypes.bool,
+	    legendPosition: React.PropTypes.string,
+	    sideOffset: React.PropTypes.number,
+	    margins: React.PropTypes.object,
+	    data: React.PropTypes.oneOfType([
+	      React.PropTypes.object,
+	      React.PropTypes.array
+	    ])
 	  },
 
-	  getInitialState:function() /*object*/ {
-	    this._rowBuffer =
-	      new FixedDataTableRowBuffer(
-	        this.props.rowsCount,
-	        this.props.defaultRowHeight,
-	        this.props.height,
-	        this._getRowHeight
+	  getDefaultProps:function() {
+	    return {
+	      data: {},
+	      legend: false,
+	      legendPosition: 'right',
+	      sideOffset: 90
+	    };
+	  },
+
+	  _renderLegend:function() {
+	    if (this.props.legend) {
+	      return (
+	        React.createElement(Legend, {
+	          legendPosition: this.props.legendPosition, 
+	          margins: this.props.margins, 
+	          colors: this.props.colors, 
+	          data: this.props.data, 
+	          width: this.props.width, 
+	          height: this.props.height, 
+	          sideOffset: this.props.sideOffset}
+	        ) 
 	      );
-	    return ({
-	      rowsToRender: this._rowBuffer.getRows(
-	        this.props.firstRowIndex,
-	        this.props.firstRowOffset
-	      ),
-	    });
-	  },
-
-	  componentWillMount:function() {
-	    this._staticRowArray = [];
-	  },
-
-	  componentDidMount:function() {
-	    this._bufferUpdateTimer = setTimeout(this._updateBuffer, 500);
-	  },
-
-	  componentWillReceiveProps:function(/*object*/ nextProps) {
-	    if (nextProps.rowsCount !== this.props.rowsCount ||
-	        nextProps.defaultRowHeight !== this.props.defaultRowHeight ||
-	        nextProps.height !== this.props.height) {
-	      this._rowBuffer =
-	        new FixedDataTableRowBuffer(
-	          nextProps.rowsCount,
-	          nextProps.defaultRowHeight,
-	          nextProps.height,
-	          this._getRowHeight
-	        );
-	    }
-	    this.setState({
-	      rowsToRender: this._rowBuffer.getRows(
-	        nextProps.firstRowIndex,
-	        nextProps.firstRowOffset
-	      ),
-	    });
-	    if (this._bufferUpdateTimer) {
-	      clearTimeout(this._bufferUpdateTimer);
-	    }
-	    this._bufferUpdateTimer = setTimeout(this._updateBuffer, 400);
-	  },
-
-	  _updateBuffer:function() {
-	    this._bufferUpdateTimer = null;
-	    if (this.isMounted()) {
-	      this.setState({
-	        rowsToRender: this._rowBuffer.getRowsWithUpdatedBuffer(),
-	      });
 	    }
 	  },
 
-	  shouldComponentUpdate:function() /*boolean*/ {
-	    // Don't add PureRenderMixin to this component please.
-	    return true;
-	  },
-
-	  componentWillUnmount:function() {
-	    this._staticRowArray.length = 0;
-	  },
-
-	  render:function() /*object*/ {
-	    var props = this.props;
-	    var offsetTop = props.offsetTop;
-	    var rowClassNameGetter = props.rowClassNameGetter || emptyFunction;
-	    var rowGetter = props.rowGetter;
-
-	    var rowsToRender = this.state.rowsToRender;
-	    this._staticRowArray.length = rowsToRender.length;
-
-	    for (var i = 0; i < rowsToRender.length; ++i) {
-	      var rowInfo = rowsToRender[i];
-	      var rowIndex = rowInfo.rowIndex;
-	      var rowOffsetTop = rowInfo.offsetTop;
-	      var currentRowHeight = this._getRowHeight(rowIndex);
-
-	      var hasBottomBorder =
-	        rowIndex === props.rowsCount - 1 && props.showLastRowBorder;
-
-	      this._staticRowArray[i] =
-	        React.createElement(FixedDataTableRow, {
-	          key: i, 
-	          index: rowIndex, 
-	          data: rowGetter(rowIndex), 
-	          width: props.width, 
-	          height: currentRowHeight, 
-	          scrollLeft: Math.round(props.scrollLeft), 
-	          offsetTop: Math.round(offsetTop + rowOffsetTop), 
-	          fixedColumns: props.fixedColumns, 
-	          scrollableColumns: props.scrollableColumns, 
-	          onClick: props.onRowClick, 
-	          onMouseDown: props.onRowMouseDown, 
-	          onMouseEnter: props.onRowMouseEnter, 
-	          className: joinClasses(
-	            rowClassNameGetter(rowIndex),
-	            cx('public/fixedDataTable/bodyRow'),
-	            hasBottomBorder ? cx('fixedDataTable/hasBottomBorder') : null
-	          )}
-	        );
-	    }
-
-	    return React.createElement("div", null, this._staticRowArray);
-	  },
-
-	  _getRowHeight:function(/*number*/ index) /*number*/ {
-	    return this.props.rowHeightGetter ?
-	      this.props.rowHeightGetter(index) :
-	      this.props.defaultRowHeight;
-	  },
+	  render:function() {
+	    return (
+	      React.createElement("div", {style: {'width': this.props.width, 'height': this.props.height}}, 
+	        React.createElement("h4", null, this.props.title), 
+	        this._renderLegend(), 
+	        React.createElement("svg", {viewBox: this.props.viewBox, width: this.props.width - this.props.sideOffset, height: this.props.height}, this.props.children)
+	      )
+	    );
+	  }
 	});
-
-	module.exports = FixedDataTableBufferedRows;
 
 
 /***/ },
 /* 150 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * This is to be used with the FixedDataTable. It is a read line
-	 * that when you click on a column that is resizable appears and allows
-	 * you to resize the corresponding column.
-	 *
-	 * @providesModule FixedDataTableColumnResizeHandle.react
-	 * @typechecks
-	 */
-
-	var DOMMouseMoveTracker = __webpack_require__(179);
-	var Locale = __webpack_require__(144);
-	var React = __webpack_require__(145);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(146);
-
-	var clamp = __webpack_require__(184);
-	var cx = __webpack_require__(155);
-
-	var PropTypes = React.PropTypes;
-
-	var FixedDataTableColumnResizeHandle = React.createClass({displayName: "FixedDataTableColumnResizeHandle",
-	  mixins: [ReactComponentWithPureRenderMixin],
-
-	  propTypes: {
-	    visible: PropTypes.bool.isRequired,
-
-	    /**
-	     * This is the height of the line
-	     */
-	    height: PropTypes.number.isRequired,
-
-	    /**
-	     * Offset from left border of the table, please note
-	     * that the line is a border on diff. So this is really the
-	     * offset of the column itself.
-	     */
-	    leftOffset: PropTypes.number.isRequired,
-
-	    /**
-	     * Height of the clickable region of the line.
-	     * This is assumed to be at the top of the line.
-	     */
-	    knobHeight: PropTypes.number.isRequired,
-
-	    /**
-	     * The line is a border on a diff, so this is essentially
-	     * the width of column.
-	     */
-	    initialWidth: PropTypes.number,
-
-	    /**
-	     * The minimum width this dragger will collapse to
-	     */
-	    minWidth: PropTypes.number,
-
-	    /**
-	     * The maximum width this dragger will collapse to
-	     */
-	    maxWidth: PropTypes.number,
-
-	    /**
-	     * Initial click event on the header cell.
-	     */
-	    initialEvent: PropTypes.object,
-
-	    /**
-	     * When resizing is complete this is called.
-	     */
-	    onColumnResizeEnd: PropTypes.func,
-
-	    /**
-	     * Column key for the column being resized.
-	     */
-	    columnKey: PropTypes.oneOfType([
-	      PropTypes.string,
-	      PropTypes.number
-	    ]),
-	  },
-
-	  getInitialState:function() /*object*/ {
-	    return {
-	      width: 0,
-	      cursorDelta: 0
-	    };
-	  },
-
-	  componentWillReceiveProps:function(/*object*/ newProps) {
-	    if (newProps.initialEvent && !this._mouseMoveTracker.isDragging()) {
-	      this._mouseMoveTracker.captureMouseMoves(newProps.initialEvent);
-	      this.setState({
-	        width: newProps.initialWidth,
-	        cursorDelta: newProps.initialWidth
-	      });
-	    }
-	  },
-
-	  componentDidMount:function() {
-	    this._mouseMoveTracker = new DOMMouseMoveTracker(
-	      this._onMove,
-	      this._onColumnResizeEnd,
-	      document.body
-	    );
-	  },
-
-	  componentWillUnmount:function() {
-	    this._mouseMoveTracker.releaseMouseMoves();
-	    this._mouseMoveTracker = null;
-	  },
-
-	  render:function() /*object*/ {
-	    var style = {
-	      width: this.state.width,
-	      height: this.props.height,
-	    };
-	    if (Locale.isRTL()) {
-	      style.right = this.props.leftOffset;
-	    } else {
-	      style.left = this.props.leftOffset;
-	    }
-	    return (
-	      React.createElement("div", {
-	        className: cx({
-	          'fixedDataTableColumnResizerLine/main': true,
-	          'fixedDataTableColumnResizerLine/hiddenElem': !this.props.visible
-	        }), 
-	        style: style}, 
-	        React.createElement("div", {
-	          className: cx('fixedDataTableColumnResizerLine/mouseArea'), 
-	          style: {height: this.props.height}}
-	        )
-	      )
-	    );
-	  },
-
-	  _onMove:function(/*number*/ deltaX) {
-	    if (Locale.isRTL()) {
-	      deltaX = -deltaX;
-	    }
-	    var newWidth = this.state.cursorDelta + deltaX;
-	    var newColumnWidth =
-	      clamp(this.props.minWidth, newWidth, this.props.maxWidth);
-
-	    // Please note cursor delta is the different between the currently width
-	    // and the new width.
-	    this.setState({
-	      width: newColumnWidth,
-	      cursorDelta: newWidth
-	    });
-	  },
-
-	  _onColumnResizeEnd:function() {
-	    this._mouseMoveTracker.releaseMouseMoves();
-	    this.props.onColumnResizeEnd(
-	      this.state.width,
-	      this.props.columnKey
-	    );
-	  },
-	});
-
-	module.exports = FixedDataTableColumnResizeHandle;
-
-
-/***/ },
-/* 151 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableRow.react
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var FixedDataTableHelper = __webpack_require__(143);
-	var React = __webpack_require__(145);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(146);
-	var FixedDataTableCellGroup = __webpack_require__(186);
-
-	var cx = __webpack_require__(155);
-	var joinClasses = __webpack_require__(183);
-	var translateDOMPositionXY = __webpack_require__(160);
-
-	var DIR_SIGN = FixedDataTableHelper.DIR_SIGN;
-	var PropTypes = React.PropTypes;
-
-	/**
-	 * Component that renders the row for <FixedDataTable />.
-	 * This component should not be used directly by developer. Instead,
-	 * only <FixedDataTable /> should use the component internally.
-	 */
-	var FixedDataTableRowImpl = React.createClass({displayName: "FixedDataTableRowImpl",
-	  mixins: [ReactComponentWithPureRenderMixin],
-
-	  propTypes: {
-	    /**
-	     * The row data to render. The data format can be a simple Map object
-	     * or an Array of data.
-	     */
-	    data: PropTypes.oneOfType([
-	      PropTypes.object,
-	      PropTypes.array
-	    ]),
-
-	    /**
-	     * Array of <FixedDataTableColumn /> for the fixed columns.
-	     */
-	    fixedColumns: PropTypes.array.isRequired,
-
-	    /**
-	     * Height of the row.
-	     */
-	    height: PropTypes.number.isRequired,
-
-	    /**
-	     * The row index.
-	     */
-	    index: PropTypes.number.isRequired,
-
-	    /**
-	     * Array of <FixedDataTableColumn /> for the scrollable columns.
-	     */
-	    scrollableColumns: PropTypes.array.isRequired,
-
-	    /**
-	     * The distance between the left edge of the table and the leftmost portion
-	     * of the row currently visible in the table.
-	     */
-	    scrollLeft: PropTypes.number.isRequired,
-
-	    /**
-	     * Width of the row.
-	     */
-	    width: PropTypes.number.isRequired,
-
-	    /**
-	     * Fire when a row is clicked.
-	     */
-	    onClick: PropTypes.func,
-
-	    /**
-	     * Callback for when resizer knob (in FixedDataTableCell) is clicked
-	     * to initialize resizing. Please note this is only on the cells
-	     * in the header.
-	     * @param number combinedWidth
-	     * @param number leftOffset
-	     * @param number cellWidth
-	     * @param number|string columnKey
-	     * @param object event
-	     */
-	    onColumnResize: PropTypes.func,
-	  },
-
-	  render:function() /*object*/ {
-	    var style = {
-	      width: this.props.width,
-	      height: this.props.height,
-	    };
-
-	    var className = cx({
-	      'public/fixedDataTableRow/main': true,
-	      'public/fixedDataTableRow/highlighted': (this.props.index % 2 === 1)
-	    });
-
-	    if (!this.props.data) {
-	      return (
-	        React.createElement("div", {
-	          className: joinClasses(className, this.props.className), 
-	          style: style}
-	        )
-	      );
-	    }
-
-	    var fixedColumns =
-	      React.createElement(FixedDataTableCellGroup, {
-	        key: "fixed_cells", 
-	        height: this.props.height, 
-	        left: 0, 
-	        zIndex: 2, 
-	        columns: this.props.fixedColumns, 
-	        data: this.props.data, 
-	        onColumnResize: this.props.onColumnResize, 
-	        rowHeight: this.props.height, 
-	        rowIndex: this.props.index}
-	      );
-	    var fixedColumnsWidth = this._getColumnsWidth(this.props.fixedColumns);
-	    var columnsShadow = this._renderColumnsShadow(fixedColumnsWidth);
-	    var scrollableColumns =
-	      React.createElement(FixedDataTableCellGroup, {
-	        key: "scrollable_cells", 
-	        height: this.props.height, 
-	        left: (fixedColumnsWidth - this.props.scrollLeft) * DIR_SIGN, 
-	        zIndex: 0, 
-	        columns: this.props.scrollableColumns, 
-	        data: this.props.data, 
-	        onColumnResize: this.props.onColumnResize, 
-	        rowHeight: this.props.height, 
-	        rowIndex: this.props.index}
-	      );
-
-	    return (
-	      React.createElement("div", {
-	        className: joinClasses(className, this.props.className), 
-	        onClick: this.props.onClick ? this._onClick : null, 
-	        onMouseDown: this.props.onMouseDown ? this._onMouseDown : null, 
-	        onMouseEnter: this.props.onMouseEnter ? this._onMouseEnter : null, 
-	        style: style}, 
-	        React.createElement("div", {className: cx('fixedDataTableRow/body')}, 
-	          fixedColumns, 
-	          scrollableColumns, 
-	          columnsShadow
-	        )
-	      )
-	    );
-	  },
-
-	  _getColumnsWidth:function(/*array*/ columns) /*number*/ {
-	    var width = 0;
-	    for (var i = 0; i < columns.length; ++i) {
-	      width += columns[i].props.width;
-	    }
-	    return width;
-	  },
-
-	  _renderColumnsShadow:function(/*number*/ left) /*?object*/ {
-	    if (left > 0) {
-	      var className = cx({
-	        'fixedDataTableRow/fixedColumnsDivider': true,
-	        'fixedDataTableRow/columnsShadow': this.props.scrollLeft > 0,
-	      });
-	      var style = {
-	        left: left,
-	        height: this.props.height
-	      };
-	      return React.createElement("div", {className: className, style: style});
-	    }
-	  },
-
-	  _onClick:function(/*object*/ event) {
-	    this.props.onClick(event, this.props.index, this.props.data);
-	  },
-
-	  _onMouseDown:function(/*object*/ event) {
-	    this.props.onMouseDown(event, this.props.index, this.props.data);
-	  },
-
-	  _onMouseEnter:function(/*object*/ event) {
-	    this.props.onMouseEnter(event, this.props.index, this.props.data);
-	  },
-	});
-
-	var FixedDataTableRow = React.createClass({displayName: "FixedDataTableRow",
-	  mixins: [ReactComponentWithPureRenderMixin],
-
-	  propTypes: {
-	    /**
-	     * Height of the row.
-	     */
-	    height: PropTypes.number.isRequired,
-
-	    /**
-	     * Z-index on which the row will be displayed. Used e.g. for keeping
-	     * header and footer in front of other rows.
-	     */
-	    zIndex: PropTypes.number,
-
-	    /**
-	     * The vertical position where the row should render itself
-	     */
-	    offsetTop: PropTypes.number.isRequired,
-
-	    /**
-	     * Width of the row.
-	     */
-	    width: PropTypes.number.isRequired,
-	  },
-
-	  render:function() /*object*/ {
-	    var style = {
-	      width: this.props.width,
-	      height: this.props.height,
-	      zIndex: (this.props.zIndex ? this.props.zIndex : 0),
-	    };
-	    translateDOMPositionXY(style, 0, this.props.offsetTop);
-
-	    return (
-	      React.createElement("div", {
-	        style: style, 
-	        className: cx('fixedDataTableRow/rowWrapper')}, 
-	        React.createElement(FixedDataTableRowImpl, React.__spread({}, 
-	          this.props, 
-	          {offsetTop: undefined, 
-	          zIndex: undefined})
-	        )
-	      )
-	    );
-	  },
-	});
-
-
-	module.exports = FixedDataTableRow;
-
-
-/***/ },
-/* 152 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableScrollHelper
-	 * @typechecks
-	 */
-	'use strict';
-
-	var PrefixIntervalTree = __webpack_require__(185);
-	var clamp = __webpack_require__(184);
-
-	var BUFFER_ROWS = 5;
-
-
-	  function FixedDataTableScrollHelper(
-	rowCount,
-	    /*number*/ defaultRowHeight,
-	    /*number*/ viewportHeight,
-	    /*?function*/ rowHeightGetter)
-	   {
-	    this.$FixedDataTableScrollHelper_rowOffsets = new PrefixIntervalTree(rowCount, defaultRowHeight);
-	    this.$FixedDataTableScrollHelper_storedHeights = new Array(rowCount);
-	    for (var i = 0; i < rowCount; ++i) {
-	      this.$FixedDataTableScrollHelper_storedHeights[i] = defaultRowHeight;
-	    }
-	    this.$FixedDataTableScrollHelper_rowCount = rowCount;
-	    this.$FixedDataTableScrollHelper_position = 0;
-	    this.$FixedDataTableScrollHelper_contentHeight = rowCount * defaultRowHeight;
-	    this.$FixedDataTableScrollHelper_defaultRowHeight = defaultRowHeight;
-	    this.$FixedDataTableScrollHelper_rowHeightGetter = rowHeightGetter ?
-	      rowHeightGetter :
-	      function()  {return defaultRowHeight;};
-	    this.$FixedDataTableScrollHelper_viewportHeight = viewportHeight;
-	    this.scrollRowIntoView = this.scrollRowIntoView.bind(this);
-	    this.setViewportHeight = this.setViewportHeight.bind(this);
-	    this.scrollBy = this.scrollBy.bind(this);
-	    this.scrollTo = this.scrollTo.bind(this);
-	    this.scrollToRow = this.scrollToRow.bind(this);
-	    this.setRowHeightGetter = this.setRowHeightGetter.bind(this);
-	    this.getContentHeight = this.getContentHeight.bind(this);
-
-	    this.$FixedDataTableScrollHelper_updateHeightsInViewport(0, 0);
-	  }
-
-	  FixedDataTableScrollHelper.prototype.setRowHeightGetter=function(rowHeightGetter) {
-	    this.$FixedDataTableScrollHelper_rowHeightGetter = rowHeightGetter;
-	  };
-
-	  FixedDataTableScrollHelper.prototype.setViewportHeight=function(viewportHeight) {
-	    this.$FixedDataTableScrollHelper_viewportHeight = viewportHeight;
-	  };
-
-	  FixedDataTableScrollHelper.prototype.getContentHeight=function()  {
-	    return this.$FixedDataTableScrollHelper_contentHeight;
-	  };
-
-	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_updateHeightsInViewport=function(
-	firstRowIndex,
-	    /*number*/ firstRowOffset)
-	   {
-	    var top = firstRowOffset;
-	    var index = firstRowIndex;
-	    while (top <= this.$FixedDataTableScrollHelper_viewportHeight && index < this.$FixedDataTableScrollHelper_rowCount) {
-	      this.$FixedDataTableScrollHelper_updateRowHeight(index);
-	      top += this.$FixedDataTableScrollHelper_storedHeights[index];
-	      index++;
-	    }
-	  };
-
-	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_updateHeightsAboveViewport=function(firstRowIndex) {
-	    var index = firstRowIndex - 1;
-	    while (index >= 0 && index >= firstRowIndex - BUFFER_ROWS) {
-	      var delta = this.$FixedDataTableScrollHelper_updateRowHeight(index);
-	      this.$FixedDataTableScrollHelper_position += delta;
-	      index--;
-	    }
-	  };
-
-	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_updateRowHeight=function(rowIndex)  {
-	    if (rowIndex < 0 || rowIndex >= this.$FixedDataTableScrollHelper_rowCount) {
-	      return 0;
-	    }
-	    var newHeight = this.$FixedDataTableScrollHelper_rowHeightGetter(rowIndex);
-	    if (newHeight !== this.$FixedDataTableScrollHelper_storedHeights[rowIndex]) {
-	      var change = newHeight - this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
-	      this.$FixedDataTableScrollHelper_rowOffsets.set(rowIndex, newHeight);
-	      this.$FixedDataTableScrollHelper_storedHeights[rowIndex] = newHeight;
-	      this.$FixedDataTableScrollHelper_contentHeight += change;
-	      return change;
-	    }
-	    return 0;
-	  };
-
-	  FixedDataTableScrollHelper.prototype.scrollBy=function(delta)  {
-	    var firstRow = this.$FixedDataTableScrollHelper_rowOffsets.upperBound(this.$FixedDataTableScrollHelper_position);
-	    var firstRowPosition =
-	      firstRow.value - this.$FixedDataTableScrollHelper_storedHeights[firstRow.index];
-	    var rowIndex = firstRow.index;
-	    var position = this.$FixedDataTableScrollHelper_position;
-
-	    var rowHeightChange = this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
-	    if (firstRowPosition !== 0) {
-	      position += rowHeightChange;
-	    }
-	    var visibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex] -
-	      (position - firstRowPosition);
-
-	    if (delta >= 0) {
-
-	      while (delta > 0 && rowIndex < this.$FixedDataTableScrollHelper_rowCount) {
-	        if (delta < visibleRowHeight) {
-	          position += delta;
-	          delta = 0;
-	        } else {
-	          delta -= visibleRowHeight;
-	          position += visibleRowHeight;
-	          rowIndex++;
-	        }
-	        if (rowIndex < this.$FixedDataTableScrollHelper_rowCount) {
-	          this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
-	          visibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
-	        }
-	      }
-	    } else if (delta < 0) {
-	      delta = -delta;
-	      var invisibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex] - visibleRowHeight;
-
-	      while (delta > 0 && rowIndex >= 0) {
-	        if (delta < invisibleRowHeight) {
-	          position -= delta;
-	          delta = 0;
-	        } else {
-	          position -= invisibleRowHeight;
-	          delta -= invisibleRowHeight;
-	          rowIndex--;
-	        }
-	        if (rowIndex >= 0) {
-	          var change = this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
-	          invisibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
-	          position += change;
-	        }
-	      }
-	    }
-
-	    var maxPosition = this.$FixedDataTableScrollHelper_contentHeight - this.$FixedDataTableScrollHelper_viewportHeight;
-	    position = clamp(0, position, maxPosition);
-	    this.$FixedDataTableScrollHelper_position = position;
-	    var firstVisibleRow = this.$FixedDataTableScrollHelper_rowOffsets.upperBound(position);
-	    var firstRowIndex = firstVisibleRow.index;
-	    firstRowPosition =
-	      firstVisibleRow.value - this.$FixedDataTableScrollHelper_rowHeightGetter(firstRowIndex);
-	    var firstRowOffset = firstRowPosition - position;
-
-	    this.$FixedDataTableScrollHelper_updateHeightsInViewport(firstRowIndex, firstRowOffset);
-	    this.$FixedDataTableScrollHelper_updateHeightsAboveViewport(firstRowIndex);
-
-	    return {
-	      index: firstRowIndex,
-	      offset: firstRowOffset,
-	      position: this.$FixedDataTableScrollHelper_position,
-	      contentHeight: this.$FixedDataTableScrollHelper_contentHeight,
-	    };
-	  };
-
-	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_getRowAtEndPosition=function(rowIndex)  {
-	    // We need to update enough rows above the selected one to be sure that when
-	    // we scroll to selected position all rows between first shown and selected
-	    // one have most recent heights computed and will not resize
-	    this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
-	    var currentRowIndex = rowIndex;
-	    var top = this.$FixedDataTableScrollHelper_storedHeights[currentRowIndex];
-	    while (top < this.$FixedDataTableScrollHelper_viewportHeight && currentRowIndex >= 0) {
-	      currentRowIndex--;
-	      if (currentRowIndex >= 0) {
-	        this.$FixedDataTableScrollHelper_updateRowHeight(currentRowIndex);
-	        top += this.$FixedDataTableScrollHelper_storedHeights[currentRowIndex];
-	      }
-	    }
-	    var position = this.$FixedDataTableScrollHelper_rowOffsets.get(rowIndex).value - this.$FixedDataTableScrollHelper_viewportHeight;
-	    if (position < 0) {
-	      position = 0;
-	    }
-	    return position;
-	  };
-
-	  FixedDataTableScrollHelper.prototype.scrollTo=function(position)  {
-	    if (position <= 0) {
-	      // If position less than or equal to 0 first row should be fully visible
-	      // on top
-	      this.$FixedDataTableScrollHelper_position = 0;
-	      this.$FixedDataTableScrollHelper_updateHeightsInViewport(0, 0);
-
-	      return {
-	        index: 0,
-	        offset: 0,
-	        position: this.$FixedDataTableScrollHelper_position,
-	        contentHeight: this.$FixedDataTableScrollHelper_contentHeight,
-	      };
-	    } else if (position >= this.$FixedDataTableScrollHelper_contentHeight - this.$FixedDataTableScrollHelper_viewportHeight) {
-	      // If position is equal to or greater than max scroll value, we need
-	      // to make sure to have bottom border of last row visible.
-	      var rowIndex = this.$FixedDataTableScrollHelper_rowCount - 1;
-	      position = this.$FixedDataTableScrollHelper_getRowAtEndPosition(rowIndex);
-	    }
-	    this.$FixedDataTableScrollHelper_position = position;
-
-	    var firstVisibleRow = this.$FixedDataTableScrollHelper_rowOffsets.upperBound(position);
-	    var firstRowIndex = Math.max(firstVisibleRow.index, 0);
-	    var firstRowPosition =
-	      firstVisibleRow.value - this.$FixedDataTableScrollHelper_rowHeightGetter(firstRowIndex);
-	    var firstRowOffset = firstRowPosition - position;
-
-	    this.$FixedDataTableScrollHelper_updateHeightsInViewport(firstRowIndex, firstRowOffset);
-	    this.$FixedDataTableScrollHelper_updateHeightsAboveViewport(firstRowIndex);
-
-	    return {
-	      index: firstRowIndex,
-	      offset: firstRowOffset,
-	      position: this.$FixedDataTableScrollHelper_position,
-	      contentHeight: this.$FixedDataTableScrollHelper_contentHeight,
-	    };
-	  };
-
-	  /**
-	   * Allows to scroll to selected row with specified offset. It always
-	   * brings that row to top of viewport with that offset
-	   */
-	  FixedDataTableScrollHelper.prototype.scrollToRow=function(rowIndex, /*number*/ offset)  {
-	    rowIndex = clamp(0, rowIndex, this.$FixedDataTableScrollHelper_rowCount - 1);
-	    offset = clamp(-this.$FixedDataTableScrollHelper_storedHeights[rowIndex], offset, 0);
-	    var firstRow = this.$FixedDataTableScrollHelper_rowOffsets.get(rowIndex);
-	    return this.scrollTo(
-	      firstRow.value - this.$FixedDataTableScrollHelper_storedHeights[rowIndex] - offset
-	    );
-	  };
-
-	  /**
-	   * Allows to scroll to selected row by bringing it to viewport with minimal
-	   * scrolling. This that if row is fully visible, scroll will not be changed.
-	   * If top border of row is above top of viewport it will be scrolled to be
-	   * fully visible on the top of viewport. If the bottom border of row is
-	   * below end of viewport, it will be scrolled up to be fully visible on the
-	   * bottom of viewport.
-	   */
-	  FixedDataTableScrollHelper.prototype.scrollRowIntoView=function(rowIndex)  {
-	    rowIndex = clamp(0, rowIndex, this.$FixedDataTableScrollHelper_rowCount - 1);
-	    var rowEnd = this.$FixedDataTableScrollHelper_rowOffsets.get(rowIndex).value;
-	    var rowBegin = rowEnd - this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
-	    if (rowBegin < this.$FixedDataTableScrollHelper_position) {
-	      return this.scrollTo(rowBegin);
-	    } else if (rowEnd > this.$FixedDataTableScrollHelper_position + this.$FixedDataTableScrollHelper_viewportHeight) {
-	      var position = this.$FixedDataTableScrollHelper_getRowAtEndPosition(rowIndex);
-	      return this.scrollTo(position);
-	    }
-	    return this.scrollTo(this.$FixedDataTableScrollHelper_position);
-	  };
-
-
-	module.exports = FixedDataTableScrollHelper;
-
-
-/***/ },
-/* 153 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableWidthHelper
-	 * @typechecks
-	 */
-	'use strict';
-
-	var React = __webpack_require__(145);
-
-	var cloneWithProps = __webpack_require__(154);
-
-	function getTotalWidth(/*array*/ columns) /*number*/ {
-	  var totalWidth = 0;
-	  for (var i = 0; i < columns.length; ++i) {
-	    totalWidth += columns[i].props.width;
-	  }
-	  return totalWidth;
-	}
-
-	function getTotalFlexGrow(/*array*/ columns) /*number*/ {
-	  var totalFlexGrow = 0;
-	  for (var i = 0; i < columns.length; ++i) {
-	    totalFlexGrow += columns[i].props.flexGrow || 0;
-	  }
-	  return totalFlexGrow;
-	}
-
-	function distributeFlexWidth(
-	  /*array*/ columns,
-	  /*number*/ flexWidth
-	) /*object*/ {
-	  if (flexWidth <= 0) {
-	    return {
-	      columns: columns,
-	      width: getTotalWidth(columns),
-	    };
-	  }
-	  var remainingFlexGrow = getTotalFlexGrow(columns);
-	  var remainingFlexWidth = flexWidth;
-	  var newColumns = [];
-	  var totalWidth = 0;
-	  for (var i = 0; i < columns.length; ++i) {
-	    var column = columns[i];
-	    if (!column.props.flexGrow) {
-	      totalWidth += column.props.width;
-	      newColumns.push(column);
-	      continue;
-	    }
-	    var columnFlexWidth = Math.floor(
-	      column.props.flexGrow / remainingFlexGrow * remainingFlexWidth
-	    );
-	    var newColumnWidth = Math.floor(column.props.width + columnFlexWidth);
-	    totalWidth += newColumnWidth;
-
-	    remainingFlexGrow -= column.props.flexGrow;
-	    remainingFlexWidth -= columnFlexWidth;
-
-	    newColumns.push(cloneWithProps(
-	      column,
-	      {width: newColumnWidth}
-	    ));
-	  }
-
-	  return {
-	    columns: newColumns,
-	    width: totalWidth,
-	  };
-	}
-
-	function adjustColumnGroupWidths(
-	  /*array*/ columnGroups,
-	  /*number*/ expectedWidth
-	) /*object*/ {
-	  var allColumns = [];
-	  var i;
-	  for (i = 0; i < columnGroups.length; ++i) {
-	    React.Children.forEach(
-	      columnGroups[i].props.children,
-	      function(column)  {allColumns.push(column);}
-	    );
-	  }
-	  var columnsWidth = getTotalWidth(allColumns);
-	  var remainingFlexGrow = getTotalFlexGrow(allColumns);
-	  var remainingFlexWidth = Math.max(expectedWidth - columnsWidth, 0);
-
-	  var newAllColumns = [];
-	  var newColumnGroups = [];
-
-	  for (i = 0; i < columnGroups.length; ++i) {
-	    var columnGroup = columnGroups[i];
-	    var currentColumns = [];
-
-	    React.Children.forEach(
-	      columnGroup.props.children,
-	      function(column)  {currentColumns.push(column);}
-	    );
-
-	    var columnGroupFlexGrow = getTotalFlexGrow(currentColumns);
-	    var columnGroupFlexWidth = Math.floor(
-	      columnGroupFlexGrow / remainingFlexGrow * remainingFlexWidth
-	    );
-
-	    var newColumnSettings = distributeFlexWidth(
-	      currentColumns,
-	      columnGroupFlexWidth
-	    );
-
-	    remainingFlexGrow -= columnGroupFlexGrow;
-	    remainingFlexWidth -= columnGroupFlexWidth;
-
-	    for (var j = 0; j < newColumnSettings.columns.length; ++j) {
-	      newAllColumns.push(newColumnSettings.columns[j]);
-	    }
-
-	    newColumnGroups.push(cloneWithProps(
-	      columnGroup,
-	      {width: newColumnSettings.width}
-	    ));
-	  }
-
-	  return {
-	    columns: newAllColumns,
-	    columnGroups: newColumnGroups,
-	  };
-	}
-
-	function adjustColumnWidths(
-	  /*array*/ columns,
-	  /*number*/ expectedWidth
-	) /*array*/ {
-	  var columnsWidth = getTotalWidth(columns);
-	  if (columnsWidth < expectedWidth) {
-	    return distributeFlexWidth(columns, expectedWidth - columnsWidth).columns;
-	  }
-	  return columns;
-	}
-
-	var FixedDataTableWidthHelper = {
-	  getTotalWidth:getTotalWidth,
-	  getTotalFlexGrow:getTotalFlexGrow,
-	  distributeFlexWidth:distributeFlexWidth,
-	  adjustColumnWidths:adjustColumnWidths,
-	  adjustColumnGroupWidths:adjustColumnGroupWidths,
-	};
-
-	module.exports = FixedDataTableWidthHelper;
-
-
-/***/ },
-/* 154 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule cloneWithProps
-	 */
-
-	module.exports = __webpack_require__(141);
-
-
-/***/ },
-/* 155 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule cx
-	 */
-
-	var slashReplaceRegex = /\//g;
-	var cache = {};
-
-	function getClassName(className) {
-	  if (cache[className]) {
-	    return cache[className];
-	  }
-
-	  cache[className] = className.replace(slashReplaceRegex, '_');
-	  return cache[className];
-	}
-
-	/**
-	 * This function is used to mark string literals representing CSS class names
-	 * so that they can be transformed statically. This allows for modularization
-	 * and minification of CSS class names.
-	 *
-	 * In static_upstream, this function is actually implemented, but it should
-	 * eventually be replaced with something more descriptive, and the transform
-	 * that is used in the main stack should be ported for use elsewhere.
-	 *
-	 * @param string|object className to modularize, or an object of key/values.
-	 *                      In the object case, the values are conditions that
-	 *                      determine if the className keys should be included.
-	 * @param [string ...]  Variable list of classNames in the string case.
-	 * @return string       Renderable space-separated CSS className.
-	 */
-	function cx(classNames) {
-	  var classNamesArray;
-	  if (typeof classNames == 'object') {
-	    classNamesArray = Object.keys(classNames).filter(function(className) {
-	      return classNames[className];
-	    });
-	  } else {
-	    classNamesArray = Array.prototype.slice.call(arguments);
-	  }
-
-	  return classNamesArray.map(getClassName).join(' ');
-	}
-
-	module.exports = cx;
-
-
-/***/ },
-/* 156 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule debounceCore
-	 * @typechecks
-	 */
-
-	/**
-	 * Invokes the given callback after a specified number of milliseconds have
-	 * elapsed, ignoring subsequent calls.
-	 *
-	 * For example, if you wanted to update a preview after the user stops typing
-	 * you could do the following:
-	 *
-	 *   elem.addEventListener('keyup', debounce(this.updatePreview, 250), false);
-	 *
-	 * The returned function has a reset method which can be called to cancel a
-	 * pending invocation.
-	 *
-	 *   var debouncedUpdatePreview = debounce(this.updatePreview, 250);
-	 *   elem.addEventListener('keyup', debouncedUpdatePreview, false);
-	 *
-	 *   // later, to cancel pending calls
-	 *   debouncedUpdatePreview.reset();
-	 *
-	 * @param {function} func - the function to debounce
-	 * @param {number} wait - how long to wait in milliseconds
-	 * @param {*} context - optional context to invoke the function in
-	 * @param {?function} setTimeoutFunc - an implementation of setTimeout
-	 *  if nothing is passed in the default setTimeout function is used
-	  * @param {?function} clearTimeoutFunc - an implementation of clearTimeout
-	 *  if nothing is passed in the default clearTimeout function is used
-	 */
-	function debounce(func, wait, context, setTimeoutFunc, clearTimeoutFunc) {
-	  setTimeoutFunc = setTimeoutFunc || setTimeout;
-	  clearTimeoutFunc = clearTimeoutFunc || clearTimeout;
-	  var timeout;
-
-	  function debouncer() {for (var args=[],$__0=0,$__1=arguments.length;$__0<$__1;$__0++) args.push(arguments[$__0]);
-	    debouncer.reset();
-
-	    timeout = setTimeoutFunc(function() {
-	      func.apply(context, args);
-	    }, wait);
-	  }
-
-	  debouncer.reset = function() {
-	    clearTimeoutFunc(timeout);
-	  };
-
-	  return debouncer;
-	}
-
-	module.exports = debounce;
-
-
-/***/ },
-/* 157 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule emptyFunction
-	 */
-
-	function makeEmptyFunction(arg) {
-	  return function() {
-	    return arg;
-	  };
-	}
-
-	/**
-	 * This function accepts and discards inputs; it has no side effects. This is
-	 * primarily useful idiomatically for overridable function endpoints which
-	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
-	 */
-	function emptyFunction() {}
-
-	emptyFunction.thatReturns = makeEmptyFunction;
-	emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
-	emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
-	emptyFunction.thatReturnsNull = makeEmptyFunction(null);
-	emptyFunction.thatReturnsThis = function() { return this; };
-	emptyFunction.thatReturnsArgument = function(arg) { return arg; };
-
-	module.exports = emptyFunction;
-
-
-/***/ },
-/* 158 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule invariant
-	 */
-
-	"use strict";
-
-	/**
-	 * Use invariant() to assert state which your program assumes to be true.
-	 *
-	 * Provide sprintf-style format (only %s is supported) and arguments
-	 * to provide information about what broke and what you were
-	 * expecting.
-	 *
-	 * The invariant message will be stripped in production, but the invariant
-	 * will remain to ensure logic does not differ in production.
-	 */
-
-	var invariant = function(condition, format, a, b, c, d, e, f) {
-	  if (process.env.NODE_ENV !== 'production') {
-	    if (format === undefined) {
-	      throw new Error('invariant requires an error message argument');
-	    }
-	  }
-
-	  if (!condition) {
-	    var error;
-	    if (format === undefined) {
-	      error = new Error(
-	        'Minified exception occurred; use the non-minified dev environment ' +
-	        'for the full error message and additional helpful warnings.'
-	      );
-	    } else {
-	      var args = [a, b, c, d, e, f];
-	      var argIndex = 0;
-	      error = new Error(
-	        'Invariant Violation: ' +
-	        format.replace(/%s/g, function() { return args[argIndex++]; })
-	      );
-	    }
-
-	    error.framesToPop = 1; // we don't care about invariant's own frame
-	    throw error;
-	  }
-	};
-
-	module.exports = invariant;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
-
-/***/ },
-/* 159 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule shallowEqual
-	 */
-
-	'use strict';
-
-	/**
-	 * Performs equality by iterating through keys on an object and returning
-	 * false when any key has values which are not strictly equal between
-	 * objA and objB. Returns true when the values of all keys are strictly equal.
-	 *
-	 * @return {boolean}
-	 */
-	function shallowEqual(objA, objB) {
-	  if (objA === objB) {
-	    return true;
-	  }
-	  var key;
-	  // Test for A's keys different from B.
-	  for (key in objA) {
-	    if (objA.hasOwnProperty(key) &&
-	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
-	      return false;
-	    }
-	  }
-	  // Test for B's keys missing from A.
-	  for (key in objB) {
-	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
-	      return false;
-	    }
-	  }
-	  return true;
-	}
-
-	module.exports = shallowEqual;
-
-
-/***/ },
-/* 160 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule translateDOMPositionXY
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var BrowserSupportCore = __webpack_require__(187);
-
-	var getVendorPrefixedName = __webpack_require__(188);
-
-	var TRANSFORM = getVendorPrefixedName('transform');
-	var BACKFACE_VISIBILITY = getVendorPrefixedName('backfaceVisibility');
-
-	var translateDOMPositionXY = (function() {
-	  if (BrowserSupportCore.hasCSSTransforms()) {
-	    var ua = global.window ? global.window.navigator.userAgent : 'UNKNOWN';
-	    var isSafari = (/Safari\//).test(ua) && !(/Chrome\//).test(ua);
-	    // It appears that Safari messes up the composition order
-	    // of GPU-accelerated layers
-	    // (see bug https://bugs.webkit.org/show_bug.cgi?id=61824).
-	    // Use 2D translation instead.
-	    if (!isSafari && BrowserSupportCore.hasCSS3DTransforms()) {
-	      return function(/*object*/ style, /*number*/ x, /*number*/ y) {
-	        style[TRANSFORM] ='translate3d(' + x + 'px,' + y + 'px,0)';
-	        style[BACKFACE_VISIBILITY] = 'hidden';
-	      };
-	    } else {
-	      return function(/*object*/ style, /*number*/ x, /*number*/ y) {
-	        style[TRANSFORM] = 'translate(' + x + 'px,' + y + 'px)';
-	      };
-	    }
-	  } else {
-	    return function(/*object*/ style, /*number*/ x, /*number*/ y) {
-	      style.left = x + 'px';
-	      style.top = y + 'px';
-	    };
-	  }
-	})();
-
-	module.exports = translateDOMPositionXY;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 161 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(178);
-	var emptyFunction = __webpack_require__(189);
-	var cloneWithProps = __webpack_require__(141);
+	var PureRenderMixin = __webpack_require__(183);
+	var emptyFunction = __webpack_require__(184);
+	var cloneWithProps = __webpack_require__(138);
 
 	function createUIEvent(draggable) {
 		return {
@@ -18332,15 +16833,15 @@
 
 
 /***/ },
-/* 162 */
+/* 151 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var React = __webpack_require__(1);
 	var Draggable = __webpack_require__(134);
-	var assign = __webpack_require__(135);
-	var PureRenderMixin = __webpack_require__(178);
-	var cloneWithProps = __webpack_require__(141);
+	var assign = __webpack_require__(136);
+	var PureRenderMixin = __webpack_require__(183);
+	var cloneWithProps = __webpack_require__(138);
 
 	var Resizable = module.exports = React.createClass({
 	  displayName: "Resizable",
@@ -18443,7 +16944,7 @@
 	}
 
 /***/ },
-/* 163 */
+/* 152 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -18461,8 +16962,8 @@
 
 	"use strict";
 	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(178);
-	var Resizable = __webpack_require__(162);
+	var PureRenderMixin = __webpack_require__(183);
+	var Resizable = __webpack_require__(151);
 
 	// An example use of Resizable.
 	var ResizableBox = module.exports = React.createClass({
@@ -18513,7 +17014,7 @@
 	});
 
 /***/ },
-/* 164 */
+/* 153 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = typeof Object.keys === 'function'
@@ -18528,7 +17029,7 @@
 
 
 /***/ },
-/* 165 */
+/* 154 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var supportsArgumentsClass = (function(){
@@ -18554,298 +17055,7 @@
 
 
 /***/ },
-/* 166 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var AxisTicks = __webpack_require__(190);
-	var AxisLine = __webpack_require__(191);
-	var Label = __webpack_require__(192);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    xAxisClassName: React.PropTypes.string.isRequired,
-	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
-	    xScale: React.PropTypes.func.isRequired,
-	    height: React.PropTypes.number.isRequired,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    tickStroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.string,
-	    xAxisOffset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      xAxisClassName: 'x axis',
-	      xAxisLabelOffset: 10,
-	      xOrient: 'bottom',
-	      fill: 'none',
-	      stroke: 'none',
-	      tickStroke: '#000',
-	      strokeWidth: 'none',
-	      xAxisOffset: 0,
-	      label: ''
-	    };
-	  },
-
-	  render:function() {
-	    var props = this.props;
-
-	    var t = ("translate(0," + (props.xAxisOffset + props.height) + ")");
-
-	    var tickArguments;
-	    if (typeof props.xAxisTickCount !== 'undefined') {
-	      tickArguments = [props.xAxisTickCount];
-	    }
-	    
-	    if (typeof props.xAxisTickInterval !== 'undefined') {
-	      tickArguments = [d3.time[props.xAxisTickInterval.unit], props.xAxisTickInterval.interval];
-	    }
-
-	    return (
-	      React.createElement("g", {
-	        className: props.xAxisClassName, 
-	        transform: t
-	      }, 
-	        React.createElement(Label, {
-	          label: props.xAxisLabel, 
-	          offset: props.xAxisLabelOffset, 
-	          orient: props.xOrient, 
-	          margins: props.margins, 
-	          width: props.width}
-	        ), 
-	        React.createElement(AxisTicks, {
-	          tickFormatting: props.tickFormatting, 
-	          tickArguments: tickArguments, 
-	          xScale: props.xScale, 
-	          orient: props.xOrient}
-	        ), 
-	        React.createElement(AxisLine, React.__spread({
-	          scale: props.xScale, 
-	          orient: props.xOrient}, 
-	          props)
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 167 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
-	var AxisTicks = __webpack_require__(190);
-	var AxisLine = __webpack_require__(191);
-	var Label = __webpack_require__(192);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    yAxisClassName: React.PropTypes.string,
-	    yOrient: React.PropTypes.oneOf(['left', 'right']),
-	    yScale: React.PropTypes.func.isRequired,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    tickStroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.string,
-	    yAxisOffset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      yAxisClassName: 'y axis',
-	      yOrient: 'left',
-	      fill: 'none',
-	      stroke: '#000',
-	      tickStroke: '#000',
-	      strokeWidth: '1',
-	      yAxisOffset: 0
-	    };
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-
-	    var t;
-	    if (props.yOrient === 'right') {
-	       t = ("translate(" + (props.yAxisOffset + props.width) + ",0)");
-	    } else {
-	       t = ("translate(" + props.yAxisOffset + ",0)");
-	    }
-
-	    var tickArguments;
-	    if (props.yAxisTickCount) {
-	      tickArguments = [props.yAxisTickCount];
-	    }
-	    
-	    if (props.yAxisTickInterval) {
-	      tickArguments = [d3.time[props.yAxisTickInterval.unit], props.yAxisTickInterval.interval];
-	    }
-
-	    return (
-	      React.createElement("g", {
-	        className: props.yAxisClassName, 
-	        transform: t
-	      }, 
-	        React.createElement(AxisTicks, {
-	          tickFormatting: props.tickFormatting, 
-	          tickArguments: tickArguments, 
-	          yScale: props.yScale, 
-	          orient: props.yOrient, 
-	          height: props.height, 
-	          width: props.width}
-	        ), 
-	        React.createElement(AxisLine, React.__spread({
-	          scale: props.yScale, 
-	          orient: props.yOrient}, 
-	          props)
-	        ), 
-	        React.createElement(Label, {
-	          label: props.yAxisLabel, 
-	          offset: props.yAxisLabelOffset, 
-	          orient: props.yOrient, 
-	          margins: props.margins, 
-	          height: props.height, 
-	          width: props.width}
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 168 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-
-	module.exports = React.createClass({displayName: "exports",
-	  render: function() {
-	    return (
-	      React.createElement("div", null, 
-	        React.createElement("h4", null, this.props.title), 
-	        React.createElement("svg", {
-	          viewBox: this.props.viewBox, 
-	          width: this.props.width, 
-	          height: this.props.height
-	        }, this.props.children)
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 169 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var LegendChart = __webpack_require__(170);
-	var BasicChart = __webpack_require__(168);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    legend: React.PropTypes.bool,
-	    viewBox: React.PropTypes.string
-	  },
-
-	  getDefaultProps: function() {
-	    return {
-	      legend: false
-	    };
-	  },
-
-	  render: function() {
-	    if (this.props.legend) {
-	      return React.createElement(LegendChart, React.__spread({},  this.props));
-	    }
-	    return React.createElement(BasicChart, React.__spread({},  this.props));
-	  }
-
-	});
-
-
-
-/***/ },
-/* 170 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var Legend = __webpack_require__(131);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    legend: React.PropTypes.bool,
-	    legendPosition: React.PropTypes.string,
-	    sideOffset: React.PropTypes.number,
-	    margins: React.PropTypes.object,
-	    data: React.PropTypes.oneOfType([
-	      React.PropTypes.object,
-	      React.PropTypes.array
-	    ])
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      data: {},
-	      legend: false,
-	      legendPosition: 'right',
-	      sideOffset: 90
-	    };
-	  },
-
-	  _renderLegend:function() {
-	    if (this.props.legend) {
-	      return (
-	        React.createElement(Legend, {
-	          legendPosition: this.props.legendPosition, 
-	          margins: this.props.margins, 
-	          colors: this.props.colors, 
-	          data: this.props.data, 
-	          width: this.props.width, 
-	          height: this.props.height, 
-	          sideOffset: this.props.sideOffset}
-	        ) 
-	      );
-	    }
-	  },
-
-	  render:function() {
-	    return (
-	      React.createElement("div", {style: {'width': this.props.width, 'height': this.props.height}}, 
-	        React.createElement("h4", null, this.props.title), 
-	        this._renderLegend(), 
-	        React.createElement("svg", {viewBox: this.props.viewBox, width: this.props.width - this.props.sideOffset, height: this.props.height}, this.props.children)
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 171 */
+/* 155 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -18861,11 +17071,11 @@
 
 	'use strict';
 
-	var ReactContext = __webpack_require__(195);
-	var ReactCurrentOwner = __webpack_require__(196);
+	var ReactContext = __webpack_require__(185);
+	var ReactCurrentOwner = __webpack_require__(186);
 
-	var assign = __webpack_require__(193);
-	var warning = __webpack_require__(174);
+	var assign = __webpack_require__(187);
+	var warning = __webpack_require__(158);
 
 	var RESERVED_PROPS = {
 	  key: true,
@@ -19153,10 +17363,10 @@
 
 	module.exports = ReactElement;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 172 */
+/* 156 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -19172,9 +17382,9 @@
 
 	'use strict';
 
-	var assign = __webpack_require__(193);
-	var emptyFunction = __webpack_require__(189);
-	var joinClasses = __webpack_require__(194);
+	var assign = __webpack_require__(187);
+	var emptyFunction = __webpack_require__(184);
+	var joinClasses = __webpack_require__(188);
 
 	/**
 	 * Creates a transfer strategy that will merge prop values using the supplied
@@ -19270,7 +17480,7 @@
 
 
 /***/ },
-/* 173 */
+/* 157 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -19310,7 +17520,7 @@
 
 
 /***/ },
-/* 174 */
+/* 158 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -19326,7 +17536,7 @@
 
 	"use strict";
 
-	var emptyFunction = __webpack_require__(189);
+	var emptyFunction = __webpack_require__(184);
 
 	/**
 	 * Similar to invariant but only logs a warning if the condition is not met.
@@ -19373,22 +17583,10 @@
 
 	module.exports = warning;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 175 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-
-	module.exports.generateRandomKey = function (len) {
-	  len = len || 10;
-	  return Math.random().toString(36).substring(2).substring(0, len);
-	};
-
-
-/***/ },
-/* 176 */
+/* 159 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -19399,510 +17597,106 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule normalizeWheel
+	 * @providesModule FixedDataTableHelper
 	 * @typechecks
 	 */
 
 	"use strict";
 
-	var UserAgent_DEPRECATED = __webpack_require__(202);
+	var Locale = __webpack_require__(160);
+	var React = __webpack_require__(161);
+	var FixedDataTableColumnGroup = __webpack_require__(142);
+	var FixedDataTableColumn = __webpack_require__(141);
 
-	var isEventSupported = __webpack_require__(203);
+	var cloneWithProps = __webpack_require__(170);
 
+	var DIR_SIGN = (Locale.isRTL() ? -1 : +1);
+	// A cell up to 5px outside of the visible area will still be considered visible
+	var CELL_VISIBILITY_TOLERANCE = 5; // used for flyouts
 
-	// Reasonable defaults
-	var PIXEL_STEP  = 10;
-	var LINE_HEIGHT = 40;
-	var PAGE_HEIGHT = 800;
-
-	/**
-	 * Mouse wheel (and 2-finger trackpad) support on the web sucks.  It is
-	 * complicated, thus this doc is long and (hopefully) detailed enough to answer
-	 * your questions.
-	 *
-	 * If you need to react to the mouse wheel in a predictable way, this code is
-	 * like your bestest friend. * hugs *
-	 *
-	 * As of today, there are 4 DOM event types you can listen to:
-	 *
-	 *   'wheel'                -- Chrome(31+), FF(17+), IE(9+)
-	 *   'mousewheel'           -- Chrome, IE(6+), Opera, Safari
-	 *   'MozMousePixelScroll'  -- FF(3.5 only!) (2010-2013) -- don't bother!
-	 *   'DOMMouseScroll'       -- FF(0.9.7+) since 2003
-	 *
-	 * So what to do?  The is the best:
-	 *
-	 *   normalizeWheel.getEventType();
-	 *
-	 * In your event callback, use this code to get sane interpretation of the
-	 * deltas.  This code will return an object with properties:
-	 *
-	 *   spinX   -- normalized spin speed (use for zoom) - x plane
-	 *   spinY   -- " - y plane
-	 *   pixelX  -- normalized distance (to pixels) - x plane
-	 *   pixelY  -- " - y plane
-	 *
-	 * Wheel values are provided by the browser assuming you are using the wheel to
-	 * scroll a web page by a number of lines or pixels (or pages).  Values can vary
-	 * significantly on different platforms and browsers, forgetting that you can
-	 * scroll at different speeds.  Some devices (like trackpads) emit more events
-	 * at smaller increments with fine granularity, and some emit massive jumps with
-	 * linear speed or acceleration.
-	 *
-	 * This code does its best to normalize the deltas for you:
-	 *
-	 *   - spin is trying to normalize how far the wheel was spun (or trackpad
-	 *     dragged).  This is super useful for zoom support where you want to
-	 *     throw away the chunky scroll steps on the PC and make those equal to
-	 *     the slow and smooth tiny steps on the Mac. Key data: This code tries to
-	 *     resolve a single slow step on a wheel to 1.
-	 *
-	 *   - pixel is normalizing the desired scroll delta in pixel units.  You'll
-	 *     get the crazy differences between browsers, but at least it'll be in
-	 *     pixels!
-	 *
-	 *   - positive value indicates scrolling DOWN/RIGHT, negative UP/LEFT.  This
-	 *     should translate to positive value zooming IN, negative zooming OUT.
-	 *     This matches the newer 'wheel' event.
-	 *
-	 * Why are there spinX, spinY (or pixels)?
-	 *
-	 *   - spinX is a 2-finger side drag on the trackpad, and a shift + wheel turn
-	 *     with a mouse.  It results in side-scrolling in the browser by default.
-	 *
-	 *   - spinY is what you expect -- it's the classic axis of a mouse wheel.
-	 *
-	 *   - I dropped spinZ/pixelZ.  It is supported by the DOM 3 'wheel' event and
-	 *     probably is by browsers in conjunction with fancy 3D controllers .. but
-	 *     you know.
-	 *
-	 * Implementation info:
-	 *
-	 * Examples of 'wheel' event if you scroll slowly (down) by one step with an
-	 * average mouse:
-	 *
-	 *   OS X + Chrome  (mouse)     -    4   pixel delta  (wheelDelta -120)
-	 *   OS X + Safari  (mouse)     -  N/A   pixel delta  (wheelDelta  -12)
-	 *   OS X + Firefox (mouse)     -    0.1 line  delta  (wheelDelta  N/A)
-	 *   Win8 + Chrome  (mouse)     -  100   pixel delta  (wheelDelta -120)
-	 *   Win8 + Firefox (mouse)     -    3   line  delta  (wheelDelta -120)
-	 *
-	 * On the trackpad:
-	 *
-	 *   OS X + Chrome  (trackpad)  -    2   pixel delta  (wheelDelta   -6)
-	 *   OS X + Firefox (trackpad)  -    1   pixel delta  (wheelDelta  N/A)
-	 *
-	 * On other/older browsers.. it's more complicated as there can be multiple and
-	 * also missing delta values.
-	 *
-	 * The 'wheel' event is more standard:
-	 *
-	 * http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents
-	 *
-	 * The basics is that it includes a unit, deltaMode (pixels, lines, pages), and
-	 * deltaX, deltaY and deltaZ.  Some browsers provide other values to maintain
-	 * backward compatibility with older events.  Those other values help us
-	 * better normalize spin speed.  Example of what the browsers provide:
-	 *
-	 *                          | event.wheelDelta | event.detail
-	 *        ------------------+------------------+--------------
-	 *          Safari v5/OS X  |       -120       |       0
-	 *          Safari v5/Win7  |       -120       |       0
-	 *         Chrome v17/OS X  |       -120       |       0
-	 *         Chrome v17/Win7  |       -120       |       0
-	 *                IE9/Win7  |       -120       |   undefined
-	 *         Firefox v4/OS X  |     undefined    |       1
-	 *         Firefox v4/Win7  |     undefined    |       3
-	 *
-	 */
-	function normalizeWheel(/*object*/ event) /*object*/ {
-	  var sX = 0, sY = 0,       // spinX, spinY
-	      pX = 0, pY = 0;       // pixelX, pixelY
-
-	  // Legacy
-	  if ('detail'      in event) { sY = event.detail; }
-	  if ('wheelDelta'  in event) { sY = -event.wheelDelta / 120; }
-	  if ('wheelDeltaY' in event) { sY = -event.wheelDeltaY / 120; }
-	  if ('wheelDeltaX' in event) { sX = -event.wheelDeltaX / 120; }
-
-	  // side scrolling on FF with DOMMouseScroll
-	  if ( 'axis' in event && event.axis === event.HORIZONTAL_AXIS ) {
-	    sX = sY;
-	    sY = 0;
+	function renderToString(value) /*string*/ {
+	  if (value === null || value === undefined) {
+	    return '';
+	  } else {
+	    return String(value);
 	  }
-
-	  pX = sX * PIXEL_STEP;
-	  pY = sY * PIXEL_STEP;
-
-	  if ('deltaY' in event) { pY = event.deltaY; }
-	  if ('deltaX' in event) { pX = event.deltaX; }
-
-	  if ((pX || pY) && event.deltaMode) {
-	    if (event.deltaMode == 1) {          // delta in LINE units
-	      pX *= LINE_HEIGHT;
-	      pY *= LINE_HEIGHT;
-	    } else {                             // delta in PAGE units
-	      pX *= PAGE_HEIGHT;
-	      pY *= PAGE_HEIGHT;
-	    }
-	  }
-
-	  // Fall-back if spin cannot be determined
-	  if (pX && !sX) { sX = (pX < 1) ? -1 : 1; }
-	  if (pY && !sY) { sY = (pY < 1) ? -1 : 1; }
-
-	  return { spinX  : sX,
-	           spinY  : sY,
-	           pixelX : pX,
-	           pixelY : pY };
 	}
 
-
 	/**
-	 * The best combination if you prefer spinX + spinY normalization.  It favors
-	 * the older DOMMouseScroll for Firefox, as FF does not include wheelDelta with
-	 * 'wheel' event, making spin speed determination impossible.
+	 * Helper method to execute a callback against all columns given the children
+	 * of a table.
+	 * @param {?object|array} children
+	 *    Children of a table.
+	 * @param {function} callback
+	 *    Function to excecute for each column. It is passed the column.
 	 */
-	normalizeWheel.getEventType = function() /*string*/ {
-	  return (UserAgent_DEPRECATED.firefox())
-	           ? 'DOMMouseScroll'
-	           : (isEventSupported('wheel'))
-	               ? 'wheel'
-	               : 'mousewheel';
-	};
-
-	module.exports = normalizeWheel;
-
-
-/***/ },
-/* 177 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule requestAnimationFramePolyfill
-	 */
-
-	var emptyFunction = __webpack_require__(157);
-	var nativeRequestAnimationFrame = __webpack_require__(201);
-
-	var lastTime = 0;
-
-	/**
-	 * Here is the native and polyfill version of requestAnimationFrame.
-	 * Please don't use it directly and use requestAnimationFrame module instead.
-	 */
-	var requestAnimationFrame =
-	  nativeRequestAnimationFrame ||
-	  function(callback) {
-	    var currTime = Date.now();
-	    var timeDelay = Math.max(0, 16 - (currTime - lastTime));
-	    lastTime = currTime + timeDelay;
-	    return global.setTimeout(function() {
-	      callback(Date.now());
-	    }, timeDelay);
-	  };
-
-	// Works around a rare bug in Safari 6 where the first request is never invoked.
-	requestAnimationFrame(emptyFunction);
-
-	module.exports = requestAnimationFrame;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 178 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	* @providesModule ReactComponentWithPureRenderMixin
-	*/
-
-	'use strict';
-
-	var shallowEqual = __webpack_require__(206);
-
-	/**
-	 * If your React component's render function is "pure", e.g. it will render the
-	 * same result given the same props and state, provide this Mixin for a
-	 * considerable performance boost.
-	 *
-	 * Most React components have pure render functions.
-	 *
-	 * Example:
-	 *
-	 *   var ReactComponentWithPureRenderMixin =
-	 *     require('ReactComponentWithPureRenderMixin');
-	 *   React.createClass({
-	 *     mixins: [ReactComponentWithPureRenderMixin],
-	 *
-	 *     render: function() {
-	 *       return <div className={this.props.className}>foo</div>;
-	 *     }
-	 *   });
-	 *
-	 * Note: This only checks shallow equality for props and state. If these contain
-	 * complex data structures this mixin may have false-negatives for deeper
-	 * differences. Only mixin to components which have simple props and state, or
-	 * use `forceUpdate()` when you know deep data structures have changed.
-	 */
-	var ReactComponentWithPureRenderMixin = {
-	  shouldComponentUpdate: function(nextProps, nextState) {
-	    return !shallowEqual(this.props, nextProps) ||
-	           !shallowEqual(this.state, nextState);
-	  }
-	};
-
-	module.exports = ReactComponentWithPureRenderMixin;
-
-
-/***/ },
-/* 179 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule DOMMouseMoveTracker
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var EventListener = __webpack_require__(204);
-
-	var cancelAnimationFramePolyfill = __webpack_require__(205);
-	var requestAnimationFramePolyfill = __webpack_require__(177);
-
-
-	  /**
-	   * onMove is the callback that will be called on every mouse move.
-	   * onMoveEnd is called on mouse up when movement has ended.
-	   */
-	  function DOMMouseMoveTracker(
-	onMove,
-	    /*function*/ onMoveEnd,
-	    /*DOMElement*/ domNode) {
-	    this.$DOMMouseMoveTracker_isDragging = false;
-	    this.$DOMMouseMoveTracker_animationFrameID = null;
-	    this.$DOMMouseMoveTracker_domNode = domNode;
-	    this.$DOMMouseMoveTracker_onMove = onMove;
-	    this.$DOMMouseMoveTracker_onMoveEnd = onMoveEnd;
-	    this.$DOMMouseMoveTracker_onMouseMove = this.$DOMMouseMoveTracker_onMouseMove.bind(this);
-	    this.$DOMMouseMoveTracker_onMouseUp = this.$DOMMouseMoveTracker_onMouseUp.bind(this);
-	    this.$DOMMouseMoveTracker_didMouseMove = this.$DOMMouseMoveTracker_didMouseMove.bind(this);
-	  }
-
-	  /**
-	   * This is to set up the listeners for listening to mouse move
-	   * and mouse up signaling the movement has ended. Please note that these
-	   * listeners are added at the document.body level. It takes in an event
-	   * in order to grab inital state.
-	   */
-	  DOMMouseMoveTracker.prototype.captureMouseMoves=function(event) {
-	    if (!this.$DOMMouseMoveTracker_eventMoveToken && !this.$DOMMouseMoveTracker_eventUpToken) {
-	      this.$DOMMouseMoveTracker_eventMoveToken = EventListener.listen(
-	        this.$DOMMouseMoveTracker_domNode,
-	        'mousemove',
-	        this.$DOMMouseMoveTracker_onMouseMove
-	      );
-	      this.$DOMMouseMoveTracker_eventUpToken = EventListener.listen(
-	        this.$DOMMouseMoveTracker_domNode,
-	        'mouseup',
-	        this.$DOMMouseMoveTracker_onMouseUp
-	      );
+	function forEachColumn(children, callback) {
+	  React.Children.forEach(children, function(child)  {
+	    if (child.type === FixedDataTableColumnGroup.type) {
+	      forEachColumn(child.props.children, callback);
+	    } else if (child.type === FixedDataTableColumn.type) {
+	      callback(child);
 	    }
-
-	    if (!this.$DOMMouseMoveTracker_isDragging) {
-	      this.$DOMMouseMoveTracker_deltaX = 0;
-	      this.$DOMMouseMoveTracker_deltaY = 0;
-	      this.$DOMMouseMoveTracker_isDragging = true;
-	      this.$DOMMouseMoveTracker_x = event.clientX;
-	      this.$DOMMouseMoveTracker_y = event.clientY;
-	    }
-	    event.preventDefault();
-	  };
-
-	  /**
-	   * These releases all of the listeners on document.body.
-	   */
-	  DOMMouseMoveTracker.prototype.releaseMouseMoves=function() {
-	    if (this.$DOMMouseMoveTracker_eventMoveToken && this.$DOMMouseMoveTracker_eventUpToken) {
-	      this.$DOMMouseMoveTracker_eventMoveToken.remove();
-	      this.$DOMMouseMoveTracker_eventMoveToken = null;
-	      this.$DOMMouseMoveTracker_eventUpToken.remove();
-	      this.$DOMMouseMoveTracker_eventUpToken = null;
-	    }
-
-	    if (this.$DOMMouseMoveTracker_animationFrameID !== null) {
-	      cancelAnimationFramePolyfill(this.$DOMMouseMoveTracker_animationFrameID);
-	      this.$DOMMouseMoveTracker_animationFrameID = null;
-	    }
-
-	    if (this.$DOMMouseMoveTracker_isDragging) {
-	      this.$DOMMouseMoveTracker_isDragging = false;
-	      this.$DOMMouseMoveTracker_x = null;
-	      this.$DOMMouseMoveTracker_y = null;
-	    }
-	  };
-
-	  /**
-	   * Returns whether or not if the mouse movement is being tracked.
-	   */
-	  DOMMouseMoveTracker.prototype.isDragging=function() {
-	    return this.$DOMMouseMoveTracker_isDragging;
-	  };
-
-	  /**
-	   * Calls onMove passed into constructor and updates internal state.
-	   */
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseMove=function(event) {
-	    var x = event.clientX;
-	    var y = event.clientY;
-
-	    this.$DOMMouseMoveTracker_deltaX += (x - this.$DOMMouseMoveTracker_x);
-	    this.$DOMMouseMoveTracker_deltaY += (y - this.$DOMMouseMoveTracker_y);
-
-	    if (this.$DOMMouseMoveTracker_animationFrameID === null) {
-	      // The mouse may move faster then the animation frame does.
-	      // Use `requestAnimationFramePolyfill` to avoid over-updating.
-	      this.$DOMMouseMoveTracker_animationFrameID =
-	        requestAnimationFramePolyfill(this.$DOMMouseMoveTracker_didMouseMove);
-	    }
-
-	    this.$DOMMouseMoveTracker_x = x;
-	    this.$DOMMouseMoveTracker_y = y;
-	    event.preventDefault();
-	  };
-
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_didMouseMove=function() {
-	    this.$DOMMouseMoveTracker_animationFrameID = null;
-	    this.$DOMMouseMoveTracker_onMove(this.$DOMMouseMoveTracker_deltaX, this.$DOMMouseMoveTracker_deltaY);
-	    this.$DOMMouseMoveTracker_deltaX = 0;
-	    this.$DOMMouseMoveTracker_deltaY = 0;
-	  };
-
-	  /**
-	   * Calls onMoveEnd passed into constructor and updates internal state.
-	   */
-	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseUp=function() {
-	    if (this.$DOMMouseMoveTracker_animationFrameID) {
-	      this.$DOMMouseMoveTracker_didMouseMove();
-	    }
-	    this.$DOMMouseMoveTracker_onMoveEnd();
-	  };
-
-
-	module.exports = DOMMouseMoveTracker;
-
-
-/***/ },
-/* 180 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Keys
-	 */
-
-	module.exports = {
-	  BACKSPACE:  8,
-	  TAB:        9,
-	  RETURN:    13,
-	  ALT:       18,
-	  ESC:       27,
-	  SPACE:     32,
-	  PAGE_UP:   33,
-	  PAGE_DOWN: 34,
-	  END:       35,
-	  HOME:      36,
-	  LEFT:      37,
-	  UP:        38,
-	  RIGHT:     39,
-	  DOWN:      40,
-	  DELETE:    46,
-	  COMMA:    188,
-	  PERIOD:   190,
-	  A:         65,
-	  Z:         90,
-	  ZERO:      48,
-	  NUMPAD_0:  96,
-	  NUMPAD_9: 105
-	};
-
-
-/***/ },
-/* 181 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule cssVar
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var CSS_VARS = {
-	  'scrollbar-face-active-color': '#7d7d7d',
-	  'scrollbar-face-color': '#c2c2c2',
-	  'scrollbar-face-margin': '4px',
-	  'scrollbar-face-radius': '6px',
-	  'scrollbar-size': '15px',
-	  'scrollbar-size-large': '17px',
-	  'scrollbar-track-color': 'rgba(255, 255, 255, 0.8)',
-	};
-
-	/**
-	 * @param {string} name
-	 */
-	function cssVar(name) {
-	  if (CSS_VARS.hasOwnProperty(name)) {
-	    return CSS_VARS[name];
-	  }
-
-	  throw new Error(
-	    'cssVar' + '("' + name + '"): Unexpected class transformation.'
-	  );
+	  });
 	}
 
-	cssVar.CSS_VARS = CSS_VARS;
+	/**
+	 * Helper method to map columns to new columns. This takes into account column
+	 * groups and will generate a new column group if its columns change.
+	 * @param {?object|array} children
+	 *    Children of a table.
+	 * @param {function} callback
+	 *    Function to excecute for each column. It is passed the column and should
+	 *    return a result column.
+	 */
+	function mapColumns(children, callback) {
+	  var newChildren = [];
+	  React.Children.forEach(children, function(originalChild)  {
+	    var newChild = originalChild;
 
-	module.exports = cssVar;
+	    // The child is either a column group or a column. If it is a column group
+	    // we need to iterate over its columns and then potentially generate a
+	    // new column group
+	    if (originalChild.type === FixedDataTableColumnGroup.type) {
+	      var haveColumnsChanged = false;
+	      var newColumns = [];
+
+	      forEachColumn(originalChild.props.children, function(originalcolumn)  {
+	        var newColumn = callback(originalcolumn);
+	        if (newColumn !== originalcolumn) {
+	          haveColumnsChanged = true;
+	        }
+	        newColumns.push(newColumn);
+	      });
+
+	      // If the column groups columns have changed clone the group and supply
+	      // new children
+	      if (haveColumnsChanged) {
+	        newChild = cloneWithProps(originalChild, {children: newColumns});
+	      }
+	    } else if (originalChild.type === FixedDataTableColumn.type) {
+	      newChild = callback(originalChild);
+	    }
+
+	    newChildren.push(newChild);
+	  });
+
+	  return newChildren;
+	}
+
+	var FixedDataTableHelper = {
+	  DIR_SIGN:DIR_SIGN,
+	  CELL_VISIBILITY_TOLERANCE:CELL_VISIBILITY_TOLERANCE,
+	  renderToString:renderToString,
+	  forEachColumn:forEachColumn,
+	  mapColumns:mapColumns,
+	};
+
+	module.exports = FixedDataTableHelper;
 
 
 /***/ },
-/* 182 */
+/* 160 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -19913,161 +17707,136 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule FixedDataTableRowBuffer
+	 * @providesModule Locale
+	 */
+
+	"use strict";
+
+	// Hard code this for now.
+	var Locale = {
+	  isRTL: function()  {return false;},
+	  getDirection: function()  {return 'LTR';}
+	};
+
+	module.exports = Locale;
+
+
+/***/ },
+/* 161 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule React
+	 */
+
+	module.exports = __webpack_require__(1);
+
+
+/***/ },
+/* 162 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactComponentWithPureRenderMixin
+	 */
+
+	module.exports = __webpack_require__(183);
+
+
+/***/ },
+/* 163 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactWheelHandler
 	 * @typechecks
 	 */
-	'use strict';
 
-	var IntegerBufferSet = __webpack_require__(207);
+	"use strict";
 
-	var clamp = __webpack_require__(184);
-	var invariant = __webpack_require__(158);
-	var MIN_BUFFER_ROWS = 5;
-	var MAX_BUFFER_ROWS = 15;
+	var normalizeWheel = __webpack_require__(189);
+	var requestAnimationFramePolyfill = __webpack_require__(190);
 
-	// FixedDataTableRowBuffer is a helper class that executes row buffering
-	// logic for FixedDataTable. It figures out which rows should be rendered
-	// and in which positions.
 
-	  function FixedDataTableRowBuffer(
-	rowsCount,
-	    /*number*/  defaultRowHeight,
-	    /*number*/ viewportHeight,
-	    /*?function*/ rowHeightGetter)
+	  /**
+	   * onWheel is the callback that will be called with right frame rate if
+	   * any wheel events happened
+	   * onWheel should is to be called with two arguments: deltaX and deltaY in
+	   * this order
+	   */
+	  function ReactWheelHandler(
+	onWheel,
+	    /*boolean*/ handleScrollX,
+	    /*boolean*/ handleScrollY,
+	    /*?boolean*/ stopPropagation)
 	   {
-	    invariant(
-	      defaultRowHeight !== 0,
-	      "defaultRowHeight musn't be equal 0 in FixedDataTableRowBuffer"
-	    );
-
-	    this.$FixedDataTableRowBuffer_bufferSet = new IntegerBufferSet();
-	    this.$FixedDataTableRowBuffer_defaultRowHeight = defaultRowHeight;
-	    this.$FixedDataTableRowBuffer_viewportRowsBegin = 0;
-	    this.$FixedDataTableRowBuffer_viewportRowsEnd = 0;
-	    this.$FixedDataTableRowBuffer_maxVisibleRowCount = Math.ceil(viewportHeight / defaultRowHeight) + 1;
-	    this.$FixedDataTableRowBuffer_bufferRowsCount = clamp(
-	      MIN_BUFFER_ROWS,
-	      Math.floor(this.$FixedDataTableRowBuffer_maxVisibleRowCount/2),
-	      MAX_BUFFER_ROWS
-	    );
-	    this.$FixedDataTableRowBuffer_rowsCount = rowsCount;
-	    this.$FixedDataTableRowBuffer_rowHeightGetter = rowHeightGetter;
-	    this.$FixedDataTableRowBuffer_rows = [];
-	    this.$FixedDataTableRowBuffer_viewportHeight = viewportHeight;
-
-	    this.getRows = this.getRows.bind(this);
-	    this.getRowsWithUpdatedBuffer = this.getRowsWithUpdatedBuffer.bind(this);
+	    this.$ReactWheelHandler_animationFrameID = null;
+	    this.$ReactWheelHandler_deltaX = 0;
+	    this.$ReactWheelHandler_deltaY = 0;
+	    this.$ReactWheelHandler_didWheel = this.$ReactWheelHandler_didWheel.bind(this);
+	    this.$ReactWheelHandler_handleScrollX = handleScrollX;
+	    this.$ReactWheelHandler_handleScrollY = handleScrollY;
+	    this.$ReactWheelHandler_stopPropagation = !!stopPropagation;
+	    this.$ReactWheelHandler_onWheelCallback = onWheel;
+	    this.onWheel = this.onWheel.bind(this);
 	  }
 
-	  FixedDataTableRowBuffer.prototype.getRowsWithUpdatedBuffer=function()  {
-	    var remainingBufferRows = 2 * this.$FixedDataTableRowBuffer_bufferRowsCount;
-	    var bufferRowIndex =
-	      Math.max(this.$FixedDataTableRowBuffer_viewportRowsBegin - this.$FixedDataTableRowBuffer_bufferRowsCount, 0);
-	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_viewportRowsBegin) {
-	      this.$FixedDataTableRowBuffer_addRowToBuffer(
-	        bufferRowIndex,
-	        this.$FixedDataTableRowBuffer_viewportHeight,
-	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
-	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
-	      );
-	      bufferRowIndex++;
-	      remainingBufferRows--;
+	  ReactWheelHandler.prototype.onWheel=function(event) {
+	    if (this.$ReactWheelHandler_handleScrollX || this.$ReactWheelHandler_handleScrollY) {
+	      event.preventDefault();
 	    }
-	    bufferRowIndex = this.$FixedDataTableRowBuffer_viewportRowsEnd;
-	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_rowsCount && remainingBufferRows > 0) {
-	      this.$FixedDataTableRowBuffer_addRowToBuffer(
-	        bufferRowIndex,
-	        this.$FixedDataTableRowBuffer_viewportHeight,
-	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
-	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
-	      );
-	      bufferRowIndex++;
-	      remainingBufferRows--;
-	    }
-	    return this.$FixedDataTableRowBuffer_rows;
-	  };
+	    var normalizedEvent = normalizeWheel(event);
 
-	  FixedDataTableRowBuffer.prototype.getRows=function(
-	firstRowIndex,
-	    /*number*/ firstRowOffset)
-	    {
-	    // Update offsets of all rows to move them outside of viewport. Later we
-	    // will bring rows that we should show to their right offsets.
-	    this.$FixedDataTableRowBuffer_hideAllRows();
+	    this.$ReactWheelHandler_deltaX += this.$ReactWheelHandler_handleScrollX ? normalizedEvent.pixelX : 0;
+	    this.$ReactWheelHandler_deltaY += this.$ReactWheelHandler_handleScrollY ? normalizedEvent.pixelY : 0;
 
-	    var top = firstRowOffset;
-	    var totalHeight = top;
-	    var rowIndex = firstRowIndex;
-	    var endIndex =
-	      Math.min(firstRowIndex + this.$FixedDataTableRowBuffer_maxVisibleRowCount, this.$FixedDataTableRowBuffer_rowsCount);
-
-	    this.$FixedDataTableRowBuffer_viewportRowsBegin = firstRowIndex;
-	    while (rowIndex < endIndex ||
-	        (totalHeight < this.$FixedDataTableRowBuffer_viewportHeight && rowIndex < this.$FixedDataTableRowBuffer_rowsCount)) {
-	      this.$FixedDataTableRowBuffer_addRowToBuffer(
-	        rowIndex,
-	        totalHeight,
-	        firstRowIndex,
-	        endIndex - 1
-	      );
-	      totalHeight += this.$FixedDataTableRowBuffer_rowHeightGetter(rowIndex);
-	      ++rowIndex;
-	      // Store index after the last viewport row as end, to be able to
-	      // distinguish when there are no rows rendered in viewport
-	      this.$FixedDataTableRowBuffer_viewportRowsEnd = rowIndex;
-	    }
-
-	    return this.$FixedDataTableRowBuffer_rows;
-	  };
-
-	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_addRowToBuffer=function(
-	rowIndex,
-	    /*number*/ offsetTop,
-	    /*number*/ firstViewportRowIndex,
-	    /*number*/ lastViewportRowIndex)
-	   {
-	      var rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getValuePosition(rowIndex);
-	      var viewportRowsCount = lastViewportRowIndex - firstViewportRowIndex + 1;
-	      var allowedRowsCount = viewportRowsCount + this.$FixedDataTableRowBuffer_bufferRowsCount * 2;
-	      if (rowPosition === null &&
-	          this.$FixedDataTableRowBuffer_bufferSet.getSize() >= allowedRowsCount) {
-	        rowPosition =
-	          this.$FixedDataTableRowBuffer_bufferSet.replaceFurthestValuePosition(
-	            firstViewportRowIndex,
-	            lastViewportRowIndex,
-	            rowIndex
-	          );
+	    var changed;
+	    if (this.$ReactWheelHandler_deltaX !== 0 || this.$ReactWheelHandler_deltaY !== 0) {
+	      if (this.$ReactWheelHandler_stopPropagation) {
+	        event.stopPropagation();
 	      }
-	      if (rowPosition === null) {
-	        // We can't reuse any of existing positions for this row. We have to
-	        // create new position
-	        rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getNewPositionForValue(rowIndex);
-	        this.$FixedDataTableRowBuffer_rows[rowPosition] = {
-	          rowIndex:rowIndex,
-	          offsetTop:offsetTop,
-	        };
-	      } else {
-	        // This row already is in the table with rowPosition position or it
-	        // can replace row that is in that position
-	        this.$FixedDataTableRowBuffer_rows[rowPosition].rowIndex = rowIndex;
-	        this.$FixedDataTableRowBuffer_rows[rowPosition].offsetTop = offsetTop;
-	      }
-	  };
+	      changed = true;
+	    }
 
-	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_hideAllRows=function() {
-	    var i = this.$FixedDataTableRowBuffer_rows.length - 1;
-	    while (i > -1) {
-	      this.$FixedDataTableRowBuffer_rows[i].offsetTop = this.$FixedDataTableRowBuffer_viewportHeight;
-	      i--;
+	    if (changed === true && this.$ReactWheelHandler_animationFrameID === null) {
+	      this.$ReactWheelHandler_animationFrameID = requestAnimationFramePolyfill(this.$ReactWheelHandler_didWheel);
 	    }
 	  };
 
+	  ReactWheelHandler.prototype.$ReactWheelHandler_didWheel=function() {
+	    this.$ReactWheelHandler_animationFrameID = null;
+	    this.$ReactWheelHandler_onWheelCallback(this.$ReactWheelHandler_deltaX, this.$ReactWheelHandler_deltaY);
+	    this.$ReactWheelHandler_deltaX = 0;
+	    this.$ReactWheelHandler_deltaY = 0;
+	  };
 
-	module.exports = FixedDataTableRowBuffer;
+
+	module.exports = ReactWheelHandler;
 
 
 /***/ },
-/* 183 */
+/* 164 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -20078,279 +17847,857 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule joinClasses
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	/**
-	 * Combines multiple className strings into one.
-	 * http://jsperf.com/joinclasses-args-vs-array
-	 *
-	 * @param {...?string} classes
-	 * @return {string}
-	 */
-	function joinClasses(className/*, ... */) {
-	  if (!className) {
-	    className = '';
-	  }
-	  var nextClass;
-	  var argLength = arguments.length;
-	  if (argLength > 1) {
-	    for (var ii = 1; ii < argLength; ii++) {
-	      nextClass = arguments[ii];
-	      if (nextClass) {
-	        className = (className ? className + ' ' : '') + nextClass;
-	      }
-	    }
-	  }
-	  return className;
-	}
-
-	module.exports = joinClasses;
-
-
-/***/ },
-/* 184 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule clamp
+	 * @providesModule Scrollbar.react
 	 * @typechecks
 	 */
 
-	 /**
-	  * @param {number} min
-	  * @param {number} value
-	  * @param {number} max
-	  * @return {number}
-	  */
-	function clamp(min, value, max) {
-	  if (value < min) {
-	    return min;
-	  }
-	  if (value > max) {
-	    return max;
-	  }
-	  return value;
-	}
+	var DOMMouseMoveTracker = __webpack_require__(191);
+	var Keys = __webpack_require__(192);
+	var React = __webpack_require__(161);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(162);
+	var ReactWheelHandler = __webpack_require__(163);
 
-	module.exports = clamp;
-
-
-/***/ },
-/* 185 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule PrefixIntervalTree
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	/**
-	 * An interval tree that allows to set a number at index and given the value
-	 * find the largest index for which prefix sum is greater than or equal to value
-	 * (lower bound) or greater than value (upper bound)
-	 * Complexity:
-	 *   construct: O(n)
-	 *   query: O(log(n))
-	 *   memory: O(log(n)),
-	 * where n is leafCount from the constructor
-	 */
-
-	  function PrefixIntervalTree(leafCount, /*?number*/ initialLeafValue) {
-	    var internalLeafCount = this.getInternalLeafCount(leafCount);
-	    this.$PrefixIntervalTree_leafCount = leafCount;
-	    this.$PrefixIntervalTree_internalLeafCount = internalLeafCount;
-	    var nodeCount = 2 * internalLeafCount;
-	    var Int32Array = global.Int32Array || Array;
-	    this.$PrefixIntervalTree_value = new Int32Array(nodeCount);
-	    this.$PrefixIntervalTree_initTables(initialLeafValue || 0);
-
-	    this.get = this.get.bind(this);
-	    this.set = this.set.bind(this);
-	    this.lowerBound = this.lowerBound.bind(this);
-	    this.upperBound = this.upperBound.bind(this);
-	  }
-
-	  PrefixIntervalTree.prototype.getInternalLeafCount=function(leafCount)  {
-	    var internalLeafCount = 1;
-	    while (internalLeafCount < leafCount) {
-	      internalLeafCount *= 2;
-	    }
-	    return internalLeafCount;
-	  };
-
-	  PrefixIntervalTree.prototype.$PrefixIntervalTree_initTables=function(initialLeafValue) {
-	    var firstLeaf = this.$PrefixIntervalTree_internalLeafCount;
-	    var lastLeaf = this.$PrefixIntervalTree_internalLeafCount + this.$PrefixIntervalTree_leafCount - 1;
-	    var i;
-	    for (i = firstLeaf; i <= lastLeaf; ++i) {
-	      this.$PrefixIntervalTree_value[i] = initialLeafValue;
-	    }
-	    var lastInternalNode = this.$PrefixIntervalTree_internalLeafCount - 1;
-	    for (i = lastInternalNode; i > 0; --i) {
-	      this.$PrefixIntervalTree_value[i] =  this.$PrefixIntervalTree_value[2 * i] + this.$PrefixIntervalTree_value[2 * i + 1];
-	    }
-	  };
-
-	  PrefixIntervalTree.prototype.set=function(position, /*number*/ value) {
-	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
-	    this.$PrefixIntervalTree_value[nodeIndex] = value;
-	    nodeIndex = Math.floor(nodeIndex / 2);
-	    while (nodeIndex !== 0) {
-	      this.$PrefixIntervalTree_value[nodeIndex] =
-	        this.$PrefixIntervalTree_value[2 * nodeIndex] + this.$PrefixIntervalTree_value[2 * nodeIndex + 1];
-	      nodeIndex = Math.floor(nodeIndex / 2);
-	    }
-	  };
-
-	  /**
-	   * Returns an object {index, value} for given position (including value at
-	   * specified position), or the same for last position if provided position
-	   * is out of range
-	   */
-	  PrefixIntervalTree.prototype.get=function(position)  {
-	    position = Math.min(position, this.$PrefixIntervalTree_leafCount);
-	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
-	    var result = this.$PrefixIntervalTree_value[nodeIndex];
-	    while (nodeIndex > 1) {
-	      if (nodeIndex % 2 === 1) {
-	        result = this.$PrefixIntervalTree_value[nodeIndex - 1] + result;
-	      }
-	      nodeIndex = Math.floor(nodeIndex / 2);
-	    }
-	    return {index: position, value: result};
-	  };
-
-	  /**
-	   * Returns an object {index, value} where index is index of leaf that was
-	   * found by upper bound algorithm. Upper bound finds first element for which
-	   * value is greater than argument
-	   */
-	  PrefixIntervalTree.prototype.upperBound=function(value)  {
-	    var result = this.$PrefixIntervalTree_upperBoundImpl(1, 0, this.$PrefixIntervalTree_internalLeafCount - 1, value);
-	    if (result.index > this.$PrefixIntervalTree_leafCount - 1) {
-	      result.index = this.$PrefixIntervalTree_leafCount - 1;
-	    }
-	    return result;
-	  };
-
-	  /**
-	   * Returns result in the same format as upperBound, but finds first element
-	   * for which value is greater than or equal to argument
-	   */
-	  PrefixIntervalTree.prototype.lowerBound=function(value)  {
-	    var result = this.upperBound(value);
-	    if (result.value > value && result.index > 0) {
-	      var previousValue =
-	        result.value - this.$PrefixIntervalTree_value[this.$PrefixIntervalTree_internalLeafCount + result.index];
-	      if (previousValue === value) {
-	        result.value = previousValue;
-	        result.index--;
-	      }
-	    }
-	    return result;
-	  };
-
-	  PrefixIntervalTree.prototype.$PrefixIntervalTree_upperBoundImpl=function(
-	nodeIndex,
-	    /*number*/ nodeIntervalBegin,
-	    /*number*/ nodeIntervalEnd,
-	    /*number*/ value)
-	    {
-	    if (nodeIntervalBegin === nodeIntervalEnd) {
-	      return {
-	        index: nodeIndex - this.$PrefixIntervalTree_internalLeafCount,
-	        value: this.$PrefixIntervalTree_value[nodeIndex],
-	      };
-	    }
-
-	    var nodeIntervalMidpoint =
-	      Math.floor((nodeIntervalBegin + nodeIntervalEnd + 1) / 2);
-	    if (value < this.$PrefixIntervalTree_value[nodeIndex * 2]) {
-	      return this.$PrefixIntervalTree_upperBoundImpl(
-	        2 * nodeIndex,
-	        nodeIntervalBegin,
-	        nodeIntervalMidpoint - 1,
-	        value
-	      );
-	    } else {
-	      var result = this.$PrefixIntervalTree_upperBoundImpl(
-	        2 * nodeIndex + 1,
-	        nodeIntervalMidpoint,
-	        nodeIntervalEnd,
-	        value - this.$PrefixIntervalTree_value[2 * nodeIndex]
-	      );
-	      result.value += this.$PrefixIntervalTree_value[2 * nodeIndex];
-	      return result;
-	    }
-	  };
-
-
-	module.exports = PrefixIntervalTree;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 186 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableCellGroup.react
-	 * @typechecks
-	 */
-
-	"use strict";
-
-	var FixedDataTableHelper = __webpack_require__(143);
-	var ImmutableObject = __webpack_require__(208);
-	var React = __webpack_require__(145);
-	var ReactComponentWithPureRenderMixin = __webpack_require__(146);
-	var FixedDataTableCell = __webpack_require__(209);
-
-	var cx = __webpack_require__(155);
-	var renderToString = FixedDataTableHelper.renderToString;
-	var translateDOMPositionXY = __webpack_require__(160);
+	var cssVar = __webpack_require__(193);
+	var cx = __webpack_require__(171);
+	var emptyFunction = __webpack_require__(173);
+	var translateDOMPositionXY = __webpack_require__(176);
 
 	var PropTypes = React.PropTypes;
 
-	var EMPTY_OBJECT = new ImmutableObject({});
+	var UNSCROLLABLE_STATE = {
+	  position: 0,
+	  scrollable: false,
+	};
 
-	var FixedDataTableCellGroupImpl = React.createClass({displayName: "FixedDataTableCellGroupImpl",
+	var FACE_MARGIN = parseInt(cssVar('scrollbar-face-margin'), 10);
+	var FACE_MARGIN_2 = FACE_MARGIN * 2;
+	var FACE_SIZE_MIN = 30;
+	var KEYBOARD_SCROLL_AMOUNT = 40;
+
+	var _lastScrolledScrollbar = null;
+
+	var Scrollbar = React.createClass({displayName: "Scrollbar",
 	  mixins: [ReactComponentWithPureRenderMixin],
 
 	  propTypes: {
+	    contentSize: PropTypes.number.isRequired,
+	    defaultPosition: PropTypes.number,
+	    isOpaque: PropTypes.bool,
+	    orientation: PropTypes.oneOf(['vertical', 'horizontal']),
+	    onScroll: PropTypes.func,
+	    position: PropTypes.number,
+	    size: PropTypes.number.isRequired,
+	    trackColor: PropTypes.oneOf(['gray']),
+	    zIndex: PropTypes.number,
+	  },
+
+	  getInitialState:function() /*object*/ {
+	    var props = this.props;
+	    return this._calculateState(
+	      props.position || props.defaultPosition || 0,
+	      props.size,
+	      props.contentSize,
+	      props.orientation
+	    );
+	  },
+
+	  componentWillReceiveProps:function(/*object*/ nextProps) {
+	    var controlledPosition = nextProps.position;
+	    if (controlledPosition === undefined) {
+	      this._setNextState(
+	        this._calculateState(
+	          this.state.position,
+	          nextProps.size,
+	          nextProps.contentSize,
+	          nextProps.orientation
+	        )
+	      );
+	    } else {
+	      this._setNextState(
+	        this._calculateState(
+	          controlledPosition,
+	          nextProps.size,
+	          nextProps.contentSize,
+	          nextProps.orientation
+	        ),
+	        nextProps
+	      );
+	    }
+	  },
+
+	  getDefaultProps:function() /*object*/ {
+	    return {
+	      defaultPosition: 0,
+	      isOpaque: false,
+	      onScroll: emptyFunction,
+	      orientation: 'vertical',
+	      zIndex: 99,
+	    };
+	  },
+
+	  render:function() /*?object*/ {
+	    if (!this.state.scrollable) {
+	      return null;
+	    }
+
+	    var size = this.props.size;
+	    var mainStyle;
+	    var faceStyle;
+	    var isHorizontal = this.state.isHorizontal;
+	    var isVertical = !isHorizontal;
+	    var isActive = this.state.focused || this.state.isDragging;
+	    var faceSize = this.state.faceSize;
+	    var isOpaque = this.props.isOpaque;
+
+	    var mainClassName = cx({
+	      'public/Scrollbar/main': true,
+	      'public/Scrollbar/mainHorizontal': isHorizontal,
+	      'public/Scrollbar/mainVertical': isVertical,
+	      'Scrollbar/mainActive': isActive,
+	      'Scrollbar/mainOpaque': isOpaque,
+	    });
+
+	    var faceClassName = cx({
+	      'Scrollbar/face': true,
+	      'Scrollbar/faceHorizontal': isHorizontal,
+	      'Scrollbar/faceVertical': isVertical,
+	      'Scrollbar/faceActive': isActive,
+	    });
+
+	    var position = this.state.position * this.state.scale + FACE_MARGIN;
+
+	    if (isHorizontal) {
+	      mainStyle = {
+	        width: size,
+	      };
+	      faceStyle = {
+	        width: faceSize - FACE_MARGIN_2
+	      };
+	      translateDOMPositionXY(faceStyle, position, 0);
+	    } else {
+	      mainStyle = {
+	        height: size,
+	      };
+	      faceStyle = {
+	        height: faceSize - FACE_MARGIN_2,
+	      };
+	      translateDOMPositionXY(faceStyle, 0, position);
+	    }
+
+	    mainStyle.zIndex = this.props.zIndex;
+
+	    if (this.props.trackColor === 'gray') {
+	      mainStyle.backgroundColor = cssVar('ads-cf-bg-color-gray');
+	    }
+
+	    return (
+	      React.createElement("div", {
+	        onFocus: this._onFocus, 
+	        onBlur: this._onBlur, 
+	        onKeyDown: this._onKeyDown, 
+	        onMouseDown: this._onMouseDown, 
+	        onWheel: this._wheelHandler.onWheel, 
+	        className: mainClassName, 
+	        style: mainStyle, 
+	        tabIndex: 0}, 
+	        React.createElement("div", {
+	          ref: "face", 
+	          className: faceClassName, 
+	          style: faceStyle}
+	        )
+	      )
+	    );
+	  },
+
+	  componentWillMount:function() {
+	    var isHorizontal = this.props.orientation === 'horizontal';
+	    var onWheel = isHorizontal ? this._onWheelX : this._onWheelY;
+
+	    this._wheelHandler = new ReactWheelHandler(
+	      onWheel,
+	      isHorizontal, // Should hanlde horizontal scroll
+	      !isHorizontal // Should handle vertical scroll
+	    );
+	  },
+
+	  componentDidMount:function() {
+	    this._mouseMoveTracker = new DOMMouseMoveTracker(
+	      this._onMouseMove,
+	      this._onMouseMoveEnd,
+	      document.documentElement
+	    );
+
+	    if (this.props.position !== undefined &&
+	      this.state.position !== this.props.position) {
+	      this._didScroll();
+	    }
+	  },
+
+	  componentWillUnmount:function() {
+	    this._nextState = null;
+	    this._mouseMoveTracker.releaseMouseMoves();
+	    if (_lastScrolledScrollbar === this) {
+	      _lastScrolledScrollbar = null;
+	    }
+	    delete this._mouseMoveTracker;
+	  },
+
+	  scrollBy:function(/*number*/ delta) {
+	    this._onWheel(delta);
+	  },
+
+	  _calculateState:function(
+	    /*?number*/ position,
+	    /*number*/ size,
+	    /*number*/ contentSize,
+	    /*string*/ orientation
+	    ) /*object*/ {
+
+	    if (size < 1 || contentSize <= size) {
+	      return UNSCROLLABLE_STATE;
+	    }
+
+	    position = position || 0;
+
+	    // There are two types of positions here.
+	    // 1) Phisical position: changed by mouse / keyboard
+	    // 2) Logical position: changed by props.
+	    // The logical position will be kept as as internal state and the `render()`
+	    // function will translate it into physical position to render.
+
+	    var isHorizontal = orientation === 'horizontal';
+	    var scale = size / contentSize;
+	    var faceSize = Math.round(size * scale);
+
+	    if (faceSize < FACE_SIZE_MIN) {
+	      scale = (size - FACE_SIZE_MIN) / (contentSize - FACE_SIZE_MIN);
+	      faceSize = FACE_SIZE_MIN;
+	    }
+
+	    var scrollable = true;
+	    var maxPosition = contentSize - size;
+
+	    if (position < 0) {
+	      position = 0;
+	    } else if (position > maxPosition) {
+	      position = maxPosition;
+	    }
+
+	    var isDragging = this._mouseMoveTracker ?
+	      this._mouseMoveTracker.isDragging() :
+	      false;
+
+	    position = Math.round(position);
+	    faceSize = Math.round(faceSize);
+
+	    // This function should only return flat values that can be compared quiclky
+	    // by `ReactComponentWithPureRenderMixin`.
+	    return {
+	      faceSize:faceSize,
+	      isDragging:isDragging,
+	      isHorizontal:isHorizontal,
+	      position:position,
+	      scale:scale,
+	      scrollable:scrollable,
+	    };
+	  },
+
+	  _onWheelY:function(/*number*/ deltaX, /*number*/ deltaY) {
+	    this._onWheel(deltaY);
+	  },
+
+	  _onWheelX:function(/*number*/ deltaX, /*number*/ deltaY) {
+	    this._onWheel(deltaX);
+	  },
+
+	  _onWheel:function(/*number*/ delta){
+	    var props = this.props;
+
+	    // The mouse may move faster then the animation frame does.
+	    // Use `requestAnimationFrame` to avoid over-updating.
+	    this._setNextState(
+	      this._calculateState(
+	        this.state.position + delta,
+	        props.size,
+	        props.contentSize,
+	        props.orientation
+	      )
+	    );
+	  },
+
+	  _onMouseDown:function(/*object*/ event) {
+	    var nextState;
+
+	    if (event.target !== this.refs.face.getDOMNode()) {
+	      // Both `offsetX` and `layerX` are non-standard DOM property but they are
+	      // magically available for browsers somehow.
+	      var nativeEvent = event.nativeEvent;
+	      var position = this.state.isHorizontal ?
+	        nativeEvent.offsetX || nativeEvent.layerX :
+	        nativeEvent.offsetY || nativeEvent.layerY;
+
+	      // MouseDown on the scroll-track directly, move the center of the
+	      // scroll-face to the mouse position.
+	      var props = this.props;
+	      position = position / this.state.scale;
+	      nextState = this._calculateState(
+	        position - (this.state.faceSize * 0.5 / this.state.scale),
+	        props.size,
+	        props.contentSize,
+	        props.orientation
+	      );
+	    } else {
+	      nextState = {};
+	    }
+
+	    nextState.focused = true;
+	    this._setNextState(nextState);
+
+	    this._mouseMoveTracker.captureMouseMoves(event);
+	    // Focus the node so it may receive keyboard event.
+	    this.getDOMNode().focus();
+	  },
+
+	  _onMouseMove:function(/*number*/ deltaX, /*number*/ deltaY) {
+	    var props = this.props;
+	    var delta = this.state.isHorizontal ? deltaX : deltaY;
+	    delta = delta / this.state.scale;
+
+	    this._setNextState(
+	      this._calculateState(
+	        this.state.position + delta,
+	        props.size,
+	        props.contentSize,
+	        props.orientation
+	      )
+	    );
+	  },
+
+	  _onMouseMoveEnd:function() {
+	    this._nextState = null;
+	    this._mouseMoveTracker.releaseMouseMoves();
+	    this.setState({isDragging: false});
+	  },
+
+	  _onKeyDown:function(/*object*/ event) {
+	    var keyCode = event.keyCode;
+
+	    if (keyCode === Keys.TAB) {
+	      // Let focus move off the scrollbar.
+	      return;
+	    }
+
+	    var distance = KEYBOARD_SCROLL_AMOUNT;
+	    var direction = 0;
+
+	    if (this.state.isHorizontal) {
+	      switch (keyCode) {
+	        case Keys.HOME:
+	          direction = -1;
+	          distance = this.props.contentSize;
+	          break;
+
+	        case Keys.LEFT:
+	          direction = -1;
+	          break;
+
+	        case Keys.RIGHT:
+	          direction = 1;
+	          break;
+
+	        default:
+	          return;
+	      }
+	    }
+
+	    if (!this.state.isHorizontal) {
+	      switch (keyCode) {
+	        case Keys.SPACE:
+	          if (event.shiftKey) {
+	            direction = -1;
+	          } else {
+	            direction = 1;
+	          }
+	          break;
+
+	        case Keys.HOME:
+	          direction = -1;
+	          distance = this.props.contentSize;
+	          break;
+
+	        case Keys.UP:
+	          direction = -1;
+	          break;
+
+	        case Keys.DOWN:
+	          direction = 1;
+	          break;
+
+	        case Keys.PAGE_UP:
+	          direction = -1;
+	          distance = this.props.size;
+	          break;
+
+	        case Keys.PAGE_DOWN:
+	          direction = 1;
+	          distance = this.props.size;
+	          break;
+
+	        default:
+	          return;
+	      }
+	    }
+
+	    event.preventDefault();
+
+	    var props = this.props;
+	    this._setNextState(
+	      this._calculateState(
+	        this.state.position + (distance * direction),
+	        props.size,
+	        props.contentSize,
+	        props.orientation
+	      )
+	    );
+	  },
+
+	  _onFocus:function() {
+	    this.setState({
+	      focused: true,
+	    });
+	  },
+
+	  _onBlur:function() {
+	    this.setState({
+	      focused: false,
+	    });
+	  },
+
+	  _blur:function() {
+	    if (this.isMounted()) {
+	      try {
+	        this._onBlur();
+	        this.getDOMNode().blur();
+	      } catch (oops) {
+	        // pass
+	      }
+	    }
+	  },
+
+	  _setNextState:function(/*object*/ nextState, /*?object*/ props) {
+	    props = props || this.props;
+	    var controlledPosition = props.position;
+	    var willScroll = this.state.position !== nextState.position;
+	    if (controlledPosition === undefined) {
+	      var callback = willScroll ? this._didScroll : undefined;
+	      this.setState(nextState, callback);
+	    } else if (controlledPosition === nextState.position) {
+	      this.setState(nextState);
+	    } else {
+	      // Scrolling is controlled. Don't update the state and let the owner
+	      // to update the scrollbar instead.
+	      if (nextState.position !== undefined &&
+	        nextState.position !== this.state.position) {
+	        this.props.onScroll(nextState.position);
+	      }
+	      return;
+	    }
+
+	    if (willScroll && _lastScrolledScrollbar !== this) {
+	      _lastScrolledScrollbar && _lastScrolledScrollbar._blur();
+	      _lastScrolledScrollbar = this;
+	    }
+	  },
+
+	  _didScroll:function() {
+	    this.props.onScroll(this.state.position);
+	  },
+	});
+
+	Scrollbar.KEYBOARD_SCROLL_AMOUNT = KEYBOARD_SCROLL_AMOUNT;
+	Scrollbar.SIZE = parseInt(cssVar('scrollbar-size'), 10);
+
+	module.exports = Scrollbar;
+
+
+/***/ },
+/* 165 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableBufferedRows.react
+	 * @typechecks
+	 */
+
+	var React = __webpack_require__(161);
+	var FixedDataTableRowBuffer = __webpack_require__(194);
+	var FixedDataTableRow = __webpack_require__(167);
+
+	var cx = __webpack_require__(171);
+	var emptyFunction = __webpack_require__(173);
+	var joinClasses = __webpack_require__(195);
+
+	var PropTypes = React.PropTypes;
+
+	var FixedDataTableBufferedRows = React.createClass({displayName: "FixedDataTableBufferedRows",
+
+	  propTypes: {
+	    defaultRowHeight: PropTypes.number.isRequired,
+	    firstRowIndex: PropTypes.number.isRequired,
+	    firstRowOffset: PropTypes.number.isRequired,
+	    fixedColumns: PropTypes.array.isRequired,
+	    height: PropTypes.number.isRequired,
+	    offsetTop: PropTypes.number.isRequired,
+	    onRowClick: PropTypes.func,
+	    onRowMouseDown: PropTypes.func,
+	    onRowMouseEnter: PropTypes.func,
+	    rowClassNameGetter: PropTypes.func,
+	    rowsCount: PropTypes.number.isRequired,
+	    rowGetter: PropTypes.func.isRequired,
+	    rowHeightGetter: PropTypes.func,
+	    scrollLeft: PropTypes.number.isRequired,
+	    scrollableColumns: PropTypes.array.isRequired,
+	    showLastRowBorder: PropTypes.bool,
+	    width: PropTypes.number.isRequired,
+	  },
+
+	  getInitialState:function() /*object*/ {
+	    this._rowBuffer =
+	      new FixedDataTableRowBuffer(
+	        this.props.rowsCount,
+	        this.props.defaultRowHeight,
+	        this.props.height,
+	        this._getRowHeight
+	      );
+	    return ({
+	      rowsToRender: this._rowBuffer.getRows(
+	        this.props.firstRowIndex,
+	        this.props.firstRowOffset
+	      ),
+	    });
+	  },
+
+	  componentWillMount:function() {
+	    this._staticRowArray = [];
+	  },
+
+	  componentDidMount:function() {
+	    this._bufferUpdateTimer = setTimeout(this._updateBuffer, 500);
+	  },
+
+	  componentWillReceiveProps:function(/*object*/ nextProps) {
+	    if (nextProps.rowsCount !== this.props.rowsCount ||
+	        nextProps.defaultRowHeight !== this.props.defaultRowHeight ||
+	        nextProps.height !== this.props.height) {
+	      this._rowBuffer =
+	        new FixedDataTableRowBuffer(
+	          nextProps.rowsCount,
+	          nextProps.defaultRowHeight,
+	          nextProps.height,
+	          this._getRowHeight
+	        );
+	    }
+	    this.setState({
+	      rowsToRender: this._rowBuffer.getRows(
+	        nextProps.firstRowIndex,
+	        nextProps.firstRowOffset
+	      ),
+	    });
+	    if (this._bufferUpdateTimer) {
+	      clearTimeout(this._bufferUpdateTimer);
+	    }
+	    this._bufferUpdateTimer = setTimeout(this._updateBuffer, 400);
+	  },
+
+	  _updateBuffer:function() {
+	    this._bufferUpdateTimer = null;
+	    if (this.isMounted()) {
+	      this.setState({
+	        rowsToRender: this._rowBuffer.getRowsWithUpdatedBuffer(),
+	      });
+	    }
+	  },
+
+	  shouldComponentUpdate:function() /*boolean*/ {
+	    // Don't add PureRenderMixin to this component please.
+	    return true;
+	  },
+
+	  componentWillUnmount:function() {
+	    this._staticRowArray.length = 0;
+	  },
+
+	  render:function() /*object*/ {
+	    var props = this.props;
+	    var offsetTop = props.offsetTop;
+	    var rowClassNameGetter = props.rowClassNameGetter || emptyFunction;
+	    var rowGetter = props.rowGetter;
+
+	    var rowsToRender = this.state.rowsToRender;
+	    this._staticRowArray.length = rowsToRender.length;
+
+	    for (var i = 0; i < rowsToRender.length; ++i) {
+	      var rowInfo = rowsToRender[i];
+	      var rowIndex = rowInfo.rowIndex;
+	      var rowOffsetTop = rowInfo.offsetTop;
+	      var currentRowHeight = this._getRowHeight(rowIndex);
+
+	      var hasBottomBorder =
+	        rowIndex === props.rowsCount - 1 && props.showLastRowBorder;
+
+	      this._staticRowArray[i] =
+	        React.createElement(FixedDataTableRow, {
+	          key: i, 
+	          index: rowIndex, 
+	          data: rowGetter(rowIndex), 
+	          width: props.width, 
+	          height: currentRowHeight, 
+	          scrollLeft: Math.round(props.scrollLeft), 
+	          offsetTop: Math.round(offsetTop + rowOffsetTop), 
+	          fixedColumns: props.fixedColumns, 
+	          scrollableColumns: props.scrollableColumns, 
+	          onClick: props.onRowClick, 
+	          onMouseDown: props.onRowMouseDown, 
+	          onMouseEnter: props.onRowMouseEnter, 
+	          className: joinClasses(
+	            rowClassNameGetter(rowIndex),
+	            cx('public/fixedDataTable/bodyRow'),
+	            hasBottomBorder ? cx('fixedDataTable/hasBottomBorder') : null
+	          )}
+	        );
+	    }
+
+	    return React.createElement("div", null, this._staticRowArray);
+	  },
+
+	  _getRowHeight:function(/*number*/ index) /*number*/ {
+	    return this.props.rowHeightGetter ?
+	      this.props.rowHeightGetter(index) :
+	      this.props.defaultRowHeight;
+	  },
+	});
+
+	module.exports = FixedDataTableBufferedRows;
+
+
+/***/ },
+/* 166 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * This is to be used with the FixedDataTable. It is a read line
+	 * that when you click on a column that is resizable appears and allows
+	 * you to resize the corresponding column.
+	 *
+	 * @providesModule FixedDataTableColumnResizeHandle.react
+	 * @typechecks
+	 */
+
+	var DOMMouseMoveTracker = __webpack_require__(191);
+	var Locale = __webpack_require__(160);
+	var React = __webpack_require__(161);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(162);
+
+	var clamp = __webpack_require__(196);
+	var cx = __webpack_require__(171);
+
+	var PropTypes = React.PropTypes;
+
+	var FixedDataTableColumnResizeHandle = React.createClass({displayName: "FixedDataTableColumnResizeHandle",
+	  mixins: [ReactComponentWithPureRenderMixin],
+
+	  propTypes: {
+	    visible: PropTypes.bool.isRequired,
 
 	    /**
-	     * Array of <FixedDataTableColumn />.
+	     * This is the height of the line
 	     */
-	    columns: PropTypes.array.isRequired,
+	    height: PropTypes.number.isRequired,
 
+	    /**
+	     * Offset from left border of the table, please note
+	     * that the line is a border on diff. So this is really the
+	     * offset of the column itself.
+	     */
+	    leftOffset: PropTypes.number.isRequired,
+
+	    /**
+	     * Height of the clickable region of the line.
+	     * This is assumed to be at the top of the line.
+	     */
+	    knobHeight: PropTypes.number.isRequired,
+
+	    /**
+	     * The line is a border on a diff, so this is essentially
+	     * the width of column.
+	     */
+	    initialWidth: PropTypes.number,
+
+	    /**
+	     * The minimum width this dragger will collapse to
+	     */
+	    minWidth: PropTypes.number,
+
+	    /**
+	     * The maximum width this dragger will collapse to
+	     */
+	    maxWidth: PropTypes.number,
+
+	    /**
+	     * Initial click event on the header cell.
+	     */
+	    initialEvent: PropTypes.object,
+
+	    /**
+	     * When resizing is complete this is called.
+	     */
+	    onColumnResizeEnd: PropTypes.func,
+
+	    /**
+	     * Column key for the column being resized.
+	     */
+	    columnKey: PropTypes.oneOfType([
+	      PropTypes.string,
+	      PropTypes.number
+	    ]),
+	  },
+
+	  getInitialState:function() /*object*/ {
+	    return {
+	      width: 0,
+	      cursorDelta: 0
+	    };
+	  },
+
+	  componentWillReceiveProps:function(/*object*/ newProps) {
+	    if (newProps.initialEvent && !this._mouseMoveTracker.isDragging()) {
+	      this._mouseMoveTracker.captureMouseMoves(newProps.initialEvent);
+	      this.setState({
+	        width: newProps.initialWidth,
+	        cursorDelta: newProps.initialWidth
+	      });
+	    }
+	  },
+
+	  componentDidMount:function() {
+	    this._mouseMoveTracker = new DOMMouseMoveTracker(
+	      this._onMove,
+	      this._onColumnResizeEnd,
+	      document.body
+	    );
+	  },
+
+	  componentWillUnmount:function() {
+	    this._mouseMoveTracker.releaseMouseMoves();
+	    this._mouseMoveTracker = null;
+	  },
+
+	  render:function() /*object*/ {
+	    var style = {
+	      width: this.state.width,
+	      height: this.props.height,
+	    };
+	    if (Locale.isRTL()) {
+	      style.right = this.props.leftOffset;
+	    } else {
+	      style.left = this.props.leftOffset;
+	    }
+	    return (
+	      React.createElement("div", {
+	        className: cx({
+	          'fixedDataTableColumnResizerLine/main': true,
+	          'fixedDataTableColumnResizerLine/hiddenElem': !this.props.visible
+	        }), 
+	        style: style}, 
+	        React.createElement("div", {
+	          className: cx('fixedDataTableColumnResizerLine/mouseArea'), 
+	          style: {height: this.props.height}}
+	        )
+	      )
+	    );
+	  },
+
+	  _onMove:function(/*number*/ deltaX) {
+	    if (Locale.isRTL()) {
+	      deltaX = -deltaX;
+	    }
+	    var newWidth = this.state.cursorDelta + deltaX;
+	    var newColumnWidth =
+	      clamp(this.props.minWidth, newWidth, this.props.maxWidth);
+
+	    // Please note cursor delta is the different between the currently width
+	    // and the new width.
+	    this.setState({
+	      width: newColumnWidth,
+	      cursorDelta: newWidth
+	    });
+	  },
+
+	  _onColumnResizeEnd:function() {
+	    this._mouseMoveTracker.releaseMouseMoves();
+	    this.props.onColumnResizeEnd(
+	      this.state.width,
+	      this.props.columnKey
+	    );
+	  },
+	});
+
+	module.exports = FixedDataTableColumnResizeHandle;
+
+
+/***/ },
+/* 167 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableRow.react
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var FixedDataTableHelper = __webpack_require__(159);
+	var React = __webpack_require__(161);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(162);
+	var FixedDataTableCellGroup = __webpack_require__(197);
+
+	var cx = __webpack_require__(171);
+	var joinClasses = __webpack_require__(195);
+	var translateDOMPositionXY = __webpack_require__(176);
+
+	var DIR_SIGN = FixedDataTableHelper.DIR_SIGN;
+	var PropTypes = React.PropTypes;
+
+	/**
+	 * Component that renders the row for <FixedDataTable />.
+	 * This component should not be used directly by developer. Instead,
+	 * only <FixedDataTable /> should use the component internally.
+	 */
+	var FixedDataTableRowImpl = React.createClass({displayName: "FixedDataTableRowImpl",
+	  mixins: [ReactComponentWithPureRenderMixin],
+
+	  propTypes: {
 	    /**
 	     * The row data to render. The data format can be a simple Map object
 	     * or an Array of data.
@@ -20360,103 +18707,154 @@
 	      PropTypes.array
 	    ]),
 
+	    /**
+	     * Array of <FixedDataTableColumn /> for the fixed columns.
+	     */
+	    fixedColumns: PropTypes.array.isRequired,
+
+	    /**
+	     * Height of the row.
+	     */
+	    height: PropTypes.number.isRequired,
+
+	    /**
+	     * The row index.
+	     */
+	    index: PropTypes.number.isRequired,
+
+	    /**
+	     * Array of <FixedDataTableColumn /> for the scrollable columns.
+	     */
+	    scrollableColumns: PropTypes.array.isRequired,
+
+	    /**
+	     * The distance between the left edge of the table and the leftmost portion
+	     * of the row currently visible in the table.
+	     */
+	    scrollLeft: PropTypes.number.isRequired,
+
+	    /**
+	     * Width of the row.
+	     */
+	    width: PropTypes.number.isRequired,
+
+	    /**
+	     * Fire when a row is clicked.
+	     */
+	    onClick: PropTypes.func,
+
+	    /**
+	     * Callback for when resizer knob (in FixedDataTableCell) is clicked
+	     * to initialize resizing. Please note this is only on the cells
+	     * in the header.
+	     * @param number combinedWidth
+	     * @param number leftOffset
+	     * @param number cellWidth
+	     * @param number|string columnKey
+	     * @param object event
+	     */
 	    onColumnResize: PropTypes.func,
-
-	    rowHeight: PropTypes.number.isRequired,
-
-	    rowIndex: PropTypes.number.isRequired,
-
-	    zIndex: PropTypes.number.isRequired,
 	  },
 
 	  render:function() /*object*/ {
-	    var props = this.props;
-	    var columns = props.columns;
-	    var cells = [];
-	    var width = 0;
+	    var style = {
+	      width: this.props.width,
+	      height: this.props.height,
+	    };
 
-	    for (var i = 0, j = columns.length; i < j; i++) {
-	      var columnProps = columns[i].props;
-	      width += columnProps.width;
-	      var key = 'cell_' + i;
-	      cells.push(
-	        this._renderCell(
-	          props.data,
-	          props.rowIndex,
-	          props.rowHeight,
-	          columnProps,
-	          width,
-	          key
+	    var className = cx({
+	      'public/fixedDataTableRow/main': true,
+	      'public/fixedDataTableRow/highlighted': (this.props.index % 2 === 1)
+	    });
+
+	    if (!this.props.data) {
+	      return (
+	        React.createElement("div", {
+	          className: joinClasses(className, this.props.className), 
+	          style: style}
 	        )
 	      );
 	    }
 
-	    var style = {
-	      width: width,
-	      height: props.height,
-	      zIndex: props.zIndex
-	    };
+	    var fixedColumns =
+	      React.createElement(FixedDataTableCellGroup, {
+	        key: "fixed_cells", 
+	        height: this.props.height, 
+	        left: 0, 
+	        zIndex: 2, 
+	        columns: this.props.fixedColumns, 
+	        data: this.props.data, 
+	        onColumnResize: this.props.onColumnResize, 
+	        rowHeight: this.props.height, 
+	        rowIndex: this.props.index}
+	      );
+	    var fixedColumnsWidth = this._getColumnsWidth(this.props.fixedColumns);
+	    var columnsShadow = this._renderColumnsShadow(fixedColumnsWidth);
+	    var scrollableColumns =
+	      React.createElement(FixedDataTableCellGroup, {
+	        key: "scrollable_cells", 
+	        height: this.props.height, 
+	        left: (fixedColumnsWidth - this.props.scrollLeft) * DIR_SIGN, 
+	        zIndex: 0, 
+	        columns: this.props.scrollableColumns, 
+	        data: this.props.data, 
+	        onColumnResize: this.props.onColumnResize, 
+	        rowHeight: this.props.height, 
+	        rowIndex: this.props.index}
+	      );
 
 	    return (
-	      React.createElement("div", {className: cx('fixedDataTableCellGroup/cellGroup'), style: style}, 
-	        cells
+	      React.createElement("div", {
+	        className: joinClasses(className, this.props.className), 
+	        onClick: this.props.onClick ? this._onClick : null, 
+	        onMouseDown: this.props.onMouseDown ? this._onMouseDown : null, 
+	        onMouseEnter: this.props.onMouseEnter ? this._onMouseEnter : null, 
+	        style: style}, 
+	        React.createElement("div", {className: cx('fixedDataTableRow/body')}, 
+	          fixedColumns, 
+	          scrollableColumns, 
+	          columnsShadow
+	        )
 	      )
 	    );
 	  },
 
-	  _renderCell:function(
-	    /*object|array*/ rowData,
-	    /*number*/ rowIndex,
-	    /*number*/ height,
-	    /*object*/ columnProps,
-	    /*?number*/ widthOffset,
-	    /*string*/ key
-	  ) /*object*/ {
-	    var cellRenderer = columnProps.cellRenderer || renderToString;
-	    var columnData = columnProps.columnData || EMPTY_OBJECT;
-	    var cellDataKey = columnProps.dataKey;
-	    var isFooterCell = columnProps.isFooterCell;
-	    var isHeaderCell = columnProps.isHeaderCell;
-	    var cellData;
-
-	    if (isHeaderCell || isFooterCell) {
-	      cellData = rowData[cellDataKey];
-	    } else {
-	      var cellDataGetter = columnProps.cellDataGetter;
-	      cellData = cellDataGetter ?
-	        cellDataGetter(cellDataKey, rowData) :
-	        rowData[cellDataKey];
+	  _getColumnsWidth:function(/*array*/ columns) /*number*/ {
+	    var width = 0;
+	    for (var i = 0; i < columns.length; ++i) {
+	      width += columns[i].props.width;
 	    }
+	    return width;
+	  },
 
-	    var cellIsResizable = columnProps.isResizable &&
-	      this.props.onColumnResize;
-	    var onColumnResize = cellIsResizable ? this.props.onColumnResize : null;
+	  _renderColumnsShadow:function(/*number*/ left) /*?object*/ {
+	    if (left > 0) {
+	      var className = cx({
+	        'fixedDataTableRow/fixedColumnsDivider': true,
+	        'fixedDataTableRow/columnsShadow': this.props.scrollLeft > 0,
+	      });
+	      var style = {
+	        left: left,
+	        height: this.props.height
+	      };
+	      return React.createElement("div", {className: className, style: style});
+	    }
+	  },
 
-	    return (
-	      React.createElement(FixedDataTableCell, {
-	        align: columnProps.align, 
-	        cellData: cellData, 
-	        cellDataKey: cellDataKey, 
-	        cellRenderer: cellRenderer, 
-	        className: columnProps.cellClassName, 
-	        columnData: columnData, 
-	        height: height, 
-	        isFooterCell: isFooterCell, 
-	        isHeaderCell: isHeaderCell, 
-	        key: key, 
-	        maxWidth: columnProps.maxWidth, 
-	        minWidth: columnProps.minWidth, 
-	        onColumnResize: onColumnResize, 
-	        rowData: rowData, 
-	        rowIndex: rowIndex, 
-	        width: columnProps.width, 
-	        widthOffset: widthOffset}
-	      )
-	    );
+	  _onClick:function(/*object*/ event) {
+	    this.props.onClick(event, this.props.index, this.props.data);
+	  },
+
+	  _onMouseDown:function(/*object*/ event) {
+	    this.props.onMouseDown(event, this.props.index, this.props.data);
+	  },
+
+	  _onMouseEnter:function(/*object*/ event) {
+	    this.props.onMouseEnter(event, this.props.index, this.props.data);
 	  },
 	});
 
-	var FixedDataTableCellGroup = React.createClass({displayName: "FixedDataTableCellGroup",
+	var FixedDataTableRow = React.createClass({displayName: "FixedDataTableRow",
 	  mixins: [ReactComponentWithPureRenderMixin],
 
 	  propTypes: {
@@ -20465,66 +18863,51 @@
 	     */
 	    height: PropTypes.number.isRequired,
 
-	    left: PropTypes.number,
-
 	    /**
 	     * Z-index on which the row will be displayed. Used e.g. for keeping
 	     * header and footer in front of other rows.
 	     */
-	    zIndex: PropTypes.number.isRequired,
+	    zIndex: PropTypes.number,
+
+	    /**
+	     * The vertical position where the row should render itself
+	     */
+	    offsetTop: PropTypes.number.isRequired,
+
+	    /**
+	     * Width of the row.
+	     */
+	    width: PropTypes.number.isRequired,
 	  },
 
 	  render:function() /*object*/ {
-	    var $__0=   this.props,left=$__0.left,props=(function(source, exclusion) {var rest = {};var hasOwn = Object.prototype.hasOwnProperty;if (source == null) {throw new TypeError();}for (var key in source) {if (hasOwn.call(source, key) && !hasOwn.call(exclusion, key)) {rest[key] = source[key];}}return rest;})($__0,{left:1});
-
 	    var style = {
-	      height: props.height,
+	      width: this.props.width,
+	      height: this.props.height,
+	      zIndex: (this.props.zIndex ? this.props.zIndex : 0),
 	    };
-
-	    if (left) {
-	      translateDOMPositionXY(style, left, 0);
-	    }
-
-	    var onColumnResize = props.onColumnResize ? this._onColumnResize : null;
+	    translateDOMPositionXY(style, 0, this.props.offsetTop);
 
 	    return (
 	      React.createElement("div", {
 	        style: style, 
-	        className: cx('fixedDataTableCellGroup/cellGroupWrapper')}, 
-	        React.createElement(FixedDataTableCellGroupImpl, React.__spread({}, 
-	          props, 
-	          {onColumnResize: onColumnResize})
+	        className: cx('fixedDataTableRow/rowWrapper')}, 
+	        React.createElement(FixedDataTableRowImpl, React.__spread({}, 
+	          this.props, 
+	          {offsetTop: undefined, 
+	          zIndex: undefined})
 	        )
 	      )
-	    );
-	  },
-
-	  _onColumnResize:function(
-	    /*number*/ widthOffset,
-	    /*number*/ width,
-	    /*?number*/ minWidth,
-	    /*?number*/ maxWidth,
-	    /*string|number*/ cellDataKey,
-	    /*object*/ event
-	  ) {
-	    this.props.onColumnResize && this.props.onColumnResize(
-	      widthOffset,
-	      this.props.left,
-	      width,
-	      minWidth,
-	      maxWidth,
-	      cellDataKey,
-	      event
 	    );
 	  },
 	});
 
 
-	module.exports = FixedDataTableCellGroup;
+	module.exports = FixedDataTableRow;
 
 
 /***/ },
-/* 187 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -20535,47 +18918,424 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule BrowserSupportCore
+	 * @providesModule FixedDataTableScrollHelper
+	 * @typechecks
 	 */
+	'use strict';
+
+	var PrefixIntervalTree = __webpack_require__(198);
+	var clamp = __webpack_require__(196);
+
+	var BUFFER_ROWS = 5;
 
 
-	var getVendorPrefixedName = __webpack_require__(188);
+	  function FixedDataTableScrollHelper(
+	rowCount,
+	    /*number*/ defaultRowHeight,
+	    /*number*/ viewportHeight,
+	    /*?function*/ rowHeightGetter)
+	   {
+	    this.$FixedDataTableScrollHelper_rowOffsets = new PrefixIntervalTree(rowCount, defaultRowHeight);
+	    this.$FixedDataTableScrollHelper_storedHeights = new Array(rowCount);
+	    for (var i = 0; i < rowCount; ++i) {
+	      this.$FixedDataTableScrollHelper_storedHeights[i] = defaultRowHeight;
+	    }
+	    this.$FixedDataTableScrollHelper_rowCount = rowCount;
+	    this.$FixedDataTableScrollHelper_position = 0;
+	    this.$FixedDataTableScrollHelper_contentHeight = rowCount * defaultRowHeight;
+	    this.$FixedDataTableScrollHelper_defaultRowHeight = defaultRowHeight;
+	    this.$FixedDataTableScrollHelper_rowHeightGetter = rowHeightGetter ?
+	      rowHeightGetter :
+	      function()  {return defaultRowHeight;};
+	    this.$FixedDataTableScrollHelper_viewportHeight = viewportHeight;
+	    this.scrollRowIntoView = this.scrollRowIntoView.bind(this);
+	    this.setViewportHeight = this.setViewportHeight.bind(this);
+	    this.scrollBy = this.scrollBy.bind(this);
+	    this.scrollTo = this.scrollTo.bind(this);
+	    this.scrollToRow = this.scrollToRow.bind(this);
+	    this.setRowHeightGetter = this.setRowHeightGetter.bind(this);
+	    this.getContentHeight = this.getContentHeight.bind(this);
 
-	var BrowserSupportCore = {
+	    this.$FixedDataTableScrollHelper_updateHeightsInViewport(0, 0);
+	  }
+
+	  FixedDataTableScrollHelper.prototype.setRowHeightGetter=function(rowHeightGetter) {
+	    this.$FixedDataTableScrollHelper_rowHeightGetter = rowHeightGetter;
+	  };
+
+	  FixedDataTableScrollHelper.prototype.setViewportHeight=function(viewportHeight) {
+	    this.$FixedDataTableScrollHelper_viewportHeight = viewportHeight;
+	  };
+
+	  FixedDataTableScrollHelper.prototype.getContentHeight=function()  {
+	    return this.$FixedDataTableScrollHelper_contentHeight;
+	  };
+
+	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_updateHeightsInViewport=function(
+	firstRowIndex,
+	    /*number*/ firstRowOffset)
+	   {
+	    var top = firstRowOffset;
+	    var index = firstRowIndex;
+	    while (top <= this.$FixedDataTableScrollHelper_viewportHeight && index < this.$FixedDataTableScrollHelper_rowCount) {
+	      this.$FixedDataTableScrollHelper_updateRowHeight(index);
+	      top += this.$FixedDataTableScrollHelper_storedHeights[index];
+	      index++;
+	    }
+	  };
+
+	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_updateHeightsAboveViewport=function(firstRowIndex) {
+	    var index = firstRowIndex - 1;
+	    while (index >= 0 && index >= firstRowIndex - BUFFER_ROWS) {
+	      var delta = this.$FixedDataTableScrollHelper_updateRowHeight(index);
+	      this.$FixedDataTableScrollHelper_position += delta;
+	      index--;
+	    }
+	  };
+
+	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_updateRowHeight=function(rowIndex)  {
+	    if (rowIndex < 0 || rowIndex >= this.$FixedDataTableScrollHelper_rowCount) {
+	      return 0;
+	    }
+	    var newHeight = this.$FixedDataTableScrollHelper_rowHeightGetter(rowIndex);
+	    if (newHeight !== this.$FixedDataTableScrollHelper_storedHeights[rowIndex]) {
+	      var change = newHeight - this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
+	      this.$FixedDataTableScrollHelper_rowOffsets.set(rowIndex, newHeight);
+	      this.$FixedDataTableScrollHelper_storedHeights[rowIndex] = newHeight;
+	      this.$FixedDataTableScrollHelper_contentHeight += change;
+	      return change;
+	    }
+	    return 0;
+	  };
+
+	  FixedDataTableScrollHelper.prototype.scrollBy=function(delta)  {
+	    var firstRow = this.$FixedDataTableScrollHelper_rowOffsets.upperBound(this.$FixedDataTableScrollHelper_position);
+	    var firstRowPosition =
+	      firstRow.value - this.$FixedDataTableScrollHelper_storedHeights[firstRow.index];
+	    var rowIndex = firstRow.index;
+	    var position = this.$FixedDataTableScrollHelper_position;
+
+	    var rowHeightChange = this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
+	    if (firstRowPosition !== 0) {
+	      position += rowHeightChange;
+	    }
+	    var visibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex] -
+	      (position - firstRowPosition);
+
+	    if (delta >= 0) {
+
+	      while (delta > 0 && rowIndex < this.$FixedDataTableScrollHelper_rowCount) {
+	        if (delta < visibleRowHeight) {
+	          position += delta;
+	          delta = 0;
+	        } else {
+	          delta -= visibleRowHeight;
+	          position += visibleRowHeight;
+	          rowIndex++;
+	        }
+	        if (rowIndex < this.$FixedDataTableScrollHelper_rowCount) {
+	          this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
+	          visibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
+	        }
+	      }
+	    } else if (delta < 0) {
+	      delta = -delta;
+	      var invisibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex] - visibleRowHeight;
+
+	      while (delta > 0 && rowIndex >= 0) {
+	        if (delta < invisibleRowHeight) {
+	          position -= delta;
+	          delta = 0;
+	        } else {
+	          position -= invisibleRowHeight;
+	          delta -= invisibleRowHeight;
+	          rowIndex--;
+	        }
+	        if (rowIndex >= 0) {
+	          var change = this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
+	          invisibleRowHeight = this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
+	          position += change;
+	        }
+	      }
+	    }
+
+	    var maxPosition = this.$FixedDataTableScrollHelper_contentHeight - this.$FixedDataTableScrollHelper_viewportHeight;
+	    position = clamp(0, position, maxPosition);
+	    this.$FixedDataTableScrollHelper_position = position;
+	    var firstVisibleRow = this.$FixedDataTableScrollHelper_rowOffsets.upperBound(position);
+	    var firstRowIndex = firstVisibleRow.index;
+	    firstRowPosition =
+	      firstVisibleRow.value - this.$FixedDataTableScrollHelper_rowHeightGetter(firstRowIndex);
+	    var firstRowOffset = firstRowPosition - position;
+
+	    this.$FixedDataTableScrollHelper_updateHeightsInViewport(firstRowIndex, firstRowOffset);
+	    this.$FixedDataTableScrollHelper_updateHeightsAboveViewport(firstRowIndex);
+
+	    return {
+	      index: firstRowIndex,
+	      offset: firstRowOffset,
+	      position: this.$FixedDataTableScrollHelper_position,
+	      contentHeight: this.$FixedDataTableScrollHelper_contentHeight,
+	    };
+	  };
+
+	  FixedDataTableScrollHelper.prototype.$FixedDataTableScrollHelper_getRowAtEndPosition=function(rowIndex)  {
+	    // We need to update enough rows above the selected one to be sure that when
+	    // we scroll to selected position all rows between first shown and selected
+	    // one have most recent heights computed and will not resize
+	    this.$FixedDataTableScrollHelper_updateRowHeight(rowIndex);
+	    var currentRowIndex = rowIndex;
+	    var top = this.$FixedDataTableScrollHelper_storedHeights[currentRowIndex];
+	    while (top < this.$FixedDataTableScrollHelper_viewportHeight && currentRowIndex >= 0) {
+	      currentRowIndex--;
+	      if (currentRowIndex >= 0) {
+	        this.$FixedDataTableScrollHelper_updateRowHeight(currentRowIndex);
+	        top += this.$FixedDataTableScrollHelper_storedHeights[currentRowIndex];
+	      }
+	    }
+	    var position = this.$FixedDataTableScrollHelper_rowOffsets.get(rowIndex).value - this.$FixedDataTableScrollHelper_viewportHeight;
+	    if (position < 0) {
+	      position = 0;
+	    }
+	    return position;
+	  };
+
+	  FixedDataTableScrollHelper.prototype.scrollTo=function(position)  {
+	    if (position <= 0) {
+	      // If position less than or equal to 0 first row should be fully visible
+	      // on top
+	      this.$FixedDataTableScrollHelper_position = 0;
+	      this.$FixedDataTableScrollHelper_updateHeightsInViewport(0, 0);
+
+	      return {
+	        index: 0,
+	        offset: 0,
+	        position: this.$FixedDataTableScrollHelper_position,
+	        contentHeight: this.$FixedDataTableScrollHelper_contentHeight,
+	      };
+	    } else if (position >= this.$FixedDataTableScrollHelper_contentHeight - this.$FixedDataTableScrollHelper_viewportHeight) {
+	      // If position is equal to or greater than max scroll value, we need
+	      // to make sure to have bottom border of last row visible.
+	      var rowIndex = this.$FixedDataTableScrollHelper_rowCount - 1;
+	      position = this.$FixedDataTableScrollHelper_getRowAtEndPosition(rowIndex);
+	    }
+	    this.$FixedDataTableScrollHelper_position = position;
+
+	    var firstVisibleRow = this.$FixedDataTableScrollHelper_rowOffsets.upperBound(position);
+	    var firstRowIndex = Math.max(firstVisibleRow.index, 0);
+	    var firstRowPosition =
+	      firstVisibleRow.value - this.$FixedDataTableScrollHelper_rowHeightGetter(firstRowIndex);
+	    var firstRowOffset = firstRowPosition - position;
+
+	    this.$FixedDataTableScrollHelper_updateHeightsInViewport(firstRowIndex, firstRowOffset);
+	    this.$FixedDataTableScrollHelper_updateHeightsAboveViewport(firstRowIndex);
+
+	    return {
+	      index: firstRowIndex,
+	      offset: firstRowOffset,
+	      position: this.$FixedDataTableScrollHelper_position,
+	      contentHeight: this.$FixedDataTableScrollHelper_contentHeight,
+	    };
+	  };
+
 	  /**
-	   * @return {bool} True if browser supports css animations.
+	   * Allows to scroll to selected row with specified offset. It always
+	   * brings that row to top of viewport with that offset
 	   */
-	  hasCSSAnimations: function() {
-	    return !!getVendorPrefixedName('animationName');
-	  },
+	  FixedDataTableScrollHelper.prototype.scrollToRow=function(rowIndex, /*number*/ offset)  {
+	    rowIndex = clamp(0, rowIndex, this.$FixedDataTableScrollHelper_rowCount - 1);
+	    offset = clamp(-this.$FixedDataTableScrollHelper_storedHeights[rowIndex], offset, 0);
+	    var firstRow = this.$FixedDataTableScrollHelper_rowOffsets.get(rowIndex);
+	    return this.scrollTo(
+	      firstRow.value - this.$FixedDataTableScrollHelper_storedHeights[rowIndex] - offset
+	    );
+	  };
 
 	  /**
-	   * @return {bool} True if browser supports css transforms.
+	   * Allows to scroll to selected row by bringing it to viewport with minimal
+	   * scrolling. This that if row is fully visible, scroll will not be changed.
+	   * If top border of row is above top of viewport it will be scrolled to be
+	   * fully visible on the top of viewport. If the bottom border of row is
+	   * below end of viewport, it will be scrolled up to be fully visible on the
+	   * bottom of viewport.
 	   */
-	  hasCSSTransforms: function() {
-	    return !!getVendorPrefixedName('transform');
-	  },
+	  FixedDataTableScrollHelper.prototype.scrollRowIntoView=function(rowIndex)  {
+	    rowIndex = clamp(0, rowIndex, this.$FixedDataTableScrollHelper_rowCount - 1);
+	    var rowEnd = this.$FixedDataTableScrollHelper_rowOffsets.get(rowIndex).value;
+	    var rowBegin = rowEnd - this.$FixedDataTableScrollHelper_storedHeights[rowIndex];
+	    if (rowBegin < this.$FixedDataTableScrollHelper_position) {
+	      return this.scrollTo(rowBegin);
+	    } else if (rowEnd > this.$FixedDataTableScrollHelper_position + this.$FixedDataTableScrollHelper_viewportHeight) {
+	      var position = this.$FixedDataTableScrollHelper_getRowAtEndPosition(rowIndex);
+	      return this.scrollTo(position);
+	    }
+	    return this.scrollTo(this.$FixedDataTableScrollHelper_position);
+	  };
 
-	  /**
-	   * @return {bool} True if browser supports css 3d transforms.
-	   */
-	  hasCSS3DTransforms: function() {
-	    return !!getVendorPrefixedName('perspective');
-	  },
 
-	  /**
-	   * @return {bool} True if browser supports css transitions.
-	   */
-	  hasCSSTransitions: function() {
-	    return !!getVendorPrefixedName('transition');
-	  },
+	module.exports = FixedDataTableScrollHelper;
+
+
+/***/ },
+/* 169 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableWidthHelper
+	 * @typechecks
+	 */
+	'use strict';
+
+	var React = __webpack_require__(161);
+
+	var cloneWithProps = __webpack_require__(170);
+
+	function getTotalWidth(/*array*/ columns) /*number*/ {
+	  var totalWidth = 0;
+	  for (var i = 0; i < columns.length; ++i) {
+	    totalWidth += columns[i].props.width;
+	  }
+	  return totalWidth;
+	}
+
+	function getTotalFlexGrow(/*array*/ columns) /*number*/ {
+	  var totalFlexGrow = 0;
+	  for (var i = 0; i < columns.length; ++i) {
+	    totalFlexGrow += columns[i].props.flexGrow || 0;
+	  }
+	  return totalFlexGrow;
+	}
+
+	function distributeFlexWidth(
+	  /*array*/ columns,
+	  /*number*/ flexWidth
+	) /*object*/ {
+	  if (flexWidth <= 0) {
+	    return {
+	      columns: columns,
+	      width: getTotalWidth(columns),
+	    };
+	  }
+	  var remainingFlexGrow = getTotalFlexGrow(columns);
+	  var remainingFlexWidth = flexWidth;
+	  var newColumns = [];
+	  var totalWidth = 0;
+	  for (var i = 0; i < columns.length; ++i) {
+	    var column = columns[i];
+	    if (!column.props.flexGrow) {
+	      totalWidth += column.props.width;
+	      newColumns.push(column);
+	      continue;
+	    }
+	    var columnFlexWidth = Math.floor(
+	      column.props.flexGrow / remainingFlexGrow * remainingFlexWidth
+	    );
+	    var newColumnWidth = Math.floor(column.props.width + columnFlexWidth);
+	    totalWidth += newColumnWidth;
+
+	    remainingFlexGrow -= column.props.flexGrow;
+	    remainingFlexWidth -= columnFlexWidth;
+
+	    newColumns.push(cloneWithProps(
+	      column,
+	      {width: newColumnWidth}
+	    ));
+	  }
+
+	  return {
+	    columns: newColumns,
+	    width: totalWidth,
+	  };
+	}
+
+	function adjustColumnGroupWidths(
+	  /*array*/ columnGroups,
+	  /*number*/ expectedWidth
+	) /*object*/ {
+	  var allColumns = [];
+	  var i;
+	  for (i = 0; i < columnGroups.length; ++i) {
+	    React.Children.forEach(
+	      columnGroups[i].props.children,
+	      function(column)  {allColumns.push(column);}
+	    );
+	  }
+	  var columnsWidth = getTotalWidth(allColumns);
+	  var remainingFlexGrow = getTotalFlexGrow(allColumns);
+	  var remainingFlexWidth = Math.max(expectedWidth - columnsWidth, 0);
+
+	  var newAllColumns = [];
+	  var newColumnGroups = [];
+
+	  for (i = 0; i < columnGroups.length; ++i) {
+	    var columnGroup = columnGroups[i];
+	    var currentColumns = [];
+
+	    React.Children.forEach(
+	      columnGroup.props.children,
+	      function(column)  {currentColumns.push(column);}
+	    );
+
+	    var columnGroupFlexGrow = getTotalFlexGrow(currentColumns);
+	    var columnGroupFlexWidth = Math.floor(
+	      columnGroupFlexGrow / remainingFlexGrow * remainingFlexWidth
+	    );
+
+	    var newColumnSettings = distributeFlexWidth(
+	      currentColumns,
+	      columnGroupFlexWidth
+	    );
+
+	    remainingFlexGrow -= columnGroupFlexGrow;
+	    remainingFlexWidth -= columnGroupFlexWidth;
+
+	    for (var j = 0; j < newColumnSettings.columns.length; ++j) {
+	      newAllColumns.push(newColumnSettings.columns[j]);
+	    }
+
+	    newColumnGroups.push(cloneWithProps(
+	      columnGroup,
+	      {width: newColumnSettings.width}
+	    ));
+	  }
+
+	  return {
+	    columns: newAllColumns,
+	    columnGroups: newColumnGroups,
+	  };
+	}
+
+	function adjustColumnWidths(
+	  /*array*/ columns,
+	  /*number*/ expectedWidth
+	) /*array*/ {
+	  var columnsWidth = getTotalWidth(columns);
+	  if (columnsWidth < expectedWidth) {
+	    return distributeFlexWidth(columns, expectedWidth - columnsWidth).columns;
+	  }
+	  return columns;
+	}
+
+	var FixedDataTableWidthHelper = {
+	  getTotalWidth:getTotalWidth,
+	  getTotalFlexGrow:getTotalFlexGrow,
+	  distributeFlexWidth:distributeFlexWidth,
+	  adjustColumnWidths:adjustColumnWidths,
+	  adjustColumnGroupWidths:adjustColumnGroupWidths,
 	};
 
-	module.exports = BrowserSupportCore;
+	module.exports = FixedDataTableWidthHelper;
 
 
 /***/ },
-/* 188 */
+/* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -20586,62 +19346,141 @@
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule getVendorPrefixedName
+	 * @providesModule cloneWithProps
+	 */
+
+	module.exports = __webpack_require__(138);
+
+
+/***/ },
+/* 171 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule cx
+	 */
+
+	var slashReplaceRegex = /\//g;
+	var cache = {};
+
+	function getClassName(className) {
+	  if (cache[className]) {
+	    return cache[className];
+	  }
+
+	  cache[className] = className.replace(slashReplaceRegex, '_');
+	  return cache[className];
+	}
+
+	/**
+	 * This function is used to mark string literals representing CSS class names
+	 * so that they can be transformed statically. This allows for modularization
+	 * and minification of CSS class names.
+	 *
+	 * In static_upstream, this function is actually implemented, but it should
+	 * eventually be replaced with something more descriptive, and the transform
+	 * that is used in the main stack should be ported for use elsewhere.
+	 *
+	 * @param string|object className to modularize, or an object of key/values.
+	 *                      In the object case, the values are conditions that
+	 *                      determine if the className keys should be included.
+	 * @param [string ...]  Variable list of classNames in the string case.
+	 * @return string       Renderable space-separated CSS className.
+	 */
+	function cx(classNames) {
+	  var classNamesArray;
+	  if (typeof classNames == 'object') {
+	    classNamesArray = Object.keys(classNames).filter(function(className) {
+	      return classNames[className];
+	    });
+	  } else {
+	    classNamesArray = Array.prototype.slice.call(arguments);
+	  }
+
+	  return classNamesArray.map(getClassName).join(' ');
+	}
+
+	module.exports = cx;
+
+
+/***/ },
+/* 172 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule debounceCore
 	 * @typechecks
 	 */
 
-	var ExecutionEnvironment = __webpack_require__(126);
-
-	var camelize = __webpack_require__(210);
-	var invariant = __webpack_require__(158);
-
-	var memoized = {};
-	var prefixes = ['Webkit', 'ms', 'Moz', 'O'];
-	var prefixRegex = new RegExp('^(' + prefixes.join('|') + ')');
-	var testStyle =
-	  ExecutionEnvironment.canUseDOM ? document.createElement('div').style : {};
-
-	function getWithPrefix(name) {
-	  for (var i = 0; i < prefixes.length; i++) {
-	    var prefixedName = prefixes[i] + name;
-	    if (prefixedName in testStyle) {
-	      return prefixedName;
-	    }
-	  }
-	  return null;
-	}
-
 	/**
-	 * @param {string} property Name of a css property to check for.
-	 * @return {?string} property name supported in the browser, or null if not
-	 * supported.
+	 * Invokes the given callback after a specified number of milliseconds have
+	 * elapsed, ignoring subsequent calls.
+	 *
+	 * For example, if you wanted to update a preview after the user stops typing
+	 * you could do the following:
+	 *
+	 *   elem.addEventListener('keyup', debounce(this.updatePreview, 250), false);
+	 *
+	 * The returned function has a reset method which can be called to cancel a
+	 * pending invocation.
+	 *
+	 *   var debouncedUpdatePreview = debounce(this.updatePreview, 250);
+	 *   elem.addEventListener('keyup', debouncedUpdatePreview, false);
+	 *
+	 *   // later, to cancel pending calls
+	 *   debouncedUpdatePreview.reset();
+	 *
+	 * @param {function} func - the function to debounce
+	 * @param {number} wait - how long to wait in milliseconds
+	 * @param {*} context - optional context to invoke the function in
+	 * @param {?function} setTimeoutFunc - an implementation of setTimeout
+	 *  if nothing is passed in the default setTimeout function is used
+	  * @param {?function} clearTimeoutFunc - an implementation of clearTimeout
+	 *  if nothing is passed in the default clearTimeout function is used
 	 */
-	function getVendorPrefixedName(property) {
-	  var name = camelize(property);
-	  if (memoized[name] === undefined) {
-	    var capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
-	    if (prefixRegex.test(capitalizedName)) {
-	      invariant(
-	        false,
-	        'getVendorPrefixedName must only be called with unprefixed' +
-	        'CSS property names. It was called with %s', property
-	      );
-	    }
-	    memoized[name] =
-	      (name in testStyle) ? name : getWithPrefix(capitalizedName);
+	function debounce(func, wait, context, setTimeoutFunc, clearTimeoutFunc) {
+	  setTimeoutFunc = setTimeoutFunc || setTimeout;
+	  clearTimeoutFunc = clearTimeoutFunc || clearTimeout;
+	  var timeout;
+
+	  function debouncer() {for (var args=[],$__0=0,$__1=arguments.length;$__0<$__1;$__0++) args.push(arguments[$__0]);
+	    debouncer.reset();
+
+	    timeout = setTimeoutFunc(function() {
+	      func.apply(context, args);
+	    }, wait);
 	  }
-	  return memoized[name];
+
+	  debouncer.reset = function() {
+	    clearTimeoutFunc(timeout);
+	  };
+
+	  return debouncer;
 	}
 
-	module.exports = getVendorPrefixedName;
+	module.exports = debounce;
 
 
 /***/ },
-/* 189 */
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * Copyright 2013-2015, Facebook, Inc.
+	 * Copyright (c) 2015, Facebook, Inc.
 	 * All rights reserved.
 	 *
 	 * This source code is licensed under the BSD-style license found in the
@@ -20675,13 +19514,188 @@
 
 
 /***/ },
-/* 190 */
+/* 174 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule invariant
+	 */
+
+	"use strict";
+
+	/**
+	 * Use invariant() to assert state which your program assumes to be true.
+	 *
+	 * Provide sprintf-style format (only %s is supported) and arguments
+	 * to provide information about what broke and what you were
+	 * expecting.
+	 *
+	 * The invariant message will be stripped in production, but the invariant
+	 * will remain to ensure logic does not differ in production.
+	 */
+
+	var invariant = function(condition, format, a, b, c, d, e, f) {
+	  if (process.env.NODE_ENV !== 'production') {
+	    if (format === undefined) {
+	      throw new Error('invariant requires an error message argument');
+	    }
+	  }
+
+	  if (!condition) {
+	    var error;
+	    if (format === undefined) {
+	      error = new Error(
+	        'Minified exception occurred; use the non-minified dev environment ' +
+	        'for the full error message and additional helpful warnings.'
+	      );
+	    } else {
+	      var args = [a, b, c, d, e, f];
+	      var argIndex = 0;
+	      error = new Error(
+	        'Invariant Violation: ' +
+	        format.replace(/%s/g, function() { return args[argIndex++]; })
+	      );
+	    }
+
+	    error.framesToPop = 1; // we don't care about invariant's own frame
+	    throw error;
+	  }
+	};
+
+	module.exports = invariant;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+
+/***/ },
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule shallowEqual
+	 */
+
+	'use strict';
+
+	/**
+	 * Performs equality by iterating through keys on an object and returning
+	 * false when any key has values which are not strictly equal between
+	 * objA and objB. Returns true when the values of all keys are strictly equal.
+	 *
+	 * @return {boolean}
+	 */
+	function shallowEqual(objA, objB) {
+	  if (objA === objB) {
+	    return true;
+	  }
+	  var key;
+	  // Test for A's keys different from B.
+	  for (key in objA) {
+	    if (objA.hasOwnProperty(key) &&
+	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
+	      return false;
+	    }
+	  }
+	  // Test for B's keys missing from A.
+	  for (key in objB) {
+	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
+	      return false;
+	    }
+	  }
+	  return true;
+	}
+
+	module.exports = shallowEqual;
+
+
+/***/ },
+/* 176 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule translateDOMPositionXY
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var BrowserSupportCore = __webpack_require__(199);
+
+	var getVendorPrefixedName = __webpack_require__(200);
+
+	var TRANSFORM = getVendorPrefixedName('transform');
+	var BACKFACE_VISIBILITY = getVendorPrefixedName('backfaceVisibility');
+
+	var translateDOMPositionXY = (function() {
+	  if (BrowserSupportCore.hasCSSTransforms()) {
+	    var ua = global.window ? global.window.navigator.userAgent : 'UNKNOWN';
+	    var isSafari = (/Safari\//).test(ua) && !(/Chrome\//).test(ua);
+	    // It appears that Safari messes up the composition order
+	    // of GPU-accelerated layers
+	    // (see bug https://bugs.webkit.org/show_bug.cgi?id=61824).
+	    // Use 2D translation instead.
+	    if (!isSafari && BrowserSupportCore.hasCSS3DTransforms()) {
+	      return function(/*object*/ style, /*number*/ x, /*number*/ y) {
+	        style[TRANSFORM] ='translate3d(' + x + 'px,' + y + 'px,0)';
+	        style[BACKFACE_VISIBILITY] = 'hidden';
+	      };
+	    } else {
+	      return function(/*object*/ style, /*number*/ x, /*number*/ y) {
+	        style[TRANSFORM] = 'translate(' + x + 'px,' + y + 'px)';
+	      };
+	    }
+	  } else {
+	    return function(/*object*/ style, /*number*/ x, /*number*/ y) {
+	      style.left = x + 'px';
+	      style.top = y + 'px';
+	    };
+	  }
+	})();
+
+	module.exports = translateDOMPositionXY;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 177 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+
+	module.exports.generateRandomKey = function (len) {
+	  len = len || 10;
+	  return Math.random().toString(36).substring(2).substring(0, len);
+	};
+
+
+/***/ },
+/* 178 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
+	var d3 = __webpack_require__(39);
 
 	module.exports = React.createClass({displayName: "exports",
 
@@ -20780,13 +19794,13 @@
 
 
 /***/ },
-/* 191 */
+/* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(16);
+	var d3 = __webpack_require__(39);
 
 	module.exports = React.createClass({displayName: "exports",
 
@@ -20853,7 +19867,7 @@
 
 
 /***/ },
-/* 192 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -20917,224 +19931,7 @@
 
 
 /***/ },
-/* 193 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2014-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Object.assign
-	 */
-
-	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
-
-	'use strict';
-
-	function assign(target, sources) {
-	  if (target == null) {
-	    throw new TypeError('Object.assign target cannot be null or undefined');
-	  }
-
-	  var to = Object(target);
-	  var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
-	    var nextSource = arguments[nextIndex];
-	    if (nextSource == null) {
-	      continue;
-	    }
-
-	    var from = Object(nextSource);
-
-	    // We don't currently support accessors nor proxies. Therefore this
-	    // copy cannot throw. If we ever supported this then we must handle
-	    // exceptions and side-effects. We don't support symbols so they won't
-	    // be transferred.
-
-	    for (var key in from) {
-	      if (hasOwnProperty.call(from, key)) {
-	        to[key] = from[key];
-	      }
-	    }
-	  }
-
-	  return to;
-	}
-
-	module.exports = assign;
-
-
-/***/ },
-/* 194 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule joinClasses
-	 * @typechecks static-only
-	 */
-
-	'use strict';
-
-	/**
-	 * Combines multiple className strings into one.
-	 * http://jsperf.com/joinclasses-args-vs-array
-	 *
-	 * @param {...?string} classes
-	 * @return {string}
-	 */
-	function joinClasses(className/*, ... */) {
-	  if (!className) {
-	    className = '';
-	  }
-	  var nextClass;
-	  var argLength = arguments.length;
-	  if (argLength > 1) {
-	    for (var ii = 1; ii < argLength; ii++) {
-	      nextClass = arguments[ii];
-	      if (nextClass) {
-	        className = (className ? className + ' ' : '') + nextClass;
-	      }
-	    }
-	  }
-	  return className;
-	}
-
-	module.exports = joinClasses;
-
-
-/***/ },
-/* 195 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactContext
-	 */
-
-	'use strict';
-
-	var assign = __webpack_require__(193);
-	var emptyObject = __webpack_require__(211);
-	var warning = __webpack_require__(174);
-
-	var didWarn = false;
-
-	/**
-	 * Keeps track of the current context.
-	 *
-	 * The context is automatically passed down the component ownership hierarchy
-	 * and is accessible via `this.context` on ReactCompositeComponents.
-	 */
-	var ReactContext = {
-
-	  /**
-	   * @internal
-	   * @type {object}
-	   */
-	  current: emptyObject,
-
-	  /**
-	   * Temporarily extends the current context while executing scopedCallback.
-	   *
-	   * A typical use case might look like
-	   *
-	   *  render: function() {
-	   *    var children = ReactContext.withContext({foo: 'foo'}, () => (
-	   *
-	   *    ));
-	   *    return <div>{children}</div>;
-	   *  }
-	   *
-	   * @param {object} newContext New context to merge into the existing context
-	   * @param {function} scopedCallback Callback to run with the new context
-	   * @return {ReactComponent|array<ReactComponent>}
-	   */
-	  withContext: function(newContext, scopedCallback) {
-	    if ("production" !== process.env.NODE_ENV) {
-	      ("production" !== process.env.NODE_ENV ? warning(
-	        didWarn,
-	        'withContext is deprecated and will be removed in a future version. ' +
-	        'Use a wrapper component with getChildContext instead.'
-	      ) : null);
-
-	      didWarn = true;
-	    }
-
-	    var result;
-	    var previousContext = ReactContext.current;
-	    ReactContext.current = assign({}, previousContext, newContext);
-	    try {
-	      result = scopedCallback();
-	    } finally {
-	      ReactContext.current = previousContext;
-	    }
-	    return result;
-	  }
-
-	};
-
-	module.exports = ReactContext;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
-
-/***/ },
-/* 196 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule ReactCurrentOwner
-	 */
-
-	'use strict';
-
-	/**
-	 * Keeps track of the current owner.
-	 *
-	 * The current owner is the component who should own any components that are
-	 * currently being constructed.
-	 *
-	 * The depth indicate how many composite components are above this render level.
-	 */
-	var ReactCurrentOwner = {
-
-	  /**
-	   * @internal
-	   * @type {ReactComponent}
-	   */
-	  current: null
-
-	};
-
-	module.exports = ReactCurrentOwner;
-
-
-/***/ },
-/* 197 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -21154,7 +19951,7 @@
 	 * If you wish to use it in the browser, please check out Browserify or WebPack!
 	 */
 
-	var Immutable = __webpack_require__(199);
+	var Immutable = __webpack_require__(201);
 	var Iterable = Immutable.Iterable;
 	var Iterator = Iterable.Iterator;
 	var Seq = Immutable.Seq;
@@ -21451,7 +20248,7 @@
 
 
 /***/ },
-/* 198 */
+/* 182 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21686,7 +20483,1511 @@
 
 
 /***/ },
+/* 183 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	* @providesModule ReactComponentWithPureRenderMixin
+	*/
+
+	'use strict';
+
+	var shallowEqual = __webpack_require__(203);
+
+	/**
+	 * If your React component's render function is "pure", e.g. it will render the
+	 * same result given the same props and state, provide this Mixin for a
+	 * considerable performance boost.
+	 *
+	 * Most React components have pure render functions.
+	 *
+	 * Example:
+	 *
+	 *   var ReactComponentWithPureRenderMixin =
+	 *     require('ReactComponentWithPureRenderMixin');
+	 *   React.createClass({
+	 *     mixins: [ReactComponentWithPureRenderMixin],
+	 *
+	 *     render: function() {
+	 *       return <div className={this.props.className}>foo</div>;
+	 *     }
+	 *   });
+	 *
+	 * Note: This only checks shallow equality for props and state. If these contain
+	 * complex data structures this mixin may have false-negatives for deeper
+	 * differences. Only mixin to components which have simple props and state, or
+	 * use `forceUpdate()` when you know deep data structures have changed.
+	 */
+	var ReactComponentWithPureRenderMixin = {
+	  shouldComponentUpdate: function(nextProps, nextState) {
+	    return !shallowEqual(this.props, nextProps) ||
+	           !shallowEqual(this.state, nextState);
+	  }
+	};
+
+	module.exports = ReactComponentWithPureRenderMixin;
+
+
+/***/ },
+/* 184 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule emptyFunction
+	 */
+
+	function makeEmptyFunction(arg) {
+	  return function() {
+	    return arg;
+	  };
+	}
+
+	/**
+	 * This function accepts and discards inputs; it has no side effects. This is
+	 * primarily useful idiomatically for overridable function endpoints which
+	 * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
+	 */
+	function emptyFunction() {}
+
+	emptyFunction.thatReturns = makeEmptyFunction;
+	emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
+	emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
+	emptyFunction.thatReturnsNull = makeEmptyFunction(null);
+	emptyFunction.thatReturnsThis = function() { return this; };
+	emptyFunction.thatReturnsArgument = function(arg) { return arg; };
+
+	module.exports = emptyFunction;
+
+
+/***/ },
+/* 185 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactContext
+	 */
+
+	'use strict';
+
+	var assign = __webpack_require__(187);
+	var emptyObject = __webpack_require__(204);
+	var warning = __webpack_require__(158);
+
+	var didWarn = false;
+
+	/**
+	 * Keeps track of the current context.
+	 *
+	 * The context is automatically passed down the component ownership hierarchy
+	 * and is accessible via `this.context` on ReactCompositeComponents.
+	 */
+	var ReactContext = {
+
+	  /**
+	   * @internal
+	   * @type {object}
+	   */
+	  current: emptyObject,
+
+	  /**
+	   * Temporarily extends the current context while executing scopedCallback.
+	   *
+	   * A typical use case might look like
+	   *
+	   *  render: function() {
+	   *    var children = ReactContext.withContext({foo: 'foo'}, () => (
+	   *
+	   *    ));
+	   *    return <div>{children}</div>;
+	   *  }
+	   *
+	   * @param {object} newContext New context to merge into the existing context
+	   * @param {function} scopedCallback Callback to run with the new context
+	   * @return {ReactComponent|array<ReactComponent>}
+	   */
+	  withContext: function(newContext, scopedCallback) {
+	    if ("production" !== process.env.NODE_ENV) {
+	      ("production" !== process.env.NODE_ENV ? warning(
+	        didWarn,
+	        'withContext is deprecated and will be removed in a future version. ' +
+	        'Use a wrapper component with getChildContext instead.'
+	      ) : null);
+
+	      didWarn = true;
+	    }
+
+	    var result;
+	    var previousContext = ReactContext.current;
+	    ReactContext.current = assign({}, previousContext, newContext);
+	    try {
+	      result = scopedCallback();
+	    } finally {
+	      ReactContext.current = previousContext;
+	    }
+	    return result;
+	  }
+
+	};
+
+	module.exports = ReactContext;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule ReactCurrentOwner
+	 */
+
+	'use strict';
+
+	/**
+	 * Keeps track of the current owner.
+	 *
+	 * The current owner is the component who should own any components that are
+	 * currently being constructed.
+	 *
+	 * The depth indicate how many composite components are above this render level.
+	 */
+	var ReactCurrentOwner = {
+
+	  /**
+	   * @internal
+	   * @type {ReactComponent}
+	   */
+	  current: null
+
+	};
+
+	module.exports = ReactCurrentOwner;
+
+
+/***/ },
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2014-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Object.assign
+	 */
+
+	// https://people.mozilla.org/~jorendorff/es6-draft.html#sec-object.assign
+
+	'use strict';
+
+	function assign(target, sources) {
+	  if (target == null) {
+	    throw new TypeError('Object.assign target cannot be null or undefined');
+	  }
+
+	  var to = Object(target);
+	  var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
+	    var nextSource = arguments[nextIndex];
+	    if (nextSource == null) {
+	      continue;
+	    }
+
+	    var from = Object(nextSource);
+
+	    // We don't currently support accessors nor proxies. Therefore this
+	    // copy cannot throw. If we ever supported this then we must handle
+	    // exceptions and side-effects. We don't support symbols so they won't
+	    // be transferred.
+
+	    for (var key in from) {
+	      if (hasOwnProperty.call(from, key)) {
+	        to[key] = from[key];
+	      }
+	    }
+	  }
+
+	  return to;
+	}
+
+	module.exports = assign;
+
+
+/***/ },
+/* 188 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule joinClasses
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	/**
+	 * Combines multiple className strings into one.
+	 * http://jsperf.com/joinclasses-args-vs-array
+	 *
+	 * @param {...?string} classes
+	 * @return {string}
+	 */
+	function joinClasses(className/*, ... */) {
+	  if (!className) {
+	    className = '';
+	  }
+	  var nextClass;
+	  var argLength = arguments.length;
+	  if (argLength > 1) {
+	    for (var ii = 1; ii < argLength; ii++) {
+	      nextClass = arguments[ii];
+	      if (nextClass) {
+	        className = (className ? className + ' ' : '') + nextClass;
+	      }
+	    }
+	  }
+	  return className;
+	}
+
+	module.exports = joinClasses;
+
+
+/***/ },
+/* 189 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule normalizeWheel
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var UserAgent_DEPRECATED = __webpack_require__(205);
+
+	var isEventSupported = __webpack_require__(206);
+
+
+	// Reasonable defaults
+	var PIXEL_STEP  = 10;
+	var LINE_HEIGHT = 40;
+	var PAGE_HEIGHT = 800;
+
+	/**
+	 * Mouse wheel (and 2-finger trackpad) support on the web sucks.  It is
+	 * complicated, thus this doc is long and (hopefully) detailed enough to answer
+	 * your questions.
+	 *
+	 * If you need to react to the mouse wheel in a predictable way, this code is
+	 * like your bestest friend. * hugs *
+	 *
+	 * As of today, there are 4 DOM event types you can listen to:
+	 *
+	 *   'wheel'                -- Chrome(31+), FF(17+), IE(9+)
+	 *   'mousewheel'           -- Chrome, IE(6+), Opera, Safari
+	 *   'MozMousePixelScroll'  -- FF(3.5 only!) (2010-2013) -- don't bother!
+	 *   'DOMMouseScroll'       -- FF(0.9.7+) since 2003
+	 *
+	 * So what to do?  The is the best:
+	 *
+	 *   normalizeWheel.getEventType();
+	 *
+	 * In your event callback, use this code to get sane interpretation of the
+	 * deltas.  This code will return an object with properties:
+	 *
+	 *   spinX   -- normalized spin speed (use for zoom) - x plane
+	 *   spinY   -- " - y plane
+	 *   pixelX  -- normalized distance (to pixels) - x plane
+	 *   pixelY  -- " - y plane
+	 *
+	 * Wheel values are provided by the browser assuming you are using the wheel to
+	 * scroll a web page by a number of lines or pixels (or pages).  Values can vary
+	 * significantly on different platforms and browsers, forgetting that you can
+	 * scroll at different speeds.  Some devices (like trackpads) emit more events
+	 * at smaller increments with fine granularity, and some emit massive jumps with
+	 * linear speed or acceleration.
+	 *
+	 * This code does its best to normalize the deltas for you:
+	 *
+	 *   - spin is trying to normalize how far the wheel was spun (or trackpad
+	 *     dragged).  This is super useful for zoom support where you want to
+	 *     throw away the chunky scroll steps on the PC and make those equal to
+	 *     the slow and smooth tiny steps on the Mac. Key data: This code tries to
+	 *     resolve a single slow step on a wheel to 1.
+	 *
+	 *   - pixel is normalizing the desired scroll delta in pixel units.  You'll
+	 *     get the crazy differences between browsers, but at least it'll be in
+	 *     pixels!
+	 *
+	 *   - positive value indicates scrolling DOWN/RIGHT, negative UP/LEFT.  This
+	 *     should translate to positive value zooming IN, negative zooming OUT.
+	 *     This matches the newer 'wheel' event.
+	 *
+	 * Why are there spinX, spinY (or pixels)?
+	 *
+	 *   - spinX is a 2-finger side drag on the trackpad, and a shift + wheel turn
+	 *     with a mouse.  It results in side-scrolling in the browser by default.
+	 *
+	 *   - spinY is what you expect -- it's the classic axis of a mouse wheel.
+	 *
+	 *   - I dropped spinZ/pixelZ.  It is supported by the DOM 3 'wheel' event and
+	 *     probably is by browsers in conjunction with fancy 3D controllers .. but
+	 *     you know.
+	 *
+	 * Implementation info:
+	 *
+	 * Examples of 'wheel' event if you scroll slowly (down) by one step with an
+	 * average mouse:
+	 *
+	 *   OS X + Chrome  (mouse)     -    4   pixel delta  (wheelDelta -120)
+	 *   OS X + Safari  (mouse)     -  N/A   pixel delta  (wheelDelta  -12)
+	 *   OS X + Firefox (mouse)     -    0.1 line  delta  (wheelDelta  N/A)
+	 *   Win8 + Chrome  (mouse)     -  100   pixel delta  (wheelDelta -120)
+	 *   Win8 + Firefox (mouse)     -    3   line  delta  (wheelDelta -120)
+	 *
+	 * On the trackpad:
+	 *
+	 *   OS X + Chrome  (trackpad)  -    2   pixel delta  (wheelDelta   -6)
+	 *   OS X + Firefox (trackpad)  -    1   pixel delta  (wheelDelta  N/A)
+	 *
+	 * On other/older browsers.. it's more complicated as there can be multiple and
+	 * also missing delta values.
+	 *
+	 * The 'wheel' event is more standard:
+	 *
+	 * http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents
+	 *
+	 * The basics is that it includes a unit, deltaMode (pixels, lines, pages), and
+	 * deltaX, deltaY and deltaZ.  Some browsers provide other values to maintain
+	 * backward compatibility with older events.  Those other values help us
+	 * better normalize spin speed.  Example of what the browsers provide:
+	 *
+	 *                          | event.wheelDelta | event.detail
+	 *        ------------------+------------------+--------------
+	 *          Safari v5/OS X  |       -120       |       0
+	 *          Safari v5/Win7  |       -120       |       0
+	 *         Chrome v17/OS X  |       -120       |       0
+	 *         Chrome v17/Win7  |       -120       |       0
+	 *                IE9/Win7  |       -120       |   undefined
+	 *         Firefox v4/OS X  |     undefined    |       1
+	 *         Firefox v4/Win7  |     undefined    |       3
+	 *
+	 */
+	function normalizeWheel(/*object*/ event) /*object*/ {
+	  var sX = 0, sY = 0,       // spinX, spinY
+	      pX = 0, pY = 0;       // pixelX, pixelY
+
+	  // Legacy
+	  if ('detail'      in event) { sY = event.detail; }
+	  if ('wheelDelta'  in event) { sY = -event.wheelDelta / 120; }
+	  if ('wheelDeltaY' in event) { sY = -event.wheelDeltaY / 120; }
+	  if ('wheelDeltaX' in event) { sX = -event.wheelDeltaX / 120; }
+
+	  // side scrolling on FF with DOMMouseScroll
+	  if ( 'axis' in event && event.axis === event.HORIZONTAL_AXIS ) {
+	    sX = sY;
+	    sY = 0;
+	  }
+
+	  pX = sX * PIXEL_STEP;
+	  pY = sY * PIXEL_STEP;
+
+	  if ('deltaY' in event) { pY = event.deltaY; }
+	  if ('deltaX' in event) { pX = event.deltaX; }
+
+	  if ((pX || pY) && event.deltaMode) {
+	    if (event.deltaMode == 1) {          // delta in LINE units
+	      pX *= LINE_HEIGHT;
+	      pY *= LINE_HEIGHT;
+	    } else {                             // delta in PAGE units
+	      pX *= PAGE_HEIGHT;
+	      pY *= PAGE_HEIGHT;
+	    }
+	  }
+
+	  // Fall-back if spin cannot be determined
+	  if (pX && !sX) { sX = (pX < 1) ? -1 : 1; }
+	  if (pY && !sY) { sY = (pY < 1) ? -1 : 1; }
+
+	  return { spinX  : sX,
+	           spinY  : sY,
+	           pixelX : pX,
+	           pixelY : pY };
+	}
+
+
+	/**
+	 * The best combination if you prefer spinX + spinY normalization.  It favors
+	 * the older DOMMouseScroll for Firefox, as FF does not include wheelDelta with
+	 * 'wheel' event, making spin speed determination impossible.
+	 */
+	normalizeWheel.getEventType = function() /*string*/ {
+	  return (UserAgent_DEPRECATED.firefox())
+	           ? 'DOMMouseScroll'
+	           : (isEventSupported('wheel'))
+	               ? 'wheel'
+	               : 'mousewheel';
+	};
+
+	module.exports = normalizeWheel;
+
+
+/***/ },
+/* 190 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule requestAnimationFramePolyfill
+	 */
+
+	var emptyFunction = __webpack_require__(173);
+	var nativeRequestAnimationFrame = __webpack_require__(207);
+
+	var lastTime = 0;
+
+	/**
+	 * Here is the native and polyfill version of requestAnimationFrame.
+	 * Please don't use it directly and use requestAnimationFrame module instead.
+	 */
+	var requestAnimationFrame =
+	  nativeRequestAnimationFrame ||
+	  function(callback) {
+	    var currTime = Date.now();
+	    var timeDelay = Math.max(0, 16 - (currTime - lastTime));
+	    lastTime = currTime + timeDelay;
+	    return global.setTimeout(function() {
+	      callback(Date.now());
+	    }, timeDelay);
+	  };
+
+	// Works around a rare bug in Safari 6 where the first request is never invoked.
+	requestAnimationFrame(emptyFunction);
+
+	module.exports = requestAnimationFrame;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 191 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule DOMMouseMoveTracker
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var EventListener = __webpack_require__(208);
+
+	var cancelAnimationFramePolyfill = __webpack_require__(209);
+	var requestAnimationFramePolyfill = __webpack_require__(190);
+
+
+	  /**
+	   * onMove is the callback that will be called on every mouse move.
+	   * onMoveEnd is called on mouse up when movement has ended.
+	   */
+	  function DOMMouseMoveTracker(
+	onMove,
+	    /*function*/ onMoveEnd,
+	    /*DOMElement*/ domNode) {
+	    this.$DOMMouseMoveTracker_isDragging = false;
+	    this.$DOMMouseMoveTracker_animationFrameID = null;
+	    this.$DOMMouseMoveTracker_domNode = domNode;
+	    this.$DOMMouseMoveTracker_onMove = onMove;
+	    this.$DOMMouseMoveTracker_onMoveEnd = onMoveEnd;
+	    this.$DOMMouseMoveTracker_onMouseMove = this.$DOMMouseMoveTracker_onMouseMove.bind(this);
+	    this.$DOMMouseMoveTracker_onMouseUp = this.$DOMMouseMoveTracker_onMouseUp.bind(this);
+	    this.$DOMMouseMoveTracker_didMouseMove = this.$DOMMouseMoveTracker_didMouseMove.bind(this);
+	  }
+
+	  /**
+	   * This is to set up the listeners for listening to mouse move
+	   * and mouse up signaling the movement has ended. Please note that these
+	   * listeners are added at the document.body level. It takes in an event
+	   * in order to grab inital state.
+	   */
+	  DOMMouseMoveTracker.prototype.captureMouseMoves=function(event) {
+	    if (!this.$DOMMouseMoveTracker_eventMoveToken && !this.$DOMMouseMoveTracker_eventUpToken) {
+	      this.$DOMMouseMoveTracker_eventMoveToken = EventListener.listen(
+	        this.$DOMMouseMoveTracker_domNode,
+	        'mousemove',
+	        this.$DOMMouseMoveTracker_onMouseMove
+	      );
+	      this.$DOMMouseMoveTracker_eventUpToken = EventListener.listen(
+	        this.$DOMMouseMoveTracker_domNode,
+	        'mouseup',
+	        this.$DOMMouseMoveTracker_onMouseUp
+	      );
+	    }
+
+	    if (!this.$DOMMouseMoveTracker_isDragging) {
+	      this.$DOMMouseMoveTracker_deltaX = 0;
+	      this.$DOMMouseMoveTracker_deltaY = 0;
+	      this.$DOMMouseMoveTracker_isDragging = true;
+	      this.$DOMMouseMoveTracker_x = event.clientX;
+	      this.$DOMMouseMoveTracker_y = event.clientY;
+	    }
+	    event.preventDefault();
+	  };
+
+	  /**
+	   * These releases all of the listeners on document.body.
+	   */
+	  DOMMouseMoveTracker.prototype.releaseMouseMoves=function() {
+	    if (this.$DOMMouseMoveTracker_eventMoveToken && this.$DOMMouseMoveTracker_eventUpToken) {
+	      this.$DOMMouseMoveTracker_eventMoveToken.remove();
+	      this.$DOMMouseMoveTracker_eventMoveToken = null;
+	      this.$DOMMouseMoveTracker_eventUpToken.remove();
+	      this.$DOMMouseMoveTracker_eventUpToken = null;
+	    }
+
+	    if (this.$DOMMouseMoveTracker_animationFrameID !== null) {
+	      cancelAnimationFramePolyfill(this.$DOMMouseMoveTracker_animationFrameID);
+	      this.$DOMMouseMoveTracker_animationFrameID = null;
+	    }
+
+	    if (this.$DOMMouseMoveTracker_isDragging) {
+	      this.$DOMMouseMoveTracker_isDragging = false;
+	      this.$DOMMouseMoveTracker_x = null;
+	      this.$DOMMouseMoveTracker_y = null;
+	    }
+	  };
+
+	  /**
+	   * Returns whether or not if the mouse movement is being tracked.
+	   */
+	  DOMMouseMoveTracker.prototype.isDragging=function() {
+	    return this.$DOMMouseMoveTracker_isDragging;
+	  };
+
+	  /**
+	   * Calls onMove passed into constructor and updates internal state.
+	   */
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseMove=function(event) {
+	    var x = event.clientX;
+	    var y = event.clientY;
+
+	    this.$DOMMouseMoveTracker_deltaX += (x - this.$DOMMouseMoveTracker_x);
+	    this.$DOMMouseMoveTracker_deltaY += (y - this.$DOMMouseMoveTracker_y);
+
+	    if (this.$DOMMouseMoveTracker_animationFrameID === null) {
+	      // The mouse may move faster then the animation frame does.
+	      // Use `requestAnimationFramePolyfill` to avoid over-updating.
+	      this.$DOMMouseMoveTracker_animationFrameID =
+	        requestAnimationFramePolyfill(this.$DOMMouseMoveTracker_didMouseMove);
+	    }
+
+	    this.$DOMMouseMoveTracker_x = x;
+	    this.$DOMMouseMoveTracker_y = y;
+	    event.preventDefault();
+	  };
+
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_didMouseMove=function() {
+	    this.$DOMMouseMoveTracker_animationFrameID = null;
+	    this.$DOMMouseMoveTracker_onMove(this.$DOMMouseMoveTracker_deltaX, this.$DOMMouseMoveTracker_deltaY);
+	    this.$DOMMouseMoveTracker_deltaX = 0;
+	    this.$DOMMouseMoveTracker_deltaY = 0;
+	  };
+
+	  /**
+	   * Calls onMoveEnd passed into constructor and updates internal state.
+	   */
+	  DOMMouseMoveTracker.prototype.$DOMMouseMoveTracker_onMouseUp=function() {
+	    if (this.$DOMMouseMoveTracker_animationFrameID) {
+	      this.$DOMMouseMoveTracker_didMouseMove();
+	    }
+	    this.$DOMMouseMoveTracker_onMoveEnd();
+	  };
+
+
+	module.exports = DOMMouseMoveTracker;
+
+
+/***/ },
+/* 192 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Keys
+	 */
+
+	module.exports = {
+	  BACKSPACE:  8,
+	  TAB:        9,
+	  RETURN:    13,
+	  ALT:       18,
+	  ESC:       27,
+	  SPACE:     32,
+	  PAGE_UP:   33,
+	  PAGE_DOWN: 34,
+	  END:       35,
+	  HOME:      36,
+	  LEFT:      37,
+	  UP:        38,
+	  RIGHT:     39,
+	  DOWN:      40,
+	  DELETE:    46,
+	  COMMA:    188,
+	  PERIOD:   190,
+	  A:         65,
+	  Z:         90,
+	  ZERO:      48,
+	  NUMPAD_0:  96,
+	  NUMPAD_9: 105
+	};
+
+
+/***/ },
+/* 193 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule cssVar
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var CSS_VARS = {
+	  'scrollbar-face-active-color': '#7d7d7d',
+	  'scrollbar-face-color': '#c2c2c2',
+	  'scrollbar-face-margin': '4px',
+	  'scrollbar-face-radius': '6px',
+	  'scrollbar-size': '15px',
+	  'scrollbar-size-large': '17px',
+	  'scrollbar-track-color': 'rgba(255, 255, 255, 0.8)',
+	};
+
+	/**
+	 * @param {string} name
+	 */
+	function cssVar(name) {
+	  if (CSS_VARS.hasOwnProperty(name)) {
+	    return CSS_VARS[name];
+	  }
+
+	  throw new Error(
+	    'cssVar' + '("' + name + '"): Unexpected class transformation.'
+	  );
+	}
+
+	cssVar.CSS_VARS = CSS_VARS;
+
+	module.exports = cssVar;
+
+
+/***/ },
+/* 194 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableRowBuffer
+	 * @typechecks
+	 */
+	'use strict';
+
+	var IntegerBufferSet = __webpack_require__(210);
+
+	var clamp = __webpack_require__(196);
+	var invariant = __webpack_require__(174);
+	var MIN_BUFFER_ROWS = 5;
+	var MAX_BUFFER_ROWS = 15;
+
+	// FixedDataTableRowBuffer is a helper class that executes row buffering
+	// logic for FixedDataTable. It figures out which rows should be rendered
+	// and in which positions.
+
+	  function FixedDataTableRowBuffer(
+	rowsCount,
+	    /*number*/  defaultRowHeight,
+	    /*number*/ viewportHeight,
+	    /*?function*/ rowHeightGetter)
+	   {
+	    invariant(
+	      defaultRowHeight !== 0,
+	      "defaultRowHeight musn't be equal 0 in FixedDataTableRowBuffer"
+	    );
+
+	    this.$FixedDataTableRowBuffer_bufferSet = new IntegerBufferSet();
+	    this.$FixedDataTableRowBuffer_defaultRowHeight = defaultRowHeight;
+	    this.$FixedDataTableRowBuffer_viewportRowsBegin = 0;
+	    this.$FixedDataTableRowBuffer_viewportRowsEnd = 0;
+	    this.$FixedDataTableRowBuffer_maxVisibleRowCount = Math.ceil(viewportHeight / defaultRowHeight) + 1;
+	    this.$FixedDataTableRowBuffer_bufferRowsCount = clamp(
+	      MIN_BUFFER_ROWS,
+	      Math.floor(this.$FixedDataTableRowBuffer_maxVisibleRowCount/2),
+	      MAX_BUFFER_ROWS
+	    );
+	    this.$FixedDataTableRowBuffer_rowsCount = rowsCount;
+	    this.$FixedDataTableRowBuffer_rowHeightGetter = rowHeightGetter;
+	    this.$FixedDataTableRowBuffer_rows = [];
+	    this.$FixedDataTableRowBuffer_viewportHeight = viewportHeight;
+
+	    this.getRows = this.getRows.bind(this);
+	    this.getRowsWithUpdatedBuffer = this.getRowsWithUpdatedBuffer.bind(this);
+	  }
+
+	  FixedDataTableRowBuffer.prototype.getRowsWithUpdatedBuffer=function()  {
+	    var remainingBufferRows = 2 * this.$FixedDataTableRowBuffer_bufferRowsCount;
+	    var bufferRowIndex =
+	      Math.max(this.$FixedDataTableRowBuffer_viewportRowsBegin - this.$FixedDataTableRowBuffer_bufferRowsCount, 0);
+	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_viewportRowsBegin) {
+	      this.$FixedDataTableRowBuffer_addRowToBuffer(
+	        bufferRowIndex,
+	        this.$FixedDataTableRowBuffer_viewportHeight,
+	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
+	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
+	      );
+	      bufferRowIndex++;
+	      remainingBufferRows--;
+	    }
+	    bufferRowIndex = this.$FixedDataTableRowBuffer_viewportRowsEnd;
+	    while (bufferRowIndex < this.$FixedDataTableRowBuffer_rowsCount && remainingBufferRows > 0) {
+	      this.$FixedDataTableRowBuffer_addRowToBuffer(
+	        bufferRowIndex,
+	        this.$FixedDataTableRowBuffer_viewportHeight,
+	        this.$FixedDataTableRowBuffer_viewportRowsBegin,
+	        this.$FixedDataTableRowBuffer_viewportRowsEnd -1
+	      );
+	      bufferRowIndex++;
+	      remainingBufferRows--;
+	    }
+	    return this.$FixedDataTableRowBuffer_rows;
+	  };
+
+	  FixedDataTableRowBuffer.prototype.getRows=function(
+	firstRowIndex,
+	    /*number*/ firstRowOffset)
+	    {
+	    // Update offsets of all rows to move them outside of viewport. Later we
+	    // will bring rows that we should show to their right offsets.
+	    this.$FixedDataTableRowBuffer_hideAllRows();
+
+	    var top = firstRowOffset;
+	    var totalHeight = top;
+	    var rowIndex = firstRowIndex;
+	    var endIndex =
+	      Math.min(firstRowIndex + this.$FixedDataTableRowBuffer_maxVisibleRowCount, this.$FixedDataTableRowBuffer_rowsCount);
+
+	    this.$FixedDataTableRowBuffer_viewportRowsBegin = firstRowIndex;
+	    while (rowIndex < endIndex ||
+	        (totalHeight < this.$FixedDataTableRowBuffer_viewportHeight && rowIndex < this.$FixedDataTableRowBuffer_rowsCount)) {
+	      this.$FixedDataTableRowBuffer_addRowToBuffer(
+	        rowIndex,
+	        totalHeight,
+	        firstRowIndex,
+	        endIndex - 1
+	      );
+	      totalHeight += this.$FixedDataTableRowBuffer_rowHeightGetter(rowIndex);
+	      ++rowIndex;
+	      // Store index after the last viewport row as end, to be able to
+	      // distinguish when there are no rows rendered in viewport
+	      this.$FixedDataTableRowBuffer_viewportRowsEnd = rowIndex;
+	    }
+
+	    return this.$FixedDataTableRowBuffer_rows;
+	  };
+
+	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_addRowToBuffer=function(
+	rowIndex,
+	    /*number*/ offsetTop,
+	    /*number*/ firstViewportRowIndex,
+	    /*number*/ lastViewportRowIndex)
+	   {
+	      var rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getValuePosition(rowIndex);
+	      var viewportRowsCount = lastViewportRowIndex - firstViewportRowIndex + 1;
+	      var allowedRowsCount = viewportRowsCount + this.$FixedDataTableRowBuffer_bufferRowsCount * 2;
+	      if (rowPosition === null &&
+	          this.$FixedDataTableRowBuffer_bufferSet.getSize() >= allowedRowsCount) {
+	        rowPosition =
+	          this.$FixedDataTableRowBuffer_bufferSet.replaceFurthestValuePosition(
+	            firstViewportRowIndex,
+	            lastViewportRowIndex,
+	            rowIndex
+	          );
+	      }
+	      if (rowPosition === null) {
+	        // We can't reuse any of existing positions for this row. We have to
+	        // create new position
+	        rowPosition = this.$FixedDataTableRowBuffer_bufferSet.getNewPositionForValue(rowIndex);
+	        this.$FixedDataTableRowBuffer_rows[rowPosition] = {
+	          rowIndex:rowIndex,
+	          offsetTop:offsetTop,
+	        };
+	      } else {
+	        // This row already is in the table with rowPosition position or it
+	        // can replace row that is in that position
+	        this.$FixedDataTableRowBuffer_rows[rowPosition].rowIndex = rowIndex;
+	        this.$FixedDataTableRowBuffer_rows[rowPosition].offsetTop = offsetTop;
+	      }
+	  };
+
+	  FixedDataTableRowBuffer.prototype.$FixedDataTableRowBuffer_hideAllRows=function() {
+	    var i = this.$FixedDataTableRowBuffer_rows.length - 1;
+	    while (i > -1) {
+	      this.$FixedDataTableRowBuffer_rows[i].offsetTop = this.$FixedDataTableRowBuffer_viewportHeight;
+	      i--;
+	    }
+	  };
+
+
+	module.exports = FixedDataTableRowBuffer;
+
+
+/***/ },
+/* 195 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule joinClasses
+	 * @typechecks static-only
+	 */
+
+	'use strict';
+
+	/**
+	 * Combines multiple className strings into one.
+	 * http://jsperf.com/joinclasses-args-vs-array
+	 *
+	 * @param {...?string} classes
+	 * @return {string}
+	 */
+	function joinClasses(className/*, ... */) {
+	  if (!className) {
+	    className = '';
+	  }
+	  var nextClass;
+	  var argLength = arguments.length;
+	  if (argLength > 1) {
+	    for (var ii = 1; ii < argLength; ii++) {
+	      nextClass = arguments[ii];
+	      if (nextClass) {
+	        className = (className ? className + ' ' : '') + nextClass;
+	      }
+	    }
+	  }
+	  return className;
+	}
+
+	module.exports = joinClasses;
+
+
+/***/ },
+/* 196 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule clamp
+	 * @typechecks
+	 */
+
+	 /**
+	  * @param {number} min
+	  * @param {number} value
+	  * @param {number} max
+	  * @return {number}
+	  */
+	function clamp(min, value, max) {
+	  if (value < min) {
+	    return min;
+	  }
+	  if (value > max) {
+	    return max;
+	  }
+	  return value;
+	}
+
+	module.exports = clamp;
+
+
+/***/ },
+/* 197 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableCellGroup.react
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	var FixedDataTableHelper = __webpack_require__(159);
+	var ImmutableObject = __webpack_require__(211);
+	var React = __webpack_require__(161);
+	var ReactComponentWithPureRenderMixin = __webpack_require__(162);
+	var FixedDataTableCell = __webpack_require__(212);
+
+	var cx = __webpack_require__(171);
+	var renderToString = FixedDataTableHelper.renderToString;
+	var translateDOMPositionXY = __webpack_require__(176);
+
+	var PropTypes = React.PropTypes;
+
+	var EMPTY_OBJECT = new ImmutableObject({});
+
+	var FixedDataTableCellGroupImpl = React.createClass({displayName: "FixedDataTableCellGroupImpl",
+	  mixins: [ReactComponentWithPureRenderMixin],
+
+	  propTypes: {
+
+	    /**
+	     * Array of <FixedDataTableColumn />.
+	     */
+	    columns: PropTypes.array.isRequired,
+
+	    /**
+	     * The row data to render. The data format can be a simple Map object
+	     * or an Array of data.
+	     */
+	    data: PropTypes.oneOfType([
+	      PropTypes.object,
+	      PropTypes.array
+	    ]),
+
+	    onColumnResize: PropTypes.func,
+
+	    rowHeight: PropTypes.number.isRequired,
+
+	    rowIndex: PropTypes.number.isRequired,
+
+	    zIndex: PropTypes.number.isRequired,
+	  },
+
+	  render:function() /*object*/ {
+	    var props = this.props;
+	    var columns = props.columns;
+	    var cells = [];
+	    var width = 0;
+
+	    for (var i = 0, j = columns.length; i < j; i++) {
+	      var columnProps = columns[i].props;
+	      width += columnProps.width;
+	      var key = 'cell_' + i;
+	      cells.push(
+	        this._renderCell(
+	          props.data,
+	          props.rowIndex,
+	          props.rowHeight,
+	          columnProps,
+	          width,
+	          key
+	        )
+	      );
+	    }
+
+	    var style = {
+	      width: width,
+	      height: props.height,
+	      zIndex: props.zIndex
+	    };
+
+	    return (
+	      React.createElement("div", {className: cx('fixedDataTableCellGroup/cellGroup'), style: style}, 
+	        cells
+	      )
+	    );
+	  },
+
+	  _renderCell:function(
+	    /*object|array*/ rowData,
+	    /*number*/ rowIndex,
+	    /*number*/ height,
+	    /*object*/ columnProps,
+	    /*?number*/ widthOffset,
+	    /*string*/ key
+	  ) /*object*/ {
+	    var cellRenderer = columnProps.cellRenderer || renderToString;
+	    var columnData = columnProps.columnData || EMPTY_OBJECT;
+	    var cellDataKey = columnProps.dataKey;
+	    var isFooterCell = columnProps.isFooterCell;
+	    var isHeaderCell = columnProps.isHeaderCell;
+	    var cellData;
+
+	    if (isHeaderCell || isFooterCell) {
+	      cellData = rowData[cellDataKey];
+	    } else {
+	      var cellDataGetter = columnProps.cellDataGetter;
+	      cellData = cellDataGetter ?
+	        cellDataGetter(cellDataKey, rowData) :
+	        rowData[cellDataKey];
+	    }
+
+	    var cellIsResizable = columnProps.isResizable &&
+	      this.props.onColumnResize;
+	    var onColumnResize = cellIsResizable ? this.props.onColumnResize : null;
+
+	    return (
+	      React.createElement(FixedDataTableCell, {
+	        align: columnProps.align, 
+	        cellData: cellData, 
+	        cellDataKey: cellDataKey, 
+	        cellRenderer: cellRenderer, 
+	        className: columnProps.cellClassName, 
+	        columnData: columnData, 
+	        height: height, 
+	        isFooterCell: isFooterCell, 
+	        isHeaderCell: isHeaderCell, 
+	        key: key, 
+	        maxWidth: columnProps.maxWidth, 
+	        minWidth: columnProps.minWidth, 
+	        onColumnResize: onColumnResize, 
+	        rowData: rowData, 
+	        rowIndex: rowIndex, 
+	        width: columnProps.width, 
+	        widthOffset: widthOffset}
+	      )
+	    );
+	  },
+	});
+
+	var FixedDataTableCellGroup = React.createClass({displayName: "FixedDataTableCellGroup",
+	  mixins: [ReactComponentWithPureRenderMixin],
+
+	  propTypes: {
+	    /**
+	     * Height of the row.
+	     */
+	    height: PropTypes.number.isRequired,
+
+	    left: PropTypes.number,
+
+	    /**
+	     * Z-index on which the row will be displayed. Used e.g. for keeping
+	     * header and footer in front of other rows.
+	     */
+	    zIndex: PropTypes.number.isRequired,
+	  },
+
+	  render:function() /*object*/ {
+	    var $__0=   this.props,left=$__0.left,props=(function(source, exclusion) {var rest = {};var hasOwn = Object.prototype.hasOwnProperty;if (source == null) {throw new TypeError();}for (var key in source) {if (hasOwn.call(source, key) && !hasOwn.call(exclusion, key)) {rest[key] = source[key];}}return rest;})($__0,{left:1});
+
+	    var style = {
+	      height: props.height,
+	    };
+
+	    if (left) {
+	      translateDOMPositionXY(style, left, 0);
+	    }
+
+	    var onColumnResize = props.onColumnResize ? this._onColumnResize : null;
+
+	    return (
+	      React.createElement("div", {
+	        style: style, 
+	        className: cx('fixedDataTableCellGroup/cellGroupWrapper')}, 
+	        React.createElement(FixedDataTableCellGroupImpl, React.__spread({}, 
+	          props, 
+	          {onColumnResize: onColumnResize})
+	        )
+	      )
+	    );
+	  },
+
+	  _onColumnResize:function(
+	    /*number*/ widthOffset,
+	    /*number*/ width,
+	    /*?number*/ minWidth,
+	    /*?number*/ maxWidth,
+	    /*string|number*/ cellDataKey,
+	    /*object*/ event
+	  ) {
+	    this.props.onColumnResize && this.props.onColumnResize(
+	      widthOffset,
+	      this.props.left,
+	      width,
+	      minWidth,
+	      maxWidth,
+	      cellDataKey,
+	      event
+	    );
+	  },
+	});
+
+
+	module.exports = FixedDataTableCellGroup;
+
+
+/***/ },
+/* 198 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule PrefixIntervalTree
+	 * @typechecks
+	 */
+
+	"use strict";
+
+	/**
+	 * An interval tree that allows to set a number at index and given the value
+	 * find the largest index for which prefix sum is greater than or equal to value
+	 * (lower bound) or greater than value (upper bound)
+	 * Complexity:
+	 *   construct: O(n)
+	 *   query: O(log(n))
+	 *   memory: O(log(n)),
+	 * where n is leafCount from the constructor
+	 */
+
+	  function PrefixIntervalTree(leafCount, /*?number*/ initialLeafValue) {
+	    var internalLeafCount = this.getInternalLeafCount(leafCount);
+	    this.$PrefixIntervalTree_leafCount = leafCount;
+	    this.$PrefixIntervalTree_internalLeafCount = internalLeafCount;
+	    var nodeCount = 2 * internalLeafCount;
+	    var Int32Array = global.Int32Array || Array;
+	    this.$PrefixIntervalTree_value = new Int32Array(nodeCount);
+	    this.$PrefixIntervalTree_initTables(initialLeafValue || 0);
+
+	    this.get = this.get.bind(this);
+	    this.set = this.set.bind(this);
+	    this.lowerBound = this.lowerBound.bind(this);
+	    this.upperBound = this.upperBound.bind(this);
+	  }
+
+	  PrefixIntervalTree.prototype.getInternalLeafCount=function(leafCount)  {
+	    var internalLeafCount = 1;
+	    while (internalLeafCount < leafCount) {
+	      internalLeafCount *= 2;
+	    }
+	    return internalLeafCount;
+	  };
+
+	  PrefixIntervalTree.prototype.$PrefixIntervalTree_initTables=function(initialLeafValue) {
+	    var firstLeaf = this.$PrefixIntervalTree_internalLeafCount;
+	    var lastLeaf = this.$PrefixIntervalTree_internalLeafCount + this.$PrefixIntervalTree_leafCount - 1;
+	    var i;
+	    for (i = firstLeaf; i <= lastLeaf; ++i) {
+	      this.$PrefixIntervalTree_value[i] = initialLeafValue;
+	    }
+	    var lastInternalNode = this.$PrefixIntervalTree_internalLeafCount - 1;
+	    for (i = lastInternalNode; i > 0; --i) {
+	      this.$PrefixIntervalTree_value[i] =  this.$PrefixIntervalTree_value[2 * i] + this.$PrefixIntervalTree_value[2 * i + 1];
+	    }
+	  };
+
+	  PrefixIntervalTree.prototype.set=function(position, /*number*/ value) {
+	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
+	    this.$PrefixIntervalTree_value[nodeIndex] = value;
+	    nodeIndex = Math.floor(nodeIndex / 2);
+	    while (nodeIndex !== 0) {
+	      this.$PrefixIntervalTree_value[nodeIndex] =
+	        this.$PrefixIntervalTree_value[2 * nodeIndex] + this.$PrefixIntervalTree_value[2 * nodeIndex + 1];
+	      nodeIndex = Math.floor(nodeIndex / 2);
+	    }
+	  };
+
+	  /**
+	   * Returns an object {index, value} for given position (including value at
+	   * specified position), or the same for last position if provided position
+	   * is out of range
+	   */
+	  PrefixIntervalTree.prototype.get=function(position)  {
+	    position = Math.min(position, this.$PrefixIntervalTree_leafCount);
+	    var nodeIndex = position + this.$PrefixIntervalTree_internalLeafCount;
+	    var result = this.$PrefixIntervalTree_value[nodeIndex];
+	    while (nodeIndex > 1) {
+	      if (nodeIndex % 2 === 1) {
+	        result = this.$PrefixIntervalTree_value[nodeIndex - 1] + result;
+	      }
+	      nodeIndex = Math.floor(nodeIndex / 2);
+	    }
+	    return {index: position, value: result};
+	  };
+
+	  /**
+	   * Returns an object {index, value} where index is index of leaf that was
+	   * found by upper bound algorithm. Upper bound finds first element for which
+	   * value is greater than argument
+	   */
+	  PrefixIntervalTree.prototype.upperBound=function(value)  {
+	    var result = this.$PrefixIntervalTree_upperBoundImpl(1, 0, this.$PrefixIntervalTree_internalLeafCount - 1, value);
+	    if (result.index > this.$PrefixIntervalTree_leafCount - 1) {
+	      result.index = this.$PrefixIntervalTree_leafCount - 1;
+	    }
+	    return result;
+	  };
+
+	  /**
+	   * Returns result in the same format as upperBound, but finds first element
+	   * for which value is greater than or equal to argument
+	   */
+	  PrefixIntervalTree.prototype.lowerBound=function(value)  {
+	    var result = this.upperBound(value);
+	    if (result.value > value && result.index > 0) {
+	      var previousValue =
+	        result.value - this.$PrefixIntervalTree_value[this.$PrefixIntervalTree_internalLeafCount + result.index];
+	      if (previousValue === value) {
+	        result.value = previousValue;
+	        result.index--;
+	      }
+	    }
+	    return result;
+	  };
+
+	  PrefixIntervalTree.prototype.$PrefixIntervalTree_upperBoundImpl=function(
+	nodeIndex,
+	    /*number*/ nodeIntervalBegin,
+	    /*number*/ nodeIntervalEnd,
+	    /*number*/ value)
+	    {
+	    if (nodeIntervalBegin === nodeIntervalEnd) {
+	      return {
+	        index: nodeIndex - this.$PrefixIntervalTree_internalLeafCount,
+	        value: this.$PrefixIntervalTree_value[nodeIndex],
+	      };
+	    }
+
+	    var nodeIntervalMidpoint =
+	      Math.floor((nodeIntervalBegin + nodeIntervalEnd + 1) / 2);
+	    if (value < this.$PrefixIntervalTree_value[nodeIndex * 2]) {
+	      return this.$PrefixIntervalTree_upperBoundImpl(
+	        2 * nodeIndex,
+	        nodeIntervalBegin,
+	        nodeIntervalMidpoint - 1,
+	        value
+	      );
+	    } else {
+	      var result = this.$PrefixIntervalTree_upperBoundImpl(
+	        2 * nodeIndex + 1,
+	        nodeIntervalMidpoint,
+	        nodeIntervalEnd,
+	        value - this.$PrefixIntervalTree_value[2 * nodeIndex]
+	      );
+	      result.value += this.$PrefixIntervalTree_value[2 * nodeIndex];
+	      return result;
+	    }
+	  };
+
+
+	module.exports = PrefixIntervalTree;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
 /* 199 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule BrowserSupportCore
+	 */
+
+
+	var getVendorPrefixedName = __webpack_require__(200);
+
+	var BrowserSupportCore = {
+	  /**
+	   * @return {bool} True if browser supports css animations.
+	   */
+	  hasCSSAnimations: function() {
+	    return !!getVendorPrefixedName('animationName');
+	  },
+
+	  /**
+	   * @return {bool} True if browser supports css transforms.
+	   */
+	  hasCSSTransforms: function() {
+	    return !!getVendorPrefixedName('transform');
+	  },
+
+	  /**
+	   * @return {bool} True if browser supports css 3d transforms.
+	   */
+	  hasCSS3DTransforms: function() {
+	    return !!getVendorPrefixedName('perspective');
+	  },
+
+	  /**
+	   * @return {bool} True if browser supports css transitions.
+	   */
+	  hasCSSTransitions: function() {
+	    return !!getVendorPrefixedName('transition');
+	  },
+	};
+
+	module.exports = BrowserSupportCore;
+
+
+/***/ },
+/* 200 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule getVendorPrefixedName
+	 * @typechecks
+	 */
+
+	var ExecutionEnvironment = __webpack_require__(139);
+
+	var camelize = __webpack_require__(213);
+	var invariant = __webpack_require__(174);
+
+	var memoized = {};
+	var prefixes = ['Webkit', 'ms', 'Moz', 'O'];
+	var prefixRegex = new RegExp('^(' + prefixes.join('|') + ')');
+	var testStyle =
+	  ExecutionEnvironment.canUseDOM ? document.createElement('div').style : {};
+
+	function getWithPrefix(name) {
+	  for (var i = 0; i < prefixes.length; i++) {
+	    var prefixedName = prefixes[i] + name;
+	    if (prefixedName in testStyle) {
+	      return prefixedName;
+	    }
+	  }
+	  return null;
+	}
+
+	/**
+	 * @param {string} property Name of a css property to check for.
+	 * @return {?string} property name supported in the browser, or null if not
+	 * supported.
+	 */
+	function getVendorPrefixedName(property) {
+	  var name = camelize(property);
+	  if (memoized[name] === undefined) {
+	    var capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+	    if (prefixRegex.test(capitalizedName)) {
+	      invariant(
+	        false,
+	        'getVendorPrefixedName must only be called with unprefixed' +
+	        'CSS property names. It was called with %s', property
+	      );
+	    }
+	    memoized[name] =
+	      (name in testStyle) ? name : getWithPrefix(capitalizedName);
+	  }
+	  return memoized[name];
+	}
+
+	module.exports = getVendorPrefixedName;
+
+
+/***/ },
+/* 201 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -26600,7 +26901,7 @@
 	}));
 
 /***/ },
-/* 200 */
+/* 202 */
 /***/ function(module, exports, __webpack_require__) {
 
 	if (typeof Object.create === 'function') {
@@ -26629,33 +26930,82 @@
 
 
 /***/ },
-/* 201 */
+/* 203 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(global) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
 	 * All rights reserved.
 	 *
 	 * This source code is licensed under the BSD-style license found in the
 	 * LICENSE file in the root directory of this source tree. An additional grant
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 *
-	 * @providesModule nativeRequestAnimationFrame
+	 * @providesModule shallowEqual
 	 */
 
-	var nativeRequestAnimationFrame =
-	  global.requestAnimationFrame       ||
-	  global.webkitRequestAnimationFrame ||
-	  global.mozRequestAnimationFrame    ||
-	  global.oRequestAnimationFrame      ||
-	  global.msRequestAnimationFrame;
+	'use strict';
 
-	module.exports = nativeRequestAnimationFrame;
+	/**
+	 * Performs equality by iterating through keys on an object and returning
+	 * false when any key has values which are not strictly equal between
+	 * objA and objB. Returns true when the values of all keys are strictly equal.
+	 *
+	 * @return {boolean}
+	 */
+	function shallowEqual(objA, objB) {
+	  if (objA === objB) {
+	    return true;
+	  }
+	  var key;
+	  // Test for A's keys different from B.
+	  for (key in objA) {
+	    if (objA.hasOwnProperty(key) &&
+	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
+	      return false;
+	    }
+	  }
+	  // Test for B's keys missing from A.
+	  for (key in objB) {
+	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
+	      return false;
+	    }
+	  }
+	  return true;
+	}
 
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+	module.exports = shallowEqual;
+
 
 /***/ },
-/* 202 */
+/* 204 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule emptyObject
+	 */
+
+	"use strict";
+
+	var emptyObject = {};
+
+	if ("production" !== process.env.NODE_ENV) {
+	  Object.freeze(emptyObject);
+	}
+
+	module.exports = emptyObject;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+
+/***/ },
+/* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -26948,7 +27298,7 @@
 
 
 /***/ },
-/* 203 */
+/* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -26964,7 +27314,7 @@
 
 	'use strict';
 
-	var ExecutionEnvironment = __webpack_require__(126);
+	var ExecutionEnvironment = __webpack_require__(139);
 
 	var useHasFeature;
 	if (ExecutionEnvironment.canUseDOM) {
@@ -27017,7 +27367,33 @@
 
 
 /***/ },
-/* 204 */
+/* 207 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule nativeRequestAnimationFrame
+	 */
+
+	var nativeRequestAnimationFrame =
+	  global.requestAnimationFrame       ||
+	  global.webkitRequestAnimationFrame ||
+	  global.mozRequestAnimationFrame    ||
+	  global.oRequestAnimationFrame      ||
+	  global.msRequestAnimationFrame;
+
+	module.exports = nativeRequestAnimationFrame;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -27032,7 +27408,7 @@
 	 * @typechecks
 	 */
 
-	var emptyFunction = __webpack_require__(157);
+	var emptyFunction = __webpack_require__(173);
 
 	/**
 	 * Upstream version of event listener. Does not take into account specific
@@ -27100,10 +27476,10 @@
 
 	module.exports = EventListener;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 205 */
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {/**
@@ -27134,55 +27510,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 206 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule shallowEqual
-	 */
-
-	'use strict';
-
-	/**
-	 * Performs equality by iterating through keys on an object and returning
-	 * false when any key has values which are not strictly equal between
-	 * objA and objB. Returns true when the values of all keys are strictly equal.
-	 *
-	 * @return {boolean}
-	 */
-	function shallowEqual(objA, objB) {
-	  if (objA === objB) {
-	    return true;
-	  }
-	  var key;
-	  // Test for A's keys different from B.
-	  for (key in objA) {
-	    if (objA.hasOwnProperty(key) &&
-	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
-	      return false;
-	    }
-	  }
-	  // Test for B's keys missing from A.
-	  for (key in objB) {
-	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
-	      return false;
-	    }
-	  }
-	  return true;
-	}
-
-	module.exports = shallowEqual;
-
-
-/***/ },
-/* 207 */
+/* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -27199,9 +27527,9 @@
 
 	"use strict";
 
-	var Heap = __webpack_require__(212);
+	var Heap = __webpack_require__(214);
 
-	var invariant = __webpack_require__(158);
+	var invariant = __webpack_require__(174);
 
 	// Data structure that allows to store values and assign positions to them
 	// in a way to minimize changing positions of stored values when new ones are
@@ -27370,7 +27698,7 @@
 
 
 /***/ },
-/* 208 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -27387,11 +27715,11 @@
 
 	"use strict";
 
-	var ImmutableValue = __webpack_require__(213);
+	var ImmutableValue = __webpack_require__(215);
 
-	var invariant = __webpack_require__(158);
-	var keyOf = __webpack_require__(214);
-	var mergeHelpers = __webpack_require__(215);
+	var invariant = __webpack_require__(174);
+	var keyOf = __webpack_require__(216);
+	var mergeHelpers = __webpack_require__(217);
 
 	var checkMergeObjectArgs = mergeHelpers.checkMergeObjectArgs;
 	var isTerminal = mergeHelpers.isTerminal;
@@ -27554,10 +27882,10 @@
 
 	module.exports = ImmutableObject;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ },
-/* 209 */
+/* 212 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -27572,12 +27900,12 @@
 	 * @typechecks
 	 */
 
-	var ImmutableObject = __webpack_require__(208);
-	var React = __webpack_require__(145);
+	var ImmutableObject = __webpack_require__(211);
+	var React = __webpack_require__(161);
 
-	var cloneWithProps = __webpack_require__(154);
-	var cx = __webpack_require__(155);
-	var joinClasses = __webpack_require__(183);
+	var cloneWithProps = __webpack_require__(170);
+	var cx = __webpack_require__(171);
+	var joinClasses = __webpack_require__(195);
 
 	var PropTypes = React.PropTypes;
 
@@ -27779,7 +28107,7 @@
 
 
 /***/ },
-/* 210 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -27815,34 +28143,7 @@
 
 
 /***/ },
-/* 211 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule emptyObject
-	 */
-
-	"use strict";
-
-	var emptyObject = {};
-
-	if ("production" !== process.env.NODE_ENV) {
-	  Object.freeze(emptyObject);
-	}
-
-	module.exports = emptyObject;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(122)))
-
-/***/ },
-/* 212 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28002,7 +28303,7 @@
 
 
 /***/ },
-/* 213 */
+/* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28019,9 +28320,9 @@
 
 	"use strict";
 
-	var invariant = __webpack_require__(158);
-	var isNode = __webpack_require__(217);
-	var keyOf = __webpack_require__(214);
+	var invariant = __webpack_require__(174);
+	var isNode = __webpack_require__(218);
+	var keyOf = __webpack_require__(216);
 
 	var SECRET_KEY = keyOf({_DONT_EVER_TYPE_THIS_SECRET_KEY: null});
 
@@ -28135,7 +28436,7 @@
 
 
 /***/ },
-/* 214 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28175,7 +28476,7 @@
 
 
 /***/ },
-/* 215 */
+/* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28193,8 +28494,8 @@
 
 	"use strict";
 
-	var invariant = __webpack_require__(158);
-	var keyMirror = __webpack_require__(216);
+	var invariant = __webpack_require__(174);
+	var keyMirror = __webpack_require__(219);
 
 	/**
 	 * Maximum number of levels to traverse. Will catch circular structures.
@@ -28321,7 +28622,39 @@
 
 
 /***/ },
-/* 216 */
+/* 218 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule isNode
+	 * @typechecks
+	 */
+
+	/**
+	 * @param {*} object The object to check.
+	 * @return {boolean} Whether or not the object is a DOM node.
+	 */
+	function isNode(object) {
+	  return !!(object && (
+	    typeof Node === 'function' ? object instanceof Node :
+	      typeof object === 'object' &&
+	      typeof object.nodeType === 'number' &&
+	      typeof object.nodeName === 'string'
+	  ));
+	}
+
+	module.exports = isNode;
+
+
+/***/ },
+/* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28338,7 +28671,7 @@
 
 	'use strict';
 
-	var invariant = __webpack_require__(158);
+	var invariant = __webpack_require__(174);
 
 	/**
 	 * Constructs an enumeration with keys equal to their value.
@@ -28375,140 +28708,6 @@
 	};
 
 	module.exports = keyMirror;
-
-
-/***/ },
-/* 217 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule isNode
-	 * @typechecks
-	 */
-
-	/**
-	 * @param {*} object The object to check.
-	 * @return {boolean} Whether or not the object is a DOM node.
-	 */
-	function isNode(object) {
-	  return !!(object && (
-	    typeof Node === 'function' ? object instanceof Node :
-	      typeof object === 'object' &&
-	      typeof object.nodeType === 'number' &&
-	      typeof object.nodeName === 'string'
-	  ));
-	}
-
-	module.exports = isNode;
-
-
-/***/ },
-/* 218 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var classNames = __webpack_require__(219);
-
-	/**
-	 *  Bootstrap requires
-	 */
-	var BS = __webpack_require__(30);
-	var Button = BS.Button;
-	var Modal = BS.Modal;
-	var TabbedArea = BS.TabbedArea;
-	var TabPane = BS.TabPane;
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	    handleCreateCard: function() {
-		this.props.onRequestHide();
-		this.props.onCreateCard();
-	    },
-
-	    render: function(){
-		return (
-		    React.createElement(Modal, React.__spread({},  this.props, {bsSize: "large", title: "Select a card to be added", animation: true}), 
-		      React.createElement("div", {className: "modal-body"}, 
-
-			React.createElement(TabbedArea, {defaultActiveKey: 2}, 
-			  React.createElement(TabPane, {eventKey: 1, tab: "Tab 1"}, "TabPane 1 content"), 
-			  React.createElement(TabPane, {eventKey: 2, tab: "Tab 2"}, "TabPane 2 content"), 
-			  React.createElement(TabPane, {eventKey: 3, tab: "Tab 3", disabled: true}, "TabPane 3 content")
-			)
-
-		      ), 
-		      React.createElement("div", {className: "modal-footer"}, 
-			React.createElement(Button, {onClick: this.props.onRequestHide}, "Close"), 
-			React.createElement(Button, {onClick: this.handleCreateCard, bsStyle: "primary"}, "Create Card")
-		      )
-		    )
-		);
-
-	    }
-	});
-
-
-/***/ },
-/* 219 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	  Copyright (c) 2015 Jed Watson.
-	  Licensed under the MIT License (MIT), see
-	  http://jedwatson.github.io/classnames
-	*/
-
-	function classNames () {
-		'use strict';
-
-		var classes = '';
-
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (!arg) continue;
-
-			var argType = typeof arg;
-
-			if ('string' === argType || 'number' === argType) {
-				classes += ' ' + arg;
-
-			} else if (Array.isArray(arg)) {
-				classes += ' ' + classNames.apply(null, arg);
-
-			} else if ('object' === argType) {
-				for (var key in arg) {
-					if (arg.hasOwnProperty(key) && arg[key]) {
-						classes += ' ' + key;
-					}
-				}
-			}
-		}
-
-		return classes.substr(1);
-	}
-
-	// safely export classNames for node / browserify
-	if (typeof module !== 'undefined' && module.exports) {
-		module.exports = classNames;
-	}
-
-	/* global define */
-	// safely export classNames for RequireJS
-	if (true) {
-		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
-			return classNames;
-		}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}
 
 
 /***/ }
