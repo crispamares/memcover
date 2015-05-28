@@ -46,6 +46,40 @@ var scatterData = [
 ];
 
 
+var Store = {
+    getSchema: function(tableName) {
+	var rpc = Context.instance().rpc;
+
+ 	function getQuantitativeAttrs(schema) {
+	    var attrs = _.pick(schema.attributes, function(value, key) {
+		return value.attribute_type === "QUANTITATIVE" && ! value.shape.length;
+	    });
+	    return _(attrs).keys().sort().value();
+	}
+
+	var promise = rpc.call("TableSrv.schema", [tableName])
+	    .then(function(schema) {
+		console.log('***', schema);
+		schema.attributes = _.mapValues(schema.attributes, function(v,k){v.name = k; return v;});
+		schema.quantitative_attrs = getQuantitativeAttrs(schema);
+
+		return schema;
+	    })
+	    .catch(function(e){console.error(e);});
+
+	return promise;
+    },
+
+    getData: function(tableName) {
+	var rpc = Context.instance().rpc;
+
+	var promise = rpc.call("TableSrv.get_data", [tableName, "rows"])
+	    .catch(function(e){console.error(e);});
+	return promise;
+    },
+}
+
+
 module.exports = React.createClass({
     getInitialState: function() {
 
@@ -86,32 +120,15 @@ module.exports = React.createClass({
     },
 
     componentDidMount: function() {
-	var rpc = Context.instance().rpc;
 	var self = this;
 	
 	this.subscribeMorphoSelection();
 
-	rpc.call("TableSrv.schema", [this.props.morphoTable])
-	    .then(function(schema){
-		console.log('***', schema);
-		schema.attributes = _.mapValues(schema.attributes, function(v,k){v.name = k; return v;});
-		schema.quantitative_attrs = getQuantitativeAttrs(schema);
+	Store.getSchema(this.props.morphoTable)
+	    .then(function(schema){ self.setState({"schema": schema}); });
 
-		function getQuantitativeAttrs(schema) {
-		    var attrs = _.pick(schema.attributes, function(value, key) {
-			return value.attribute_type === "QUANTITATIVE" && ! value.shape.length;
-		    });
-		    return _(attrs).keys().sort().value();
-		}
-
-		self.setState({"schema": schema});
-	    })
-	    .catch(function(e){console.error(e);});
- 
-
-	rpc.call("TableSrv.get_data", [this.props.morphoTable, "rows"])
-	    .then(function(rows){self.setState({"measuresData": rows});})
-	    .catch(function(e){console.error(e);});
+	Store.getData(this.props.morphoTable)
+	    .then(function(rows){ self.setState({"measuresData": rows}); });
 
 	rpc.call('DynSelectSrv.new_categorical_condition', [this.props.morphoSelection, "region"])
 	    .then(function(condition){
