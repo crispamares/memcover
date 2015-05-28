@@ -86,45 +86,39 @@ var DataTableMenu = React.createClass({
     //     ]
     // }
     mixins: [React.addons.LinkedStateMixin],
-
     getInitialState: function() {
-	return {
-	    table: this.props.options.table,
-	    columns: this.props.options.columns
-	};
-    },
-
-    componentWillReceiveProps: function(nextProps) {
-	this.setState({
-	    table: nextProps.options.table,
-	    columns: nextProps.options.columns
-	});
+	return {table: this.props.options.tables[0]};
     },
 
     getConfig: function() {
 	var self = this;
+	var columns = this.props.options.columns[ this.state.table ].map(
+	    function(column, i){return {name: column.name, included: self.refs["col"+i].getChecked()};})
+
 	return {
 	    table: this.refs.table.getValue(),
-	    columns: this.props.options.columns.map(
-		function(column, i){return {name: column.name, included: self.refs["col"+i].getChecked()};})
+	    columns: columns
 	};
     },
 
     render: function() {
+	var self = this;
 	var options = this.props.options;
+	console.log("options:", this.props.options);
+	var columns = options.columns[this.state.table];
 	return (
             <form>
-	      <Input type="select" label="Data Table" ref="table">
+	      <Input type="select" label="Data Table" ref="table" valueLink={self.linkState('table')}>
 	        {
-		    options.tables.map(function(table){
-			return (<option value={table}> {table} </option>);
+		    options.tables.map(function(table, i){
+			return (<option  key={"table" + i} value={table}> {table} </option>);
 		    })
 		 }
               </Input>
               <label> Columns: </label>
 	      {
-		  options.columns.map(function(column, i){
-		      return (<Input type='checkbox' ref={"col" + i} 
+		  columns.map(function(column, i){
+		      return (<Input type='checkbox' ref={"col" + i}  key={"col" + i}
 				      label={column.name} defaultChecked={column.included}/>);
 		  })
 	      }

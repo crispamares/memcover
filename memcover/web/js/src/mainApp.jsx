@@ -104,14 +104,13 @@ module.exports = React.createClass({
 	];
 
 	var tables = {};
-	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: []};
-	tables[this.props.clinicTable] = {name: this.props.clinicTable, data: []};
+	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: [], schema: {attributes:{}}};
+	tables[this.props.clinicTable] = {name: this.props.clinicTable, data: [], schema: {attributes:{}}};
 
 	return {
 	    "schema": {attributes:{}},
 	    "morphoTable": this.props.morphoTable,
 	    "tables": tables,
-	    "measuresData": [],
 	    "regionsCondition": null,
 	    "includedRegions": [],
 	    "layout": layout,
@@ -121,15 +120,24 @@ module.exports = React.createClass({
 
     componentDidMount: function() {
 	var self = this;
+
+	//this.subscribeMorphoSelection();
+
+	_.forEach(this.state.tables, function(v,k){
+	    Store.getSchema(v.name).then(function(schema){ 
+		self.state.tables[v.name].schema = schema;
+		self.setState({"tables": self.state.tables}); 
+	    });
+
+	    Store.getData(v.name).then(function(rows){ 
+		self.state.tables[v.name].data = rows;
+		self.setState({"tables": self.state.tables}); 
+	    });
+
+	});
 	
-	this.subscribeMorphoSelection();
 
-	Store.getSchema(this.props.morphoTable)
-	    .then(function(schema){ self.setState({"schema": schema}); });
-
-	Store.getData(this.props.morphoTable)
-	    .then(function(rows){ self.setState({"measuresData": rows}); });
-
+	var rpc = Context.instance().rpc;
 	rpc.call('DynSelectSrv.new_categorical_condition', [this.props.morphoSelection, "region"])
 	    .then(function(condition){
 		return rpc.call('ConditionSrv.include_all', [condition])
@@ -155,7 +163,7 @@ module.exports = React.createClass({
 		})
 		.then(function(tableView){
 		    return rpc.call("TableSrv.get_data", [tableView, "rows"])
-			.then(function(rows){self.setState({"measuresData": rows});})
+			.then(function(rows){self.setState({"measuresData": rows});}) //BAD TABLE
 		})
 		.catch(function(e){console.error(e);});
 	});
@@ -220,9 +228,11 @@ module.exports = React.createClass({
 	    {kind: "table", title: "Data Table", 
 		options: { 
 		    tables: _.keys(self.state.tables),
-		    columns: _.map(self.state.schema.attributes, 
-			function(value, key){return {name: key, included: true};}
-		    )
+		    columns: _.mapValues(self.state.tables, function(table){
+			return _.map(table.schema.attributes, 
+			    function(value, key){return {name: key, included: true};}
+			);
+		    })
 		}
 	    }
 	];
@@ -261,7 +271,7 @@ module.exports = React.createClass({
 			 case "table":
 			     // var columnNames = _.keys(self.state.schema.attributes);
 			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
-			     component = (<DataTable {...size} {...card.config} rows={self.state.measuresData} columnNames={columnNames}/>);
+			     component = (<DataTable {...size} {...card.config} rows={self.state.tables[card.config.table].data} columnNames={columnNames}/>);
 			     break;
 		     }
 

@@ -31,4 +31,4 @@ rpc.call('init', [])
 	React.render( <App {...props}></App>, document.getElementById('content'));
 
     })
-    .catch(function(e){console.error(e);});
+    .catch(function(e){console.error("ERROR: " + e.message); });

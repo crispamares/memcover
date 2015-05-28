@@ -25,7 +25,7 @@ class App(MetaApp):
         Front.instance().get_method('DynSelectSrv.expose_dselect')(morpho_dselect)
 
         clinic_table_name = 'clinic'
-        clinic_table = init_table(clinic_table_name, 'schema')
+        clinic_table = init_table(clinic_table_name, 'clinic_schema')
         clinic_dselect = DynSelect('clinic_dselect', clinic_table, setop='AND')
         Front.instance().get_method('TableSrv.expose_table')(clinic_table)
         Front.instance().get_method('DynSelectSrv.expose_dselect')(clinic_dselect)
