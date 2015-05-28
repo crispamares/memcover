@@ -23,9 +23,11 @@ var hub = context.hub;
 rpc.call('init', [])
     .then(function(names){
 	var props = {
-	    morphoTable: names["main_table"],
-	    morphoSelection: names["main_selection"]
-	};
+	    morphoTable: names["morpho_table"],
+	    morphoSelection: names["morpho_selection"],
+	    clinicTable: names["clinic_table"],
+	    clinicSelection: names["clinic_selection"]
+ 	};
 	React.render( <App {...props}></App>, document.getElementById('content'));
 
     })

@@ -71,6 +71,7 @@ module.exports = React.createClass({
 
 	var tables = {};
 	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: []};
+	tables[this.props.clinicTable] = {name: this.props.clinicTable, data: []};
 
 	return {
 	    "schema": {attributes:{}},
@@ -201,7 +202,7 @@ module.exports = React.createClass({
 	var creationMenuTabs = [
 	    {kind: "table", title: "Data Table", 
 		options: { 
-		    tables:[this.props.morphoTable],
+		    tables: _.keys(self.state.tables),
 		    columns: _.map(self.state.schema.attributes, 
 			function(value, key){return {name: key, included: true};}
 		    )

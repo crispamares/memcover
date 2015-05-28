@@ -1,0 +1,11 @@
+Patients,REFERENCIA,Gender,Braak Scale,CERAD Scale,GDS Scale,Postmortem delay (hours),Age(years),Age at diagnosis,Disease progression (years),MMSE (1),MMSE (2),Family history of dementia,Details on family history of dementia,Language impairment,Apraxia,Visuospatial Agnosia,Cerebral atrophy (CAT/CT),Details of the cerebral atrophy (CAT/CT),Cardiovascular diseases,Details of the cardiovascular diseases,Initial behaviour alteration,Depression/Anxiety/Mood disorders,Diabetes,Hypercholesterolemia
+Az01,BK-0713,Male,VI,C,N/A,4.5,90,80,10,14,N/A,SI,Alzheimer,SI,SI,N/A,SI,Global,N/A,N/A,N/A,N/A,N/A,N/A
+Az02,BK-0819,Female,V,C,4,2,82,70,12,15,0,NO,N/A,SI,SI,SI,SI ,Cortico-subcortical,SI,Arterial hypertension,SI,SI,N/A,N/A
+Az03,BK-0997,Female,V,C,N/A,5.5,81,79,2,N/A,N/A,NO,N/A,N/A,N/A,SI,N/A,N/A,N/A,N/A,SI,SI,N/A,N/A
+Az04,BK-1043,Female,IV,B,N/A,5.5,87,78,9,N/A,N/A,SI,Alzheimer,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+Az05,BK-1071,Female,V/VI,C,N/A,4,83,69,14,23,4,SI,Dementia,SI,SI,N/A,SI,Fronto-temporal,SI,Coronary Heart Disease,N/A,SI,N/A,N/A
+Az06,BK-1153,Female,V,C,N/A,5,76,69,7,18,4,SI,Dementia,SI,NO,N/A,SI ,Global,N/A,N/A,NO,SI,SI,N/A
+Az07,BK-1161,Female,VI,C,N/A,4.25,89,89,0,N/A,N/A,SI,Alzheimer,N/A,N/A,N/A,N/A,N/A,SI,Arterial hypertension,N/A,N/A,N/A,N/A
+Az08,BK-1251,Female,VI,C,6,5.75,85,77,8,7,N/A,NO,N/A,SI,SI,N/A,SI ,Cortico-subcortical / Cerebelosa,SI,Arterial hypertension,NO,NO,SI,SI
+Az09,BK-1316,Female,VI,C,3,5,84,76,8,18,8,SI,Alzheimer,SI,SI,SI,SI ,Cortico-subcortical,SI,Arterial hypertension,NO,NO,N/A,SI
+Az10,BK-1343,Female,V,C,N/A,5,80,71,9,27,21,SI,MCI,SI,N/A,SI,SI ,Basal nuclei ,N/A,N/A,N/A,SI,N/A,N/A
