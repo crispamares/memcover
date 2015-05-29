@@ -13,7 +13,7 @@ var SimpleVis = require('./simpleVis');
 var Card = require('./card');
 var CardCreationMenu = require('./cardCreationMenu');
 
-var PCPChart = reactify(require('./pcpChart'));
+var PCPChart = reactify(require('./pcpChart'), "PCPChart");
 var ScatterChart = require('react-d3/scatterchart').ScatterChart;
 
 /**
@@ -223,18 +223,15 @@ module.exports = React.createClass({
 	    return rowHeight * height - 60;
 	};
 
-
+	var tables = _.keys(self.state.tables);
+	var columns = _.mapValues(self.state.tables, function(table){
+	    return _.map(table.schema.attributes, 
+		function(value, key){return {name: key, included: true};}
+	    );
+	});
 	var creationMenuTabs = [
-	    {kind: "table", title: "Data Table", 
-		options: { 
-		    tables: _.keys(self.state.tables),
-		    columns: _.mapValues(self.state.tables, function(table){
-			return _.map(table.schema.attributes, 
-			    function(value, key){return {name: key, included: true};}
-			);
-		    })
-		}
-	    }
+	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
+	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } }
 	];
 
 	return (
@@ -272,6 +269,17 @@ module.exports = React.createClass({
 			     // var columnNames = _.keys(self.state.schema.attributes);
 			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
 			     component = (<DataTable {...size} {...card.config} rows={self.state.tables[card.config.table].data} columnNames={columnNames}/>);
+			     break;
+			 case "pcp":
+			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
+			     var attributes = _.map(columnNames, function(c){return self.state.tables[card.config.table].schema.attributes[c];});
+			     component = (<PCPChart {...size}
+				 data={self.state.tables[card.config.table].data} 
+				 margin={{top: 50, right: 40, bottom: 40, left: 40}}
+				 attributes={attributes}
+				 onBrush={function(extent){/*console.log(extent);*/}}
+				 >
+			     </PCPChart>);
 			     break;
 		     }
 

@@ -29,6 +29,10 @@ var CardCreationMenu = React.createClass({
 	    case "table":
 		card = {kind:"table", title: config.table, config: config}
 		break;
+	    case "pcp":
+		card = {kind:"pcp", title: config.table, config: config}
+		break;
+
 	}
 
 	this.props.onRequestHide();
@@ -52,8 +56,10 @@ var CardCreationMenu = React.createClass({
 			  var tabNode = null;
 			  switch (tab.kind) {
 			      case "table":
+			      case "pcp":
 				  tabNode = <DataTableMenu ref={tab.kind} options={tab.options}/>;
 				  break;
+
 			  }
 			  return (
 			      <TabPane eventKey={tab.kind} tab={tab.title}>

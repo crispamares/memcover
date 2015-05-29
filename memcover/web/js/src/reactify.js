@@ -1,5 +1,5 @@
 var ChartContainerMixin = require('./chartContainerMixin');
 
-module.exports = function(chart){
-    return React.createClass({mixins : [ChartContainerMixin, chart]});
+module.exports = function(chart, displayName){
+    return React.createClass({displayName: displayName, mixins : [ChartContainerMixin, chart]});
 };
