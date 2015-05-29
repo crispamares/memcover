@@ -82,18 +82,8 @@ var Store = {
 
 module.exports = React.createClass({
     getInitialState: function() {
-
-//	var layout = [
-//	    {x: 8, y: 0, w: 4, h: 6, i:"c0", handle:".card-title"}, 
-//	    {x: 3, y: 0, w: 5, h: 6, i:"c1", handle:".card-title"}, 
-//	    {x: 0, y: 0, w: 3, h: 6, i:"c2", handle:".card-title"}, 
-//	    {x: 0, y: 1, w: 12, h: 9, i:"c3", isDraggable:false}, 
-//	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
-//	];
-
 	var layout = [
 //	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
-//	    {x: 0, y: 2, w: 12, h: 10, i:"table", isDraggable:false}
 	];
 
 	var cards = [
@@ -229,9 +219,21 @@ module.exports = React.createClass({
 		function(value, key){return {name: key, included: true};}
 	    );
 	});
+	var quantitativeColumns = _.mapValues(self.state.tables, function(table){
+	    return _.chain(table.schema.attributes)
+		.filter({attribute_type: "QUANTITATIVE"})
+		.map(function(value, key){return {name: value.name};})
+		.value();
+	});
 	var creationMenuTabs = [
 	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
-	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } }
+	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } },
+	    { kind: "scatter", title: "Scatter Plot", 
+		options: { 
+		    tables: tables, 
+		    columns: quantitativeColumns
+		} 
+	    }
 	];
 
 	return (
@@ -262,17 +264,16 @@ module.exports = React.createClass({
 		     var component = null;
 		     var size = {width: computeWidth(card.key), height: computeHeight(card.key)};
 		     switch (card.kind) {
-			 case "scatter":
-			     component = (<ScatterChart {...size} {...card.config} />);
-			     break;
 			 case "table":
 			     // var columnNames = _.keys(self.state.schema.attributes);
 			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
-			     component = (<DataTable {...size} {...card.config} rows={self.state.tables[card.config.table].data} columnNames={columnNames}/>);
+			     component = (<DataTable {...size} {...card.config} 
+				 rows={self.state.tables[card.config.table].data} columnNames={columnNames}/>);
 			     break;
 			 case "pcp":
 			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
-			     var attributes = _.map(columnNames, function(c){return self.state.tables[card.config.table].schema.attributes[c];});
+			     var attributes = _.map(columnNames, function(c){
+				 return self.state.tables[card.config.table].schema.attributes[c];});
 			     component = (<PCPChart {...size}
 				 data={self.state.tables[card.config.table].data} 
 				 margin={{top: 50, right: 40, bottom: 40, left: 40}}
@@ -281,13 +282,22 @@ module.exports = React.createClass({
 				 >
 			     </PCPChart>);
 			     break;
+			 case "scatter":
+			     var values = _.map(self.state.tables[card.config.table].data, function(row) {
+				 return {x: row[card.config.xColumn], y: row[card.config.yColumn]};
+			     });
+			     var data = [{ name: "series1", values: values}];
+			     
+			     component = (<ScatterChart {...size} {...card.config} data={data}/>);
+			     break;
+
 		     }
 
 		     return (
 			 <div key={card.key}>
-			 <Card key={card.key} title={card.title}>
-			 {component}
-			 </Card>
+			   <Card key={card.key} title={card.title}>
+			     {component}
+			   </Card>
 			 </div>			      
 		     );
 		 })
