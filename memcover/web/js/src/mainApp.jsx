@@ -27,24 +27,6 @@ var Button = BS.Button;
 var Glyphicon = BS.Glyphicon;
 var ModalTrigger = BS.ModalTrigger;
 
-var scatterData = [
-    {
-	name: "series1",
-	values: [ 
-	    { x: 4.5, y:	10093.0355127938 },
-	    { x: 2, y:	9053.6006591816 },
-	    { x: 5.5, y:	9709.7132826258 },
-	    { x: 5.5, y:	4411.9646756317 },
-	    { x: 4, y:	11871.6073443496 },
-	    { x: 5, y:	8503.093763325 },
-	    { x: 4.25, y:	9717.1988192271 },
-	    { x: 4.75, y:	9739.9604497065 },
-	    { x: 5, y:	7204.7118005418 },
-	    { x: 5, y:	9935.2958133543 } 
-	]
-    },
-];
-
 
 var Store = {
     getSchema: function(tableName) {
@@ -99,7 +81,6 @@ module.exports = React.createClass({
 
 	return {
 	    "schema": {attributes:{}},
-	    "morphoTable": this.props.morphoTable,
 	    "tables": tables,
 	    "regionsCondition": null,
 	    "includedRegions": [],
@@ -186,7 +167,7 @@ module.exports = React.createClass({
 	var Y = Math.max(0, _.max(this.state.layout, 'y')) + 1;
 	var key = "c" + this.state.layout.length
 	card.key = key;
-	this.state.layout.push({x:0, y: Y, w: 5, h: 6, i:key, handle:".card-title"});
+	this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-title"});
 	this.state.cards.push(card);
 	this.setState({layout:this.state.layout, cards: this.state.cards});
 
@@ -228,12 +209,8 @@ module.exports = React.createClass({
 	var creationMenuTabs = [
 	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
 	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } },
-	    { kind: "scatter", title: "Scatter Plot", 
-		options: { 
-		    tables: tables, 
-		    columns: quantitativeColumns
-		} 
-	    }
+	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
+	    { kind: "regions", title: "Regions", options: {}}
 	];
 
 	return (
@@ -290,7 +267,13 @@ module.exports = React.createClass({
 			     
 			     component = (<ScatterChart {...size} {...card.config} data={data}/>);
 			     break;
-
+			 case "regions":
+			     component = (<BrainRegions {...size} 
+						  includedRegions={self.state.includedRegions}
+						  onClickRegion={self.toggleRegion}>
+			     </BrainRegions>);
+			     
+			     break;
 		     }
 
 		     return (

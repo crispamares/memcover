@@ -27,7 +27,7 @@ var CardCreationMenu = React.createClass({
 	var card = {kind:this.state.activeTab, title: config.table, config: config};
 
 	switch (this.state.activeTab) {
-	    // Nothing special for: ["table", "pcp"]
+	    // Nothing special for: ["table", "pcp", "regions"]
 	    case "scatter":
 		card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
 		break;
@@ -60,7 +60,9 @@ var CardCreationMenu = React.createClass({
 			      case "scatter":
 				  tabNode = <ScatterMenu ref={tab.kind} options={tab.options}/>;
 				  break;
-
+			      case "regions":
+				  tabNode = <DummyMenu ref={tab.kind} options={tab.options}/>;
+				  break;
 			  }
 			  return (
 			      <TabPane eventKey={tab.kind} tab={tab.title}>
@@ -121,6 +123,13 @@ var RadioColumnsMenuItem = React.createClass({
 
 	)}    
 });
+
+
+var DummyMenu = React.createClass({
+    getConfig: function() { return {};},
+    render: function() { return (<span></span>);}
+});
+
 
 var DataTableMenu = React.createClass({
 
@@ -194,13 +203,26 @@ var ScatterMenu = React.createClass({
 	};
     },
 
+    handleTableChange: function(table) {
+	this.setState({
+	    table: table,
+	    xColumn: this.props.options.columns[table][0].name,
+	    yColumn: this.props.options.columns[table][0].name,
+	});
+    },
+
     render: function() {
 	var options = this.props.options;
 	var columns = options.columns[this.state.table];
+	var tableLink = {
+	    value: this.state.table,
+	    requestChange: this.handleTableChange
+	};
+
 	return (
             <div>
               <form>
- 		<TableMenuItem tableLink={this.linkState('table')} tables={options.tables} /> 
+ 		<TableMenuItem tableLink={tableLink} tables={options.tables} /> 
 	      </form>
 
 	      <Input type='select' label='X Coordinate' ref="x" valueLink={this.linkState('xColumn')} >

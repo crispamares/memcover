@@ -125,24 +125,6 @@
 	var Glyphicon = BS.Glyphicon;
 	var ModalTrigger = BS.ModalTrigger;
 
-	var scatterData = [
-	    {
-		name: "series1",
-		values: [ 
-		    { x: 4.5, y:	10093.0355127938 },
-		    { x: 2, y:	9053.6006591816 },
-		    { x: 5.5, y:	9709.7132826258 },
-		    { x: 5.5, y:	4411.9646756317 },
-		    { x: 4, y:	11871.6073443496 },
-		    { x: 5, y:	8503.093763325 },
-		    { x: 4.25, y:	9717.1988192271 },
-		    { x: 4.75, y:	9739.9604497065 },
-		    { x: 5, y:	7204.7118005418 },
-		    { x: 5, y:	9935.2958133543 } 
-		]
-	    },
-	];
-
 
 	var Store = {
 	    getSchema: function(tableName) {
@@ -197,7 +179,6 @@
 
 		return {
 		    "schema": {attributes:{}},
-		    "morphoTable": this.props.morphoTable,
 		    "tables": tables,
 		    "regionsCondition": null,
 		    "includedRegions": [],
@@ -284,7 +265,7 @@
 		var Y = Math.max(0, _.max(this.state.layout, 'y')) + 1;
 		var key = "c" + this.state.layout.length
 		card.key = key;
-		this.state.layout.push({x:0, y: Y, w: 5, h: 6, i:key, handle:".card-title"});
+		this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-title"});
 		this.state.cards.push(card);
 		this.setState({layout:this.state.layout, cards: this.state.cards});
 
@@ -326,12 +307,8 @@
 		var creationMenuTabs = [
 		    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
 		    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } },
-		    { kind: "scatter", title: "Scatter Plot", 
-			options: { 
-			    tables: tables, 
-			    columns: quantitativeColumns
-			} 
-		    }
+		    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
+		    { kind: "regions", title: "Regions", options: {}}
 		];
 
 		return (
@@ -388,7 +365,13 @@
 				     
 				     component = (React.createElement(ScatterChart, React.__spread({},  size,  card.config, {data: data})));
 				     break;
-
+				 case "regions":
+				     component = (React.createElement(BrainRegions, React.__spread({},  size, 
+							  {includedRegions: self.state.includedRegions, 
+							  onClickRegion: self.toggleRegion})
+				     ));
+				     
+				     break;
 			     }
 
 			     return (
@@ -1010,7 +993,7 @@
 		      React.createElement("object", {ref: "container", id: "svgobject", 
 			      type: "image/svg+xml", 
 			      width: this.props.width, 
-			      height: this.props.heght, 
+			      height: this.props.height, 
 			      data: "assets/hipo_foto.svg"}
 		      )
 	            )
@@ -1134,7 +1117,7 @@
 		var card = {kind:this.state.activeTab, title: config.table, config: config};
 
 		switch (this.state.activeTab) {
-		    // Nothing special for: ["table", "pcp"]
+		    // Nothing special for: ["table", "pcp", "regions"]
 		    case "scatter":
 			card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
 			break;
@@ -1167,7 +1150,9 @@
 				      case "scatter":
 					  tabNode = React.createElement(ScatterMenu, {ref: tab.kind, options: tab.options});
 					  break;
-
+				      case "regions":
+					  tabNode = React.createElement(DummyMenu, {ref: tab.kind, options: tab.options});
+					  break;
 				  }
 				  return (
 				      React.createElement(TabPane, {eventKey: tab.kind, tab: tab.title}, 
@@ -1228,6 +1213,13 @@
 
 		)}    
 	});
+
+
+	var DummyMenu = React.createClass({displayName: "DummyMenu",
+	    getConfig: function() { return {};},
+	    render: function() { return (React.createElement("span", null));}
+	});
+
 
 	var DataTableMenu = React.createClass({displayName: "DataTableMenu",
 
@@ -1301,13 +1293,26 @@
 		};
 	    },
 
+	    handleTableChange: function(table) {
+		this.setState({
+		    table: table,
+		    xColumn: this.props.options.columns[table][0].name,
+		    yColumn: this.props.options.columns[table][0].name,
+		});
+	    },
+
 	    render: function() {
 		var options = this.props.options;
 		var columns = options.columns[this.state.table];
+		var tableLink = {
+		    value: this.state.table,
+		    requestChange: this.handleTableChange
+		};
+
 		return (
 	            React.createElement("div", null, 
 	              React.createElement("form", null, 
-	 		React.createElement(TableMenuItem, {tableLink: this.linkState('table'), tables: options.tables})
+	 		React.createElement(TableMenuItem, {tableLink: tableLink, tables: options.tables})
 		      ), 
 
 		      React.createElement(Input, {type: "select", label: "X Coordinate", ref: "x", valueLink: this.linkState('xColumn')}, 
