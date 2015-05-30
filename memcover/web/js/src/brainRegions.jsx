@@ -38,21 +38,22 @@ module.exports = React.createClass({
     update: function(svg, props, state) {
 	var self = this;
 
-	svg.selectAll("path.region")
-	    .datum(function() { return this.dataset; })
+	var region = svg.selectAll("g.region")
+	    .datum(function() { return this.id; })
 	    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
-	    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d.region);};})
-	    .style("fill", function(d){return (_.include(props.includedRegions, d.region)) ? "rgb(164, 0, 0)" : "#EEE";});
+	    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d);};});
 
-	svg.selectAll("text")
+	region.selectAll("path")
+	    .datum(function() { return this.parentNode.id; })
+	    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "rgb(164, 0, 0)" : "#EEE";});
+
+	region.selectAll("text")
 	    .datum(function() { return this.className; })
 	    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
 	
 	props.includedRegions.forEach(function(region){
-	    svg.selectAll("text."+region)
-		.style("fill", "white");
+	    svg.select("#"+region).select("text").style("fill", "white");
 	});
-;
 
     },
 

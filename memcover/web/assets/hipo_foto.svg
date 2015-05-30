@@ -6237,130 +6237,112 @@ Sgmoz1IzXX0xHg/p7JHv+/3/A9SqohlPsSWuAAAAAElFTkSuQmCC
        id="image8076"
        x="26.712231"
        y="93.762756" />
-    <flowRoot
-       transform="translate(26.712231,93.762741)"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       id="flowRoot8090"
-       xml:space="preserve"><flowRegion
-         id="flowRegion8092"><rect
-           y="305.76013"
-           x="349.51279"
-           height="83.842659"
-           width="282.84271"
-           id="rect8094" /></flowRegion><flowPara
-         id="flowPara8096"></flowPara></flowRoot>    <text
-       id="text8106"
-       y="386.79846"
-       x="134.56937"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       xml:space="preserve"><tspan
-         y="386.79846"
-         x="134.56937"
-         id="tspan8108" /></text>
   </g>
   <g
      id="layer2">
     <g
-       style="stroke:none"
-       id="g8194">
+	style="stroke:none"
+	id="g8194">
       <path
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-         d="m 240.59892,100.77504 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
-         id="rect8133" />
+          style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#EEEEEE;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+          d="m 240.59892,100.77504 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
+          id="rect8133" />
       <text
-         xml:space="preserve"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         x="239.99998"
-         y="125.70901"
-         id="text8098"><tspan
-           id="tspan8100"
-           x="239.99998"
-           y="125.70901"
-           style="font-size:25px;fill:#ffffff;stroke:none">CA2</tspan></text>
+          xml:space="preserve"
+	  class="region"
+          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#333333;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+          x="239.99998"
+          y="125.70901"
+          id="text8098"><tspan
+			    id="tspan8100"
+			    x="239.99998"
+			    y="125.70901"
+			    style="font-size:25px">CA2</tspan></text>
     </g>
     <g
-       style="stroke:none"
-       id="g8199">
+	class="region"
+	style="stroke:none"
+	id="CA3">
       <path
 	  class="region"
-         id="use8137"
-         d="m 360.58642,185.06081 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
+          id="use8137"
+          d="m 360.58642,185.06081 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
+          style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
       <text
 	  class="CA3"
-         id="text8102"
-         y="209.99478"
-         x="360"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           style="font-size:25px;fill:#ffffff;stroke:none"
-           y="209.99478"
-           x="360"
-           id="tspan8104">CA3</tspan></text>
+          id="text8102"
+          y="209.99478"
+          x="360"
+          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+          xml:space="preserve"><tspan
+				   style="font-size:25px"
+				   y="209.99478"
+				   x="360"
+				   id="tspan8104">CA3</tspan></text>
     </g>
     <g
-       style="stroke:none"
-       id="g8214">
+	style="stroke:none"
+	class="region"
+	id="CA1">
       <path
 	  class="region"
-         id="use8139"
-         d="m 103.37214,271.48937 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
+          id="use8139"
+          d="m 103.37214,271.48937 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
+          style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
       <text
 	  class="CA1"
 	  xml:space="preserve"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         x="104.28571"
-         y="296.42334"
-         id="text8110"><tspan
-           id="tspan8112"
-           x="104.28571"
-           y="296.42334"
-           style="font-size:25px;fill:#ffffff;stroke:none">CA1</tspan></text>
+          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+          x="104.28571"
+          y="296.42334"
+          id="text8110"><tspan
+			    id="tspan8112"
+			    x="104.28571"
+			    y="296.42334"
+			    style="font-size:25px">CA1</tspan></text>
     </g>
     <g
-       style="stroke:none"
-       id="g8204">
+	class="region"
+	style="stroke:none"
+	id="DG">
       <path
 	  class="region"
-         id="use8141"
-         d="m 270.02587,270.04831 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
+          id="use8141"
+          d="m 270.02587,270.04831 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
+          style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
       <text
 	  class="DG"
-         id="text8114"
-         y="294.99478"
-         x="275"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           style="font-size:25px;fill:#ffffff;stroke:none"
-           y="294.99478"
-           x="275"
-           id="tspan8116">DG</tspan></text>
+          id="text8114"
+          y="294.99478"
+          x="275"
+          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+          xml:space="preserve"><tspan
+				   style="font-size:25px"
+				   y="294.99478"
+				   x="275"
+				   id="tspan8116">DG</tspan></text>
     </g>
     <g
-       id="g8222">
-      <g
-         id="g8209"
-         style="stroke:none">
-        <path
-	    class="region"
-           style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
-           d="m 514.84919,358.50902 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
-           id="use8143" />
-        <text
-	    class="SUB"
-
-           id="text8118"
-           y="384.28049"
-           x="516.42859"
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           xml:space="preserve"><tspan
-             style="font-size:25px;fill:#ffffff;stroke:none"
-             y="384.28049"
-             x="516.42859"
-             id="tspan8120">Sub</tspan></text>
-      </g>
+	class="region"
+        id="SUB"
+        style="stroke:none">
+      <path
+	  class="region"
+          style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#a40000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.5999999;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+          d="m 514.84919,358.50902 45.0705,0 c 6.33145,0 11.4286,7.2515 11.4286,16.25897 0,9.00748 -5.09715,16.25898 -11.4286,16.25898 l -45.0705,0 c -6.33145,0 -11.4286,-7.2515 -11.4286,-16.25898 0,-9.00747 5.09715,-16.25897 11.4286,-16.25897 z"
+          id="use8143" />
+      <text
+	  class="SUB"
+	  
+          id="text8118"
+          y="384.28049"
+          x="516.42859"
+          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:125%;font-family:Ubuntu;-inkscape-font-specification:Ubuntu;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+          xml:space="preserve"><tspan
+				   style="font-size:25px"
+				   y="384.28049"
+				   x="516.42859"
+				   id="tspan8120">Sub</tspan></text>
     </g>
   </g>
 </svg>
