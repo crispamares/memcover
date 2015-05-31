@@ -4,8 +4,13 @@ var React = require('react');
 var d3 = require('d3');
 var _ = require('lodash');
 
-module.exports = React.createClass({
+var LifecycleMixin = require('./lifecycleMixin');
+var BS = require('react-bootstrap');
+var Input = BS.Input;
 
+
+module.exports = React.createClass({
+    mixins: [LifecycleMixin],
 
     getDefaultProps: function() {
 	return {
@@ -14,14 +19,15 @@ module.exports = React.createClass({
     },
 
     render: function() {
-	var onClickedCategoriy = this.props.onClickedCategoriy;
+	var onClickedCategory = this.props.onClickedCategory;
+
 	return (
-	    <form>
+	    <form className="form-inline">
 	      {
 		  this.props.categories.map(function(category, i){
-		      return (<Input type='checkbox' ref={"cat" + i}  key={"cat" + category.name}
-			  label={category.name} valueChecked={category.included} 
-				      onCLick={onClickedCategoriy.bind(this, category.name)}/>
+		      return (<Input style={ {"margin-left": 20} } type='checkbox' ref={"cat" + i}  key={"cat" + category.name}
+			  label={category.name} checked={category.included} 
+				      onChange={onClickedCategory.bind(this, category.name)}/>
 		      );
 		  })
 	       }

@@ -9,6 +9,7 @@ var Context = require('context');
 var reactify = require('./reactify');
 var DataTable = require('./dataTable');
 var BrainRegions = require('./brainRegions');
+var CategoricalFilter = require('./categoricalFilter');
 var SimpleVis = require('./simpleVis');
 var Card = require('./card');
 var CardCreationMenu = require('./cardCreationMenu');
@@ -31,7 +32,7 @@ var ModalTrigger = BS.ModalTrigger;
 var Store = {
     getSchema: function(tableName) {
 	var rpc = Context.instance().rpc;
-
+	
  	function getQuantitativeAttrs(schema) {
 	    var attrs = _.pick(schema.attributes, function(value, key) {
 		return value.attribute_type === "QUANTITATIVE" && ! value.shape.length;
@@ -59,7 +60,7 @@ var Store = {
 	    .catch(function(e){console.error(e);});
 	return promise;
     },
-
+    
     linkTableToSelection: function(table, selection, onChange) {
 	var rpc = Context.instance().rpc;
 	var hub = Context.instance().hub;
@@ -77,6 +78,62 @@ var Store = {
 		})
 		.catch(function(e){console.error(e);});
 	});
+    },
+	
+    /**
+     * @param kind: "categorical", "quantitative"
+     * @return: condition
+     */
+    createCondition: function(selection, column, kind) {
+	var rpc = Context.instance().rpc;
+
+	var method = "DynSelectSrv.new_" + kind + "_condition"
+
+	var promise = rpc.call(method, [selection, column])
+		.catch(function(e){console.error(e);});	
+
+	return promise;
+    },
+
+    includeAll: function(condition) {
+	var rpc = Context.instance().rpc;
+	return rpc.call('ConditionSrv.include_all', [condition]);
+    },
+
+    getGrammar: function(condition) {
+	var rpc = Context.instance().rpc;
+	return rpc.call('ConditionSrv.grammar', [condition]);
+    },
+
+
+
+//		    .then(function(categories) {
+//			self.subscribeCategoricalCondition(condition, "includedRegions");
+//			self.setState({"regionsCondition": condition, "includedRegions": categories});
+//		    });
+
+
+	
+    /**
+     * Will create a new subscription and call onChange with the grammar of the condition
+     * @param: onChange(grammar)
+     */
+    linkCondition: function(condition, onChange) {
+	var rpc = Context.instance().rpc;
+	var hub = Context.instance().hub;
+
+	hub.subscribe(condition + ':change', function(){	    
+	    rpc.call('ConditionSrv.grammar', [condition])
+		.then( onChange )
+		.catch(function(e){console.error(e);});
+	});
+
+	return rpc.call('ConditionSrv.grammar', [condition]).then( onChange );
+    },
+
+    toggleCategory: function(condition, category) {
+	var rpc = Context.instance().rpc;
+	return rpc.call('ConditionSrv.toggle_category', [condition, category]);
     }
 
 }
@@ -89,24 +146,31 @@ module.exports = React.createClass({
 	];
 
 	var cards = [
-// 	    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{
-// 		margins:{top: 20, right: 60, bottom: 60, left: 60},
-// 		data:scatterData
-// 	    }}
+// 	    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{}}
 	];
 
 	var tables = {};
-	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: [], schema: {attributes:{}}};
-	tables[this.props.clinicTable] = {name: this.props.clinicTable, data: [], schema: {attributes:{}}};
+	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: [], schema: {attributes:{}}, selection: this.props.morphoSelection};
+	tables[this.props.clinicTable] = {name: this.props.clinicTable, data: [], schema: {attributes:{}}, selection: this.props.clinicSelection};
+
+	var conditions = {};
+//     - Conditions: {table: {conditionSet: {condition: {subscription: <>,  name: condition } } }
+//     - Selections: {table: {conditionSet: {subscription: <>, name: condition } } }
+//     - TableSubscriptions: {table: {subscription: <>, name: condition } }
 
 	return {
-	    "schema": {attributes:{}},
 	    "tables": tables,
+	    "conditions": conditions,
 	    "regionsCondition": null,
 	    "includedRegions": [],
 	    "layout": layout,
 	    "cards": cards
 	};
+    },
+
+    putState: function(v, path) {
+	var newState = _.set(this.state, v, path);
+	this.setState(newState);
     },
 
     componentDidMount: function() {
@@ -131,42 +195,6 @@ module.exports = React.createClass({
 
 	});
 	
-
-	var rpc = Context.instance().rpc;
-	rpc.call('DynSelectSrv.new_categorical_condition', [this.props.morphoSelection, "region"])
-	    .then(function(condition){
-		return rpc.call('ConditionSrv.include_all', [condition])
-		    .then(function(){return rpc.call('ConditionSrv.included_categories', [condition]);})
-		    .then(function(categories) {
-			self.subscribeCategoricalCondition(condition, "includedRegions");
-			self.setState({"regionsCondition": condition, "includedRegions": categories});
-		    });
-	    })
-	    .catch(function(e){console.error(e);});
-    },
-
-
-    subscribeCategoricalCondition: function(condition, stateSlot) {
-	var rpc = Context.instance().rpc;
-	var hub = Context.instance().hub;
-	var self = this;
-	
-	hub.subscribe(condition + ':change', function(){	    
-	    rpc.call('ConditionSrv.included_categories', [condition])
-		.then(function(categories) {
-		    var newCategories = {};
-		    newCategories[stateSlot] = categories;
-		    self.setState(newCategories);
-		})
-		.catch(function(e){console.error(e);});
-	});
-    },
-
-    toggleRegion: function(region) {
-	var rpc = Context.instance().rpc;
-	var self = this;
-
-	rpc.call('ConditionSrv.toggle_category', [this.state.regionsCondition, region]);
     },
 
     addCard: function(card) {
@@ -179,6 +207,66 @@ module.exports = React.createClass({
 
     },
 
+    initCondition: function(kind, table, selection, column) {
+	var self = this;
+	Store.createCondition(selection, column, kind)
+	    .then(function(condition) { 
+		Store.includeAll(condition)
+		    .then(function() { 
+			Store.linkCondition( condition, function(grammar) {
+			    self.putState(
+				["conditions", table, selection, column],
+				{name: condition, grammar: grammar});
+			    console.log("GRAMMAR: ", grammar);
+			}); 
+		    });
+	    });
+    },
+
+    renderRegionsCard: function(card, size) {
+	var initRegions = this.initCondition.bind(this, "categorical", this.props.morphoTable, this.props.morphoSelection, "region");
+
+	var conditionPath = ["conditions", this.props.morphoTable, this.props.morphoSelection, "region"];
+	var condition = _.get(this.state, conditionPath.concat(["name"]));
+
+	var component = (<BrainRegions {...size} 
+			     onMount={initRegions}
+			     includedRegions={_.get(this.state, conditionPath.concat(["grammar", "included_categories"]), [])}
+			     onClickRegion={Store.toggleCategory.bind(this, condition)}>
+	</BrainRegions>);
+			     
+	return component;
+    },
+
+    renderCategroricalFilterCard: function(card, size) {
+	var table = card.config.table;
+	var column = card.config.column;
+	var selection = this.state.tables[table].selection;
+
+	var initCondition = this.initCondition.bind(this, "categorical", table, selection, column);
+
+	var conditionPath = ["conditions", table, selection, column];
+	var condition = _.get(this.state, conditionPath.concat(["name"]));
+
+	var included = _.get(this.state, conditionPath.concat(["grammar", "included_categories"]));
+	var excluded = _.get(this.state, conditionPath.concat(["grammar", "excluded_categories"]));
+	var categories = [];
+	_.reduce(included, function(acc, category) {
+	    acc.push({name: category, included: true});
+	    return acc;
+	}, categories);
+	_.reduce(excluded, function(acc, category) {
+	    acc.push({name: category, included: false});
+	    return acc;
+	}, categories);
+	categories = _.sortBy(categories, "name");
+
+	var component = (<CategoricalFilter {...size} 
+				 onMount={initCondition}
+				 categories={categories} 
+				 onClickedCategory={Store.toggleCategory.bind(this, condition)} />);
+	return component;
+    },
     
     render: function(){
 	var self = this;
@@ -192,7 +280,6 @@ module.exports = React.createClass({
 
 	var computeWidth = function (key) {
 	    var width = _.result(_.find(layout, {i: key}), "w");
-	    console.log("width: ", key, (contentWidth/12) * width - 50 );
 	    return (contentWidth/12) * width - 20;
 	};
 	var computeHeight = function (key) {
@@ -212,11 +299,19 @@ module.exports = React.createClass({
 		.map(function(value, key){return {name: value.name};})
 		.value();
 	});
+	var categoricalColumns = _.mapValues(self.state.tables, function(table){
+	    return _.chain(table.schema.attributes)
+		.filter({attribute_type: "CATEGORICAL"})
+		.map(function(value, key){return {name: value.name};})
+		.value();
+	});
+
 	var creationMenuTabs = [
 	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
 	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } },
 	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
-	    { kind: "regions", title: "Regions", options: {}}
+	    { kind: "regions", title: "Regions", options: {}},
+	    { kind: "categoricalFilter", title: "Categorical Filter", options: { tables: tables, columns: categoricalColumns } },
 	];
 
 	return (
@@ -274,17 +369,17 @@ module.exports = React.createClass({
 			     component = (<ScatterChart {...size} {...card.config} data={data}/>);
 			     break;
 			 case "regions":
-			     component = (<BrainRegions {...size} 
-						  includedRegions={self.state.includedRegions}
-						  onClickRegion={self.toggleRegion}>
-			     </BrainRegions>);
-			     
+			     component = self.renderRegionsCard(card, size);
 			     break;
+			 case "categoricalFilter":
+			     component =  self.renderCategroricalFilterCard(card, size);
+			     break;
+			 
 		     }
 
 		     return (
 			 <div key={card.key}>
-			   <Card key={card.key} title={card.title}>
+			   <Card key={card.key} title={card.title} size={size}>
 			     {component}
 			   </Card>
 			 </div>			      

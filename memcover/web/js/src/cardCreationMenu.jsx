@@ -31,6 +31,10 @@ var CardCreationMenu = React.createClass({
 	    case "scatter":
 		card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
 		break;
+	    case "categoricalFilter":
+		card.title = _.capitalize(config.column) + " - " + config.table;
+		break;
+
 	}
 
 	this.props.onRequestHide();
@@ -63,6 +67,8 @@ var CardCreationMenu = React.createClass({
 			      case "regions":
 				  tabNode = <DummyMenu ref={tab.kind} options={tab.options}/>;
 				  break;
+			      case "categoricalFilter":
+				  tabNode = <CategoricalFilterMenu ref={tab.kind} options={tab.options}/>;
 			  }
 			  return (
 			      <TabPane eventKey={tab.kind} tab={tab.title}>
@@ -232,6 +238,64 @@ var ScatterMenu = React.createClass({
 	      </Input>
 
 	      <Input type='select' label='Y Coordinate' ref="y" valueLink={this.linkState('yColumn')}>
+	      {
+		  columns.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
+	       }
+	      </Input>
+
+            </div>
+	);
+
+    }
+});
+
+
+var CategoricalFilterMenu = React.createClass({
+
+    // options: { 
+    //     tables:["morpho", "clinic"],
+    //     attributes:[
+    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
+    //     ]
+    // }
+    mixins: [React.addons.LinkedStateMixin],
+    getInitialState: function() {
+	var table = this.props.table || this.props.options.tables[0];
+	return {
+	    table: table,
+	    column: this.props.column || this.props.options.columns[table][0].name,
+	};
+    },
+
+    getConfig: function() {
+	return {
+	    table: this.state.table,
+	    column: this.state.column,
+	};
+    },
+
+    handleTableChange: function(table) {
+	this.setState({
+	    table: table,
+	    column: this.props.options.columns[table][0].name,
+	});
+    },
+
+    render: function() {
+	var options = this.props.options;
+	var columns = options.columns[this.state.table];
+	var tableLink = {
+	    value: this.state.table,
+	    requestChange: this.handleTableChange
+	};
+
+	return (
+            <div>
+              <form>
+ 		<TableMenuItem tableLink={tableLink} tables={options.tables} /> 
+	      </form>
+
+	      <Input type='select' label='Column' ref="col" valueLink={this.linkState('column')} >
 	      {
 		  columns.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
 	       }

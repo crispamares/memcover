@@ -4,7 +4,10 @@ var React = require('react');
 var d3 = require('d3');
 var _ = require('lodash');
 
+var LifecycleMixin = require('./lifecycleMixin');
+
 module.exports = React.createClass({
+    mixins: [LifecycleMixin],
 
     getDefaultProps: function() {
 	return {
