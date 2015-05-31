@@ -59,6 +59,26 @@ var Store = {
 	    .catch(function(e){console.error(e);});
 	return promise;
     },
+
+    linkTableToSelection: function(table, selection, onChange) {
+	var rpc = Context.instance().rpc;
+	var hub = Context.instance().hub;
+	var self = this;
+
+	hub.subscribe(selection + ':change', function(){	    
+	    rpc.call('DynSelectSrv.view_args', [selection])
+		.then(function(viewArgs){
+		    console.log("viewArgs", viewArgs);
+		    return rpc.call("TableSrv.find", [table, viewArgs.query, viewArgs.projection]);
+		})
+		.then(function(tableView){
+		    return rpc.call("TableSrv.get_data", [tableView, "rows"])
+			.then( onChange );
+		})
+		.catch(function(e){console.error(e);});
+	});
+    }
+
 }
 
 
@@ -92,7 +112,11 @@ module.exports = React.createClass({
     componentDidMount: function() {
 	var self = this;
 
-	//this.subscribeMorphoSelection();
+	Store.linkTableToSelection(this.props.morphoTable, this.props.morphoSelection, 
+	    function(rows) {
+		self.state.tables[self.props.morphoTable].data = rows;
+		self.setState({"tables": self.state.tables}); 
+	    });
 
 	_.forEach(this.state.tables, function(v,k){
 	    Store.getSchema(v.name).then(function(schema){ 
@@ -121,24 +145,6 @@ module.exports = React.createClass({
 	    .catch(function(e){console.error(e);});
     },
 
-    subscribeMorphoSelection: function() {
-	var rpc = Context.instance().rpc;
-	var hub = Context.instance().hub;
-	var self = this;
-
-	hub.subscribe(this.props.morphoSelection + ':change', function(){	    
-	    rpc.call('DynSelectSrv.view_args', [self.props.morphoSelection])
-		.then(function(viewArgs){
-		    console.log("viewArgs", viewArgs);
-		    return rpc.call("TableSrv.find", [self.props.morphoTable, viewArgs.query, viewArgs.projection]);
-		})
-		.then(function(tableView){
-		    return rpc.call("TableSrv.get_data", [tableView, "rows"])
-			.then(function(rows){self.setState({"measuresData": rows});}) //BAD TABLE
-		})
-		.catch(function(e){console.error(e);});
-	});
-    },
 
     subscribeCategoricalCondition: function(condition, stateSlot) {
 	var rpc = Context.instance().rpc;
