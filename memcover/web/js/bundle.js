@@ -274,20 +274,19 @@
 	    componentDidMount: function() {
 		var self = this;
 
-		Store.linkTableToSelection(this.props.morphoTable, this.props.morphoSelection, 
-		    function(rows) {
-			self.state.tables[self.props.morphoTable].data = rows;
+		_.forEach(this.state.tables, function(table){
+		    Store.linkTableToSelection(table.name, table.selection, function(rows) {
+			self.state.tables[table.name].data = rows;
 			self.setState({"tables": self.state.tables}); 
 		    });
 
-		_.forEach(this.state.tables, function(v,k){
-		    Store.getSchema(v.name).then(function(schema){ 
-			self.state.tables[v.name].schema = schema;
+		    Store.getSchema(table.name).then(function(schema){ 
+			self.state.tables[table.name].schema = schema;
 			self.setState({"tables": self.state.tables}); 
 		    });
 
-		    Store.getData(v.name).then(function(rows){ 
-			self.state.tables[v.name].data = rows;
+		    Store.getData(table.name).then(function(rows){ 
+			self.state.tables[table.name].data = rows;
 			self.setState({"tables": self.state.tables}); 
 		    });
 
