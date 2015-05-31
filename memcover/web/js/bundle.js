@@ -458,9 +458,13 @@
 				     ));
 				     break;
 				 case "scatter":
-				     var values = _.map(self.state.tables[card.config.table].data, function(row) {
-					 return {x: row[card.config.xColumn], y: row[card.config.yColumn]};
-				     });
+				     var values = []; // NaN Filtered 
+				     _.reduce(self.state.tables[card.config.table].data, function(acc, row) {
+					 if ( _.isNumber(row[card.config.xColumn]) && _.isNumber(row[card.config.yColumn]) ) {
+					     acc.push({x: row[card.config.xColumn], y: row[card.config.yColumn]});
+					 }
+					 return acc;
+				     }, values);
 				     var data = [{ name: "series1", values: values}];
 				     
 				     component = (React.createElement(ScatterChart, React.__spread({},  size,  card.config, {data: data})));
