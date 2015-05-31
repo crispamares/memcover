@@ -159,7 +159,7 @@ module.exports = React.createClass({
 		    self.setState(newCategories);
 		})
 		.catch(function(e){console.error(e);});
-	});	
+	});
     },
 
     toggleRegion: function(region) {

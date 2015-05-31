@@ -257,7 +257,7 @@
 			    self.setState(newCategories);
 			})
 			.catch(function(e){console.error(e);});
-		});	
+		});
 	    },
 
 	    toggleRegion: function(region) {
@@ -1409,33 +1409,38 @@
 		// Add a group element for each trait.
 		var coordinates = svg.selectAll(".coordinate")
 			.data(_.pluck(props.attributes, "name"), function(d){return d;});
-		coordinates.enter().append("g");
-		coordinates.attr("class", "coordinate")
+		coordinates.enter().append("g").attr("class", "coordinate")
+			.call(function(g) {
+			    // Add an axis and title.
+			    g.append("g")
+				.attr("class", "axis")
+			      .append("text")
+				.attr("text-anchor", "middle")
+				.attr("y", function(d,i){return (i%2)? -9 : -27;})
+				.attr("class", "dimension") ;})
+
+			.call(function(g) {
+			    // Add a brush for each axis.
+			    g.append("g")
+				.attr("class", "brush"); });
+		coordinates
 			.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
 			.call(d3.behavior.drag()
 			      .origin(function(d) { return {x: scales.x(d)}; })
 			      .on("dragstart", this._dragstart(props.attributes, dragState))
 			      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
 			      .on("dragend", this._dragend(scales, props.attributes, width, path))
-			     )
-			.call(function(g) {
-			    // Add an axis and title.
-			    g.append("g")
-				.attr("class", "axis")
-				.each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); })
-			      .append("text")
-				.attr("text-anchor", "middle")
-				.attr("y", -9)
-				.attr("class", "dimension")
-				.text(function(d){return _.capitalize(String(d));});})
-			.call(function(g) {
-			    // Add a brush for each axis.
-			    g.append("g")
-				.attr("class", "brush")
-				.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
-			       .selectAll("rect")
-				.attr("x", -8)
-				.attr("width", 16);});
+			     );
+		coordinates.selectAll("g.axis")
+		    .each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); });
+		coordinates.selectAll("text.dimension")			
+		    .text(function(d){return _.capitalize(String(d));});
+		coordinates.selectAll("g.brush")
+			.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
+		    .selectAll("rect")
+			.attr("x", -8)
+			.attr("width", 16);
+
 		coordinates.exit().remove();
 
 		return null;
