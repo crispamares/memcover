@@ -15,6 +15,7 @@ var Card = require('./card');
 var CardCreationMenu = require('./cardCreationMenu');
 
 var PCPChart = reactify(require('./pcpChart'), "PCPChart");
+var BoxChart = reactify(require('./boxChart'), "BoxChart");
 var ScatterChart = require('react-d3/scatterchart').ScatterChart;
 
 /**
@@ -105,15 +106,6 @@ var Store = {
 	return rpc.call('ConditionSrv.grammar', [condition]);
     },
 
-
-
-//		    .then(function(categories) {
-//			self.subscribeCategoricalCondition(condition, "includedRegions");
-//			self.setState({"regionsCondition": condition, "includedRegions": categories});
-//		    });
-
-
-	
     /**
      * Will create a new subscription and call onChange with the grammar of the condition
      * @param: onChange(grammar)
@@ -134,7 +126,43 @@ var Store = {
     toggleCategory: function(condition, category) {
 	var rpc = Context.instance().rpc;
 	return rpc.call('ConditionSrv.toggle_category', [condition, category]);
+    },
+
+    getFacetedData: function(table, selection, attr, facetAttr) {
+	var rpc = Context.instance().rpc;
+
+	return rpc.call('DynSelectSrv.query', [selection])
+	    .then(function (query) {
+		var aggregation = [{$match: query},
+		    {$group: {_id: '$'+facetAttr, 
+			'list': {$push: '$'+attr},
+			'max': {$max: '$'+attr},
+			'min': {$min: '$'+attr}
+		    }
+		    },
+		    {$project: {facetAttr: '$_id', _id: false, 'list':true, 'max':true, 'min':true}}
+		];
+		//console.log(JSON.stringify(aggregation));
+		return rpc.call('TableSrv.aggregate', [table, aggregation]);
+	    })
+	    .then(function (tableview) {return rpc.call('TableSrv.get_data', [tableview]);});
+    },
+
+    linkFacetedData: function(table, selection, attr, facetAttr, onChange) {
+	var rpc = Context.instance().rpc;
+	var hub = Context.instance().hub;
+
+	hub.subscribe(selection + ':change', function(){	    
+	    Store.getFacetedData(table, selection, attr, facetAttr)
+		.then( onChange )
+		.catch(function(e){console.error(e);});
+	});
+
+	Store.getFacetedData(table, selection, attr, facetAttr)
+	    .then( onChange )
+	    .catch(function(e){console.error(e);});
     }
+
 
 }
 
@@ -145,9 +173,9 @@ module.exports = React.createClass({
 //	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
 	];
 
-	var cards = [
-// 	    {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{}}
-	];
+	var cards = {
+// 	    "c0": {key:"c0", kind:"scatter", title: "Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)", config:{}}
+	};
 
 	var tables = {};
 	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: [], schema: {attributes:{}}, selection: this.props.morphoSelection};
@@ -161,15 +189,13 @@ module.exports = React.createClass({
 	return {
 	    "tables": tables,
 	    "conditions": conditions,
-	    "regionsCondition": null,
-	    "includedRegions": [],
 	    "layout": layout,
 	    "cards": cards
 	};
     },
 
-    putState: function(v, path) {
-	var newState = _.set(this.state, v, path);
+    putState: function(path, v) {
+	var newState = _.set(this.state, path, v);
 	this.setState(newState);
     },
 
@@ -201,7 +227,7 @@ module.exports = React.createClass({
 	var key = "c" + this.state.layout.length
 	card.key = key;
 	this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-title"});
-	this.state.cards.push(card);
+	this.state.cards[key] = card;
 	this.setState({layout:this.state.layout, cards: this.state.cards});
 
     },
@@ -275,7 +301,7 @@ module.exports = React.createClass({
 	var rowHeight = 50;
 	
 	var layout = this.state.layout;
-	var cards = this.state.cards;
+	var cards = _.values(this.state.cards);
 
 	var computeWidth = function (key) {
 	    var width = _.result(_.find(layout, {i: key}), "w");
@@ -311,6 +337,7 @@ module.exports = React.createClass({
 	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
 	    { kind: "regions", title: "Regions", options: {}},
 	    { kind: "categoricalFilter", title: "Categorical Filter", options: { tables: tables, columns: categoricalColumns } },
+	    { kind: "box", title: "Box Plot", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns } },
 	];
 
 	return (
@@ -322,6 +349,10 @@ module.exports = React.createClass({
 		    <Glyphicon glyph='plus' /> Add Card 
 		  </Button> 
 		</ModalTrigger>
+		<Button className="navbar-btn pull-right" style={ {"margin-right":10} }> 
+		  <Glyphicon glyph='save' /> Export Excell 
+		</Button> 
+
 	      </Navbar>
 
 
@@ -334,6 +365,7 @@ module.exports = React.createClass({
 		      onResizeStop={function(layout, oldL, l, _, ev){/* console.log(ev);*/}}
 		      >
 		{
+
 		    /*
 		     * Render all the cards
 		     */
@@ -377,7 +409,22 @@ module.exports = React.createClass({
 			 case "categoricalFilter":
 			     component =  self.renderCategroricalFilterCard(card, size);
 			     break;
-			 
+			 case "box":
+			     var table = card.config.table;
+			     var selection = self.state.tables[table].selection;
+			     var attr = card.config.attr;
+			     var facetAttr = card.config.facetAttr;
+
+			     var distributions = _.get(self.state.cards[card.key], "data", []);
+			     var saveData = function(data) {
+				 console.log(data);
+				 self.putState( ["cards", card.key, "data"], [data] );
+			     };
+			     var linkData = Store.linkFacetedData.bind(self, table, selection, attr, facetAttr, saveData);
+
+			     var margin = {top: 20, right: 10, bottom: 20, left: 80};
+			     component = (<BoxChart {...size} margin={margin} distributions={distributions} onMount={linkData}/>)
+			     break;
 		     }
 
 		     return (

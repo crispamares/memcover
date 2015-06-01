@@ -34,6 +34,10 @@ var CardCreationMenu = React.createClass({
 	    case "categoricalFilter":
 		card.title = _.capitalize(config.column) + " - " + config.table;
 		break;
+	    case "box":
+		card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
+		break;
+
 
 	}
 
@@ -69,6 +73,10 @@ var CardCreationMenu = React.createClass({
 				  break;
 			      case "categoricalFilter":
 				  tabNode = <CategoricalFilterMenu ref={tab.kind} options={tab.options}/>;
+				  break;
+			      case "box":
+				  tabNode = <BoxMenu ref={tab.kind} options={tab.options}/>;
+				  break;
 			  }
 			  return (
 			      <TabPane eventKey={tab.kind} tab={tab.title}>
@@ -306,3 +314,73 @@ var CategoricalFilterMenu = React.createClass({
 
     }
 });
+
+
+var BoxMenu = React.createClass({
+
+    // options: { 
+    //     tables:["morpho", "clinic"],
+    //     attributes:[
+    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
+    //     ]
+    // }
+    mixins: [React.addons.LinkedStateMixin],
+    getInitialState: function() {
+	var table = this.props.table || this.props.options.tables[0];
+	return {
+	    table: table,
+	    attr: this.props.attr || this.props.options.quantitativeColumns[table][0].name,
+	    facetAttr: this.props.facetAttr || this.props.options.categoricalColumns[table][0].name,
+	};
+    },
+
+    getConfig: function() {
+	return {
+	    table: this.state.table,
+	    attr: this.state.attr,
+	    facetAttr: this.state.facetAttr,
+	};
+    },
+
+    handleTableChange: function(table) {
+	this.setState({
+	    table: table,
+	    attr: this.props.options.quantitativeColumns[table][0].name,
+	    facetAttr: this.props.options.categoricalColumns[table][0].name,
+	});
+    },
+
+    render: function() {
+	var options = this.props.options;
+	var attrs = options.quantitativeColumns[this.state.table];
+	var facetAttrs = options.categoricalColumns[this.state.table];
+	var tableLink = {
+	    value: this.state.table,
+	    requestChange: this.handleTableChange
+	};
+
+	return (
+            <div>
+              <form>
+ 		<TableMenuItem tableLink={tableLink} tables={options.tables} /> 
+	      </form>
+
+	      <Input type='select' label='Column' ref="attr" valueLink={this.linkState('attr')} >
+	      {
+		  attrs.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
+	       }
+	      </Input>
+
+	      <Input type='select' label='Split By' ref="facetAttr" valueLink={this.linkState('facetAttr')}>
+	      {
+		  facetAttrs.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
+	       }
+	      </Input>
+
+            </div>
+	);
+
+    }
+});
+
+
