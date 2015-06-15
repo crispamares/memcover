@@ -1139,7 +1139,7 @@
 
 		region.selectAll("path")
 		    .datum(function() { return this.parentNode.id; })
-		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "rgb(164, 0, 0)" : "#EEE";});
+		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "rgb(49, 130, 189)" : "#EEE";});
 
 		region.selectAll("text")
 		    .datum(function() { return this.parentNode.id; })
