@@ -16,7 +16,14 @@ module.exports = React.createClass({
 
 	return (
 	    <div className="card" key={this.props.key}>
-	      <h4><div className="card-title">{title}</div></h4>
+	      <div className="card-title">
+		<span className="btn btn-xs btn-default card-anchor glyphicon glyphicon-move pull-left" aria-hidden="true"></span>
+
+		<span className="h4 card-anchor">{title}</span>
+
+		<button className="card-close btn btn-xs btn-default glyphicon glyphicon-remove pull-right" aria-hidden="true" onClick={this.props.onClose}></button>
+
+	      </div>
 	      <div className="card-content" style={contentSize}>
 		{this.props.children}		
 	      </div>

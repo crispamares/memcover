@@ -226,10 +226,18 @@ module.exports = React.createClass({
 	var Y = Math.max(0, _.max(this.state.layout, 'y')) + 1;
 	var key = "c" + this.state.layout.length
 	card.key = key;
-	this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-title"});
+	card.onClose = this.removeCard.bind(this, key);
+	this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-anchor"});
 	this.state.cards[key] = card;
 	this.setState({layout:this.state.layout, cards: this.state.cards});
 
+    },
+
+    removeCard: function(key) {
+	var cards = _.omit(this.state.cards, key);
+	var layout = _.reject(this.state.layout, {i: key});
+
+	this.setState({layout:layout, cards: cards});	
     },
 
     initCondition: function(kind, table, selection, column) {
@@ -429,7 +437,7 @@ module.exports = React.createClass({
 
 		     return (
 			 <div key={card.key}>
-			   <Card key={card.key} title={card.title} size={size}>
+			   <Card key={card.key} onClose={card.onClose} title={card.title} size={size}>
 			     {component}
 			   </Card>
 			 </div>			      
