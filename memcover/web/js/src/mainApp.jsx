@@ -167,6 +167,17 @@ var Store = {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
 module.exports = React.createClass({
     getInitialState: function() {
 	var layout = [
@@ -185,6 +196,9 @@ module.exports = React.createClass({
 //     - Conditions: {table: {conditionSet: {condition: {subscription: <>,  name: condition } } }
 //     - Selections: {table: {conditionSet: {subscription: <>, name: condition } } }
 //     - TableSubscriptions: {table: {subscription: <>, name: condition } }
+
+	var savedState = require('./savedState');
+	return JSON.parse(savedState);
 
 	return {
 	    "tables": tables,
