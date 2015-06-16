@@ -224,7 +224,10 @@ module.exports = React.createClass({
 
     addCard: function(card) {
 	var Y = Math.max(0, _.max(this.state.layout, 'y')) + 1;
-	var key = "c" + this.state.layout.length
+
+	if (this.state.layout.length === 0) var key = "c0";
+	else var key = "c" + (parseInt(_.rest(_.last(this.state.layout).i)) + 1)
+
 	card.key = key;
 	card.onClose = this.removeCard.bind(this, key);
 	this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-anchor"});
