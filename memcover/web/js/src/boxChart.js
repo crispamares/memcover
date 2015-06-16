@@ -2,6 +2,7 @@ var d3 = require('d3');
 var _ = require('lodash');
 require('./box');
 
+
 module.exports = {
     createChart: function(container, props, state){
 	var margin = this.props.margin;
@@ -60,9 +61,12 @@ module.exports = {
 	//     Update the axes
 	// -----------------------------
 
+	console.log("x domain", _.keys(factedData));
+	console.log("facetedData", factedData);
+
 	var x = d3.scale.ordinal()
 	    .domain(_.keys(factedData))
-	    .rangeBands([0,width]);
+	    .rangePoints([0,width], 1);
 
 	var y = d3.scale.linear()
 	    .domain(self.getDomain(distributions))
@@ -73,7 +77,8 @@ module.exports = {
 	    .height(height)
 	    .width(boxWidth)
 	    .whiskers(iqr(1.5))
-	    .domain(y.domain());
+	    .domain(y.domain())
+	    .tickFormat(function(){return "";}); // No labels
 
 	var xGroup = d3.scale.linear()
 	    .rangeRound([0, width])
@@ -123,10 +128,10 @@ module.exports = {
 	box.enter().append('g')
 	    .classed('box', true);
 
-	boxGroup.attr("transform", function(d,i) {return "translate(" + (xGroup(i) + boxGroupMargin) + ",0)";});
+	boxGroup.attr("transform", function(d,i) {return "translate(" + x(d[0].facetAttr) + ",0)";});
 
 	box.attr("transform", function(d,i) {
-	    var offset = boxMargin + ((boxGroupWidth/2) * d.subset);
+	    var offset = - (boxWidth/2); //boxMargin + ((boxGroupWidth/2) * d.subset);
 	    return "translate(" + offset + ",0)";})
 	    .datum(function(d){return d.list;})
 	    .call(boxPlot);
