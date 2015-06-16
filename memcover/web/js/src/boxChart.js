@@ -61,9 +61,6 @@ module.exports = {
 	//     Update the axes
 	// -----------------------------
 
-	console.log("x domain", _.keys(factedData));
-	console.log("facetedData", factedData);
-
 	var x = d3.scale.ordinal()
 	    .domain(_.keys(factedData))
 	    .rangePoints([0,width], 1);

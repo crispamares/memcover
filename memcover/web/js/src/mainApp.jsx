@@ -170,14 +170,6 @@ var Store = {
 
 
 
-
-
-
-
-
-
-
-
 module.exports = React.createClass({
     getInitialState: function() {
 	var layout = [
@@ -197,8 +189,9 @@ module.exports = React.createClass({
 //     - Selections: {table: {conditionSet: {subscription: <>, name: condition } } }
 //     - TableSubscriptions: {table: {subscription: <>, name: condition } }
 
-	var savedState = require('./savedState');
-	return JSON.parse(savedState);
+// -------  To load saved state: 
+//	var savedState = require('./savedState');
+//	return JSON.parse(savedState);
 
 	return {
 	    "tables": tables,
@@ -356,24 +349,34 @@ module.exports = React.createClass({
 		.value();
 	});
 
-	var creationMenuTabs = [
+	var creationVisMenuTabs = [
 	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
 	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } },
 	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
+	    { kind: "box", title: "Box Plot", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns } },
+	];
+
+	var creationFilterMenuTabs = [
 	    { kind: "regions", title: "Regions", options: {}},
 	    { kind: "categoricalFilter", title: "Categorical Filter", options: { tables: tables, columns: categoricalColumns } },
-	    { kind: "box", title: "Box Plot", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns } },
 	];
 
 	return (
 	    <div className="mainApp">
 
 	      <Navbar brand='Memcover' fixedTop>
-		<ModalTrigger modal={<CardCreationMenu tabs={creationMenuTabs} onCreateCard={this.addCard}/>}>
+		<ModalTrigger modal={<CardCreationMenu tabs={creationVisMenuTabs} onCreateCard={this.addCard}/>}>
 		  <Button className="navbar-btn pull-right" bsStyle="primary"> 
-		    <Glyphicon glyph='plus' /> Add Card 
+		    <Glyphicon glyph='plus' /> Add Visualization 
 		  </Button> 
 		</ModalTrigger>
+
+		<ModalTrigger modal={<CardCreationMenu tabs={creationFilterMenuTabs} onCreateCard={this.addCard}/>}>
+		  <Button className="navbar-btn pull-right" bsStyle="primary" style={ {"margin-right":10} }> 
+		    <Glyphicon glyph='plus' /> Add Filter
+		  </Button> 
+		</ModalTrigger>
+
 		<Button className="navbar-btn pull-right" style={ {"margin-right":10} }> 
 		  <Glyphicon glyph='save' /> Export Excell 
 		</Button> 
@@ -467,62 +470,6 @@ module.exports = React.createClass({
 	);
     }
 });
-
-
-
-//	      <div key={"c0"}>
-//		<Card key={"c0"} title={"Avg Cells/Vol NISSL (mm3) vs Time Postmortem (hours)"}>
-//		  <ScatterChart 
-//			  margins={{top: 20, right: 60, bottom: 60, left: 60}}
-//			  data={scatterData}
-//			  width={computeWidth("c0")}
-//			  height={computeHeight("c0")}
-//			  />
-//		</Card>
-//	      </div>
-//	    
-//	      <div key={"c1"}>
-//		<Card title={"AT8 Cells/Vol per region"}>
-//		  <img src="assets/boxplot.png"
-//			  width={computeWidth("c1")}
-//			  height={computeHeight("c1")}
-//			  />
-//		</Card>
-//	      </div>
-//	      <div key={"c2"}>
-//		<Card title={"Regions"}>
-//		  <BrainRegions 
-//			  width={computeWidth("c2")}
-//			  height={computeHeight("c2")}
-//			  includedRegions={this.state.includedRegions}
-//			  onClickRegion={this.toggleRegion}></BrainRegions>
-//		</Card>
-//	      </div>
-//	      <div key={"c3"}>
-//		<PCPChart 
-//			width={computeWidth("c3")}
-//			height={computeHeight("c3")}
-//			margin={{top: 50, right: 40, bottom: 40, left: 40}}
-//			attributes={
-//			    _.chain(this.state.schema.attributes).values()
-//				.filter(function(d){return !_.include(["measure_id"], d.name); })
-//				.value()
-//			}
-//			data={this.state.measuresData}
-//			onBrush={function(extent){/*console.log(extent);*/}}
-//			>
-//		</PCPChart>
-//	      </div>
-//	      <div key={"table"}>
-//		<DataTable
-//			rows={this.state.measuresData}
-//			columnNames={columnNames}
-//			width={computeWidth("table")}
-//			height={computeHeight("table")}
-//			>
-//		</DataTable>
-//	      </div>
-
 
 
 

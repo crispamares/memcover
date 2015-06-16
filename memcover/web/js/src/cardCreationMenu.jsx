@@ -17,7 +17,7 @@ var Col = BS.Col;
 var CardCreationMenu = React.createClass({
     getInitialState: function() {
 	return {
-	    activeTab: "table"
+	    activeTab: this.props.tabs[0].kind
 	};
     },
 
