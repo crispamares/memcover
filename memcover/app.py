@@ -18,13 +18,13 @@ class App(MetaApp):
         '''
         This method loads the data in a table
         '''
-        morpho_table_name = 'morpho'
+        morpho_table_name = "Histological features"
         morpho_table = init_table(morpho_table_name, 'schema')
         morpho_dselect = DynSelect('morpho_dselect', morpho_table, setop='AND')
         Front.instance().get_method('TableSrv.expose_table')(morpho_table)
         Front.instance().get_method('DynSelectSrv.expose_dselect')(morpho_dselect)
 
-        clinic_table_name = 'clinic'
+        clinic_table_name = "Patients characteristics"
         clinic_table = init_table(clinic_table_name, 'clinic_schema')
         clinic_dselect = DynSelect('clinic_dselect', clinic_table, setop='AND')
         Front.instance().get_method('TableSrv.expose_table')(clinic_table)
