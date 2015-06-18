@@ -1,11 +1,11 @@
-Patient,Gender,Braak Scale,CERAD Scale,Post-mortem delay (hours),Decease age,Age at diagnosis,Disease progression,MMSE (1),MMSE (2),Details on family history of dementia,Language impairment,Visuospatial agnosia,Details of the cerebral atrophy,Details of cardiovascular diseases,Initial behavior alteration,Depression/Anxiety/Mood disorders,Diabetes,Hypercholesterolemia
-Az1,Male,VI,C,4.5,90,80,10,14,N/A,Alzheimer,SI,N/A,Global,N/A,N/A,N/A,N/A,N/A
-Az2,Female,V,C,2,82,70,12,15,0,N/A,SI,SI,Cortico-subcortical,Hipertensión arterial,SI,SI,N/A,N/A
-Az3,Female,V,C,5.5,81,79,2,N/A,N/A,N/A,N/A,SI,N/A,N/A,SI,SI,N/A,N/A
-Az4,Female,IV,B,5.5,87,78,9,N/A,N/A,Alzheimer,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
-Az5,Female,V/VI,C,4,83,69,14,23,4,Demencia,SI,N/A,Fronto-temporal,Cardiopatía isquémica,N/A,SI,N/A,N/A
-Az6,Female,V,C,5,76,69,7,18,4,Demencia,SI,N/A,Global,N/A,NO,SI,SI,N/A
-Az7,Female,VI,C,4.25,89,89,0,N/A,N/A,Alzheimer,N/A,N/A,N/A,Hipertensión arterial,N/A,N/A,N/A,N/A
-Az8,Female,VI,C,5.75,85,77,8,7,N/A,N/A,SI,N/A,Cortico-subcortical / Cerebelosa,Hipertensión arterial,NO,NO,SI,SI
-Az9,Female,VI,C,5,84,76,8,18,8,Alzheimer,SI,SI,Cortico-subcortical,Hipertensión arterial,NO,NO,N/A,SI
-Az10,Female,V,C,5,80,71,9,27,21,DCL,SI,SI,Ganglios Basales,N/A,N/A,SI,N/A,N/A
+Patient,Gender,Braak Scale,CERAD Scale,Post-mortem delay (hours),Decease age,Age at diagnosis,Disease progression,MMSE (1),MMSE (2),Details on family history of dementia,Language impairment,Apraxia / Instrumental impairment,Visuospatial agnosia,Details of the cerebral atrophy,Details of cardiovascular diseases,Initial behavior alteration,Depression/Anxiety/Mood disorders,Diabetes,Hypercholesterolemia
+Az01,H,VI,C,4.5,90,80,10,14,N/A,Alzheimer,SI,SI,N/A,Global,N/A,N/A,N/A,N/A,N/A
+Az02,M,V,C,2,82,70,12,15,0,N/A,SI,SI,SI,Cortico-subcortical,Hipertensión arterial,SI,SI,N/A,N/A
+Az03,M,V,C,5.5,81,79,2,N/A,N/A,N/A,N/A,N/A,SI,N/A,N/A,SI,SI,N/A,N/A
+Az04,M,IV,B,5.5,87,78,9,N/A,N/A,Alzheimer,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+Az05,M,V/VI,C,4,83,69,14,23,4,Demencia,SI,SI,N/A,Fronto-temporal,Cardiopatía isquémica,N/A,SI,N/A,N/A
+Az06,M,V,C,5,76,69,7,18,4,Demencia,SI,NO,N/A,Global,N/A,NO,SI,SI,N/A
+Az07,M,VI,C,4.25,89,89,0,N/A,N/A,Alzheimer,N/A,N/A,N/A,N/A,Hipertensión arterial,N/A,N/A,N/A,N/A
+Az08,M,VI,C,5.75,85,77,8,7,N/A,N/A,SI,SI,N/A,Cortico-subcortical / Cerebelosa,Hipertensión arterial,NO,NO,SI,SI
+Az09,M,VI,C,5,84,76,8,18,8,Alzheimer,SI,SI,SI,Cortico-subcortical,Hipertensión arterial,NO,NO,N/A,SI
+Az10,M,V,C,5,80,71,9,27,21,DCL,SI,N/A,SI,Ganglios Basales,N/A,N/A,SI,N/A,N/A

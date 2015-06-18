@@ -71,6 +71,13 @@
    "shape": [], 
    "continuous": false
   }, 
+  "Apraxia / Instrumental impairment": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
   "Total nucleators counted": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 

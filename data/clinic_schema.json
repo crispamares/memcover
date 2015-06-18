@@ -29,6 +29,13 @@
    "shape": [], 
    "continuous": false
   }, 
+  "Apraxia / Instrumental impairment": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
   "MMSE (2)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
