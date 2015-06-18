@@ -1,20 +1,6 @@
 {
  "index": "measure_id", 
  "attributes": {
-  "total population by optical fractionator": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  }, 
-  "avg volume (mm3)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  }, 
   "measure_id": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
@@ -22,70 +8,77 @@
    "shape": [], 
    "continuous": false
   }, 
-  "tint": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "patient": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "total markers counted": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "cells/volume (mm3)": {
+  "CE Gundersen": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": true
   }, 
-  "region": {
+  "Patient": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": false
+  }, 
+  "No of cells/volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Total markers counted": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Region": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total population estimated": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
   }, 
   "% Occupied by plaques": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": false
   }, 
-  "total nucleators counted": {
+  "Labeling": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total nucleators counted": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": false
   }, 
-  "CE Schaeffer": {
+  "Plaque AVG volume": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": false
   }, 
-  "estimated volume (mm3)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  }, 
-  "CE Gundersen": {
+  "Region volume estimation": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 

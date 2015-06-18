@@ -26,7 +26,10 @@ rpc.call('init', [])
 	    morphoTable: names["morpho_table"],
 	    morphoSelection: names["morpho_selection"],
 	    clinicTable: names["clinic_table"],
-	    clinicSelection: names["clinic_selection"]
+	    clinicSelection: names["clinic_selection"],
+	    joinedTable: names["joined_table"],
+	    joinedSelection: names["joined_selection"]
+
  	};
 	React.render( <App {...props}></App>, document.getElementById('content'));
 

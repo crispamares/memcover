@@ -1,6 +1,20 @@
 {
- "index": "Patient", 
+ "index": "measure_id", 
  "attributes": {
+  "measure_id": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": true, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Region volume estimation": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
   "Decease age": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
@@ -15,7 +29,35 @@
    "shape": [], 
    "continuous": false
   }, 
+  "Region": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total population estimated": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
   "Disease progression": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Labeling": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "MMSE (2)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
@@ -29,12 +71,26 @@
    "shape": [], 
    "continuous": false
   }, 
-  "MMSE (2)": {
+  "Total nucleators counted": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": false
+  }, 
+  "Plaque AVG volume": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "CE Gundersen": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
   }, 
   "MMSE (1)": {
    "attribute_type": "QUANTITATIVE", 
@@ -67,7 +123,21 @@
   "Patient": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
-   "key": true, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "No of cells/volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "% Occupied by plaques": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
    "shape": [], 
    "continuous": false
   }, 
@@ -90,7 +160,7 @@
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": false
   }, 
   "Details on family history of dementia": {
    "attribute_type": "CATEGORICAL", 
@@ -98,6 +168,13 @@
    "key": false, 
    "shape": [], 
    "continuous": false
+  }, 
+  "Total markers counted": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
   }, 
   "Details of cardiovascular diseases": {
    "attribute_type": "CATEGORICAL", 

@@ -183,6 +183,8 @@ module.exports = React.createClass({
 	var tables = {};
 	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: [], schema: {attributes:{}}, selection: this.props.morphoSelection};
 	tables[this.props.clinicTable] = {name: this.props.clinicTable, data: [], schema: {attributes:{}}, selection: this.props.clinicSelection};
+	tables[this.props.joinedTable] = {name: this.props.joinedTable, data: [], schema: {attributes:{}}, selection: this.props.joinedSelection};
+
 
 	var conditions = {};
 //     - Conditions: {table: {conditionSet: {condition: {subscription: <>,  name: condition } } }
@@ -236,7 +238,6 @@ module.exports = React.createClass({
 	else var key = "c" + (parseInt(_.rest(_.last(this.state.layout).i)) + 1)
 
 	card.key = key;
-	card.onClose = this.removeCard.bind(this, key);
 	this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-anchor"});
 	this.state.cards[key] = card;
 	this.setState({layout:this.state.layout, cards: this.state.cards});
@@ -267,9 +268,9 @@ module.exports = React.createClass({
     },
 
     renderRegionsCard: function(card, size) {
-	var initRegions = this.initCondition.bind(this, "categorical", this.props.morphoTable, this.props.morphoSelection, "region");
+	var initRegions = this.initCondition.bind(this, "categorical", this.props.morphoTable, this.props.morphoSelection, "Region");
 
-	var conditionPath = ["conditions", this.props.morphoTable, this.props.morphoSelection, "region"];
+	var conditionPath = ["conditions", this.props.morphoTable, this.props.morphoSelection, "Region"];
 	var condition = _.get(this.state, conditionPath.concat(["name"]));
 
 	var component = (<BrainRegions {...size} 
@@ -323,11 +324,11 @@ module.exports = React.createClass({
 
 	var computeWidth = function (key) {
 	    var width = _.result(_.find(layout, {i: key}), "w");
-	    return (contentWidth/12) * width - 20;
+	    return (contentWidth/12) * width - 40;
 	};
 	var computeHeight = function (key) {
 	    var height = _.result(_.find(layout, {i: key}), "h");
-	    return rowHeight * height - 60;
+	    return rowHeight * height - 40;
 	};
 
 	var tables = _.keys(self.state.tables);
@@ -367,13 +368,13 @@ module.exports = React.createClass({
 	      <Navbar brand='Memcover' fixedTop>
 		<ModalTrigger modal={<CardCreationMenu tabs={creationVisMenuTabs} onCreateCard={this.addCard}/>}>
 		  <Button className="navbar-btn pull-right" bsStyle="primary"> 
-		    <Glyphicon glyph='plus' /> Add Visualization 
+		    <Glyphicon glyph='plus' /> Visualization 
 		  </Button> 
 		</ModalTrigger>
 
 		<ModalTrigger modal={<CardCreationMenu tabs={creationFilterMenuTabs} onCreateCard={this.addCard}/>}>
 		  <Button className="navbar-btn pull-right" bsStyle="primary" style={ {"margin-right":10} }> 
-		    <Glyphicon glyph='plus' /> Add Filter
+		    <Glyphicon glyph='plus' /> Filter
 		  </Button> 
 		</ModalTrigger>
 
@@ -457,7 +458,7 @@ module.exports = React.createClass({
 
 		     return (
 			 <div key={card.key}>
-			   <Card key={card.key} onClose={card.onClose} title={card.title} size={size}>
+			   <Card key={card.key} onClose={self.removeCard.bind(self, card.key)} title={card.title} size={size}>
 			     {component}
 			   </Card>
 			 </div>			      
