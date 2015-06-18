@@ -425,7 +425,7 @@
 
 		var computeWidth = function (key) {
 		    var width = _.result(_.find(layout, {i: key}), "w");
-		    return (contentWidth/12) * width - 40;
+		    return (contentWidth/12) * width - 20;
 		};
 		var computeHeight = function (key) {
 		    var height = _.result(_.find(layout, {i: key}), "h");
@@ -515,7 +515,7 @@
 					 return self.state.tables[card.config.table].schema.attributes[c];});
 				     component = (React.createElement(PCPChart, React.__spread({},  size, 
 					 {data: self.state.tables[card.config.table].data, 
-					 margin: {top: 50, right: 40, bottom: 40, left: 40}, 
+					 margin: {top: 50, right: 40, bottom: 10, left: 40}, 
 					 attributes: attributes, 
 					 onBrush: function(extent){/*console.log(extent);*/}
 					 })
@@ -1196,16 +1196,16 @@
 		/* var child = React.cloneElement(
 		   React.Children.only(this.props.children), 
 		   {width: this.props.width, height: this.props.height}); */
-		var contentSize = {width: this.props.size.width + 5, height: this.props.size.height + 5};
+		var contentSize = {width: this.props.size.width + 15, height: this.props.size.height + 15};
 
 		return (
 		    React.createElement("div", {className: "card", key: this.props.key}, 
-		      React.createElement("div", {className: "card-title"}, 
-			React.createElement("span", {className: "btn btn-xs btn-default card-anchor glyphicon glyphicon-move pull-left", "aria-hidden": "true"}), 
+		      React.createElement("div", {className: "card-header"}, 
+			React.createElement("div", {className: "card-move btn btn-xs btn-default card-anchor glyphicon glyphicon-move", "aria-hidden": "true"}), 
 
 			React.createElement("span", {className: "h4 card-anchor"}, title), 
 
-			React.createElement("button", {className: "card-close btn btn-xs btn-default glyphicon glyphicon-remove pull-right", "aria-hidden": "true", onClick: this.props.onClose})
+			React.createElement("button", {className: "card-close btn btn-xs btn-default glyphicon glyphicon-remove", "aria-hidden": "true", onClick: this.props.onClose})
 
 		      ), 
 		      React.createElement("div", {className: "card-content", style: contentSize}, 

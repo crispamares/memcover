@@ -324,7 +324,7 @@ module.exports = React.createClass({
 
 	var computeWidth = function (key) {
 	    var width = _.result(_.find(layout, {i: key}), "w");
-	    return (contentWidth/12) * width - 40;
+	    return (contentWidth/12) * width - 20;
 	};
 	var computeHeight = function (key) {
 	    var height = _.result(_.find(layout, {i: key}), "h");
@@ -414,7 +414,7 @@ module.exports = React.createClass({
 				 return self.state.tables[card.config.table].schema.attributes[c];});
 			     component = (<PCPChart {...size}
 				 data={self.state.tables[card.config.table].data} 
-				 margin={{top: 50, right: 40, bottom: 40, left: 40}}
+				 margin={{top: 50, right: 40, bottom: 10, left: 40}}
 				 attributes={attributes}
 				 onBrush={function(extent){/*console.log(extent);*/}}
 				 >

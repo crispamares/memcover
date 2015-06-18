@@ -1,13 +1,31 @@
+.card {
+    overflow: hidden;
+    text-align: center;
+}
+
 .card .card-anchor {
     cursor: all-scroll;
 }
 
-.card .card-title {
-    padding: 0 0 4px 0;
+.card .card-header {
+    padding: 0 0px 4px 0px;
     text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
 }
 
 .card .card-content {
-    overflow: auto;
+    overflow-y: auto;
 }
 
+.card .card-close {
+    position:absolute;
+    right: 0px;
+    top: 5px;
+}
+
+.card .card-move {
+    position:absolute;
+    left: 1px;
+    top: 5px;    
+}

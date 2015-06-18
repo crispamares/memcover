@@ -12,16 +12,16 @@ module.exports = React.createClass({
 	/* var child = React.cloneElement(
 	   React.Children.only(this.props.children), 
 	   {width: this.props.width, height: this.props.height}); */
-	var contentSize = {width: this.props.size.width + 5, height: this.props.size.height + 5};
+	var contentSize = {width: this.props.size.width + 15, height: this.props.size.height + 15};
 
 	return (
 	    <div className="card" key={this.props.key}>
-	      <div className="card-title" > 
-		<span className="btn btn-xs btn-default card-anchor glyphicon glyphicon-move pull-left" aria-hidden="true"></span>
+	      <div className="card-header" > 
+		<div className="card-move btn btn-xs btn-default card-anchor glyphicon glyphicon-move" aria-hidden="true"></div>
 
 		<span className="h4 card-anchor">{title}</span>
 
-		<button className="card-close btn btn-xs btn-default glyphicon glyphicon-remove pull-right" aria-hidden="true" onClick={this.props.onClose}></button>
+		<button className="card-close btn btn-xs btn-default glyphicon glyphicon-remove" aria-hidden="true" onClick={this.props.onClose}></button>
 
 	      </div>
 	      <div className="card-content" style={contentSize}>
