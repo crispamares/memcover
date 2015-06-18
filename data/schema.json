@@ -8,13 +8,6 @@
    "shape": [], 
    "continuous": false
   }, 
-  "CE Gundersen": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  }, 
   "Patient": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
@@ -22,6 +15,27 @@
    "shape": [], 
    "continuous": false
   }, 
+  "Labeling": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Region": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Region volume estimation": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
   "No of cells/volume (mm3)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
@@ -36,13 +50,6 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Region": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
   "Total population estimated": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
@@ -50,15 +57,15 @@
    "shape": [], 
    "continuous": true
   }, 
-  "% Occupied by plaques": {
+  "Plaque AVG volume": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": false
   }, 
-  "Labeling": {
-   "attribute_type": "CATEGORICAL", 
+  "% Occupied by plaques": {
+   "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
@@ -71,14 +78,7 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Plaque AVG volume": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Region volume estimation": {
+  "CE Gundersen": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 

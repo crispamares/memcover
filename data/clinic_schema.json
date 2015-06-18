@@ -1,6 +1,20 @@
 {
  "index": "Patient", 
  "attributes": {
+  "Patient": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": true, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Gender": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
   "Decease age": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
@@ -8,8 +22,8 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Gender": {
-   "attribute_type": "CATEGORICAL", 
+  "Age at diagnosis": {
+   "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
@@ -22,7 +36,49 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Language impairment": {
+  "Post-mortem delay (hours)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Braak Scale": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  },
+  "CERAD Scale": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  },  
+  "MMSE (1)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "MMSE (2)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Initial behavior alteration": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Depression/Anxiety/Mood disorders": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -36,49 +92,7 @@
    "shape": [], 
    "continuous": false
   }, 
-  "MMSE (2)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "MMSE (1)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Depression/Anxiety/Mood disorders": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "CERAD Scale": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Age at diagnosis": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Patient": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": true, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Hypercholesterolemia": {
+  "Language impairment": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -92,14 +106,14 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Post-mortem delay (hours)": {
-   "attribute_type": "QUANTITATIVE", 
+  "Diabetes": {
+   "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
-  }, 
-  "Details on family history of dementia": {
+   "continuous": false
+  },
+  "Hypercholesterolemia": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -120,21 +134,7 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Initial behavior alteration": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Braak Scale": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Diabetes": {
+  "Details on family history of dementia": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 

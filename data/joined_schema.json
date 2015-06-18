@@ -8,21 +8,14 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Region volume estimation": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  }, 
-  "Decease age": {
-   "attribute_type": "QUANTITATIVE", 
+  "Patient": {
+   "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": false
   }, 
-  "Gender": {
+  "Labeling": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -36,12 +29,82 @@
    "shape": [], 
    "continuous": false
   }, 
+  "Region volume estimation": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "No of cells/volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Total markers counted": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
   "Total population estimated": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": true
+  }, 
+  "Plaque AVG volume": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "% Occupied by plaques": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total nucleators counted": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "CE Gundersen": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "Gender": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Decease age": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Age at diagnosis": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
   }, 
   "Disease progression": {
    "attribute_type": "QUANTITATIVE", 
@@ -50,8 +113,29 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Labeling": {
+  "Post-mortem delay (hours)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Braak Scale": {
    "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  },
+  "CERAD Scale": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  },  
+  "MMSE (1)": {
+   "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
@@ -64,7 +148,14 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Language impairment": {
+  "Initial behavior alteration": {
+   "attribute_type": "CATEGORICAL", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Depression/Anxiety/Mood disorders": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -78,77 +169,7 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Total nucleators counted": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Plaque AVG volume": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "CE Gundersen": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  }, 
-  "MMSE (1)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Depression/Anxiety/Mood disorders": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "CERAD Scale": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Age at diagnosis": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Patient": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "No of cells/volume (mm3)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": true
-  }, 
-  "% Occupied by plaques": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Hypercholesterolemia": {
+  "Language impairment": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -162,26 +183,19 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Post-mortem delay (hours)": {
-   "attribute_type": "QUANTITATIVE", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Details on family history of dementia": {
+  "Diabetes": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": false
-  }, 
-  "Total markers counted": {
-   "attribute_type": "QUANTITATIVE", 
+  },
+  "Hypercholesterolemia": {
+   "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": false
   }, 
   "Details of cardiovascular diseases": {
    "attribute_type": "CATEGORICAL", 
@@ -197,21 +211,7 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Initial behavior alteration": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Braak Scale": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Diabetes": {
+  "Details on family history of dementia": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
