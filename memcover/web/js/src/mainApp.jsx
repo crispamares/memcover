@@ -13,6 +13,7 @@ var CategoricalFilter = require('./categoricalFilter');
 var SimpleVis = require('./simpleVis');
 var Card = require('./card');
 var CardCreationMenu = require('./cardCreationMenu');
+var AnalysisMenu = require('./analysisMenu');
 
 var PCPChart = reactify(require('./pcpChart'), "PCPChart");
 var BoxChart = reactify(require('./boxChart'), "BoxChart");
@@ -161,9 +162,17 @@ var Store = {
 	Store.getFacetedData(table, selection, attr, facetAttr)
 	    .then( onChange )
 	    .catch(function(e){console.error(e);});
+    },
+
+    exportTable: function(table, fileName) {
+	var rpc = Context.instance().rpc;
+
+	rpc.call("export_dselect", [table.selection, table.name, fileName])
+	    .then(function(d){ 
+		var uri = "http://" + window.location.host + window.location.pathname + d;
+		window.open(uri, fileName);
+	    });
     }
-
-
 }
 
 
@@ -378,9 +387,12 @@ module.exports = React.createClass({
 		  </Button> 
 		</ModalTrigger>
 
-		<Button className="navbar-btn pull-right" style={ {"margin-right":10} }> 
-		  <Glyphicon glyph='save' /> Export Excell 
-		</Button> 
+                <AnalysisMenu className="navbar-btn pull-right" 
+			style={ {"margin-right":10} }
+			tables={this.state.tables} 
+			onSelection={function(table){Store.exportTable(table, table.name);}}>
+		  
+		</AnalysisMenu>
 
 	      </Navbar>
 

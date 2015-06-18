@@ -37,8 +37,6 @@ var CardCreationMenu = React.createClass({
 	    case "box":
 		card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
 		break;
-
-
 	}
 
 	this.props.onRequestHide();

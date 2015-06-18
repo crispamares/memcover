@@ -136,7 +136,7 @@ module.exports = {
 	function sortRegions (rows) {
 	    return rows.sort(function(a,b){
 		var order = ["DG", "CA3", "CA1", "SUB"];
-		return d3.descending(order.indexOf(a), order.indexOf(b)); 
+		return d3.ascending(order.indexOf(a), order.indexOf(b)); 
 	    })
 	}
 
@@ -150,7 +150,7 @@ module.exports = {
 	    }
 	    else if (d.attribute_type === 'CATEGORICAL') {
 		var domain = d3.set(_.pluck(data, name)).values();
-		domain = (d.name == "region") ? sortRegions(domain) : domain;
+		domain = (d.name == "Region") ? sortRegions(domain) : domain;
 		y[name] = d3.scale.ordinal()
 		    .domain(domain)
 		    .rangePoints([height, 0]);

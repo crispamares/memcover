@@ -27,7 +27,10 @@ def export_dselect(dselect_name, dataset_name, name):
         if attr.is_multidimensional():
             project[name] = False
 
-    data = dataset.find(dselect.query, project).get_data('rows')
+    if dselect.get_conditions():
+        data = dataset.find(dselect.query, project).get_data('rows')
+    else:
+        data = dataset.get_data('rows')
     df = pd.DataFrame(data)
     df.to_excel(os.path.join(ASSETSPATH, 'exports', download_name))
 

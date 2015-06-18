@@ -114,6 +114,7 @@
 	var SimpleVis = __webpack_require__(13);
 	var Card = __webpack_require__(10);
 	var CardCreationMenu = __webpack_require__(11);
+	var AnalysisMenu = __webpack_require__(224);
 
 	var PCPChart = reactify(__webpack_require__(14), "PCPChart");
 	var BoxChart = reactify(__webpack_require__(12), "BoxChart");
@@ -262,9 +263,17 @@
 		Store.getFacetedData(table, selection, attr, facetAttr)
 		    .then( onChange )
 		    .catch(function(e){console.error(e);});
+	    },
+
+	    exportTable: function(table, fileName) {
+		var rpc = Context.instance().rpc;
+
+		rpc.call("export_dselect", [table.selection, table.name, fileName])
+		    .then(function(d){ 
+			var uri = "http://" + window.location.host + window.location.pathname + d;
+			window.open(uri, fileName);
+		    });
 	    }
-
-
 	}
 
 
@@ -479,8 +488,11 @@
 			  )
 			), 
 
-			React.createElement(Button, {className: "navbar-btn pull-right", style:  {"margin-right":10} }, 
-			  React.createElement(Glyphicon, {glyph: "save"}), " Export Excell" 
+	                React.createElement(AnalysisMenu, {className: "navbar-btn pull-right", 
+				style:  {"margin-right":10}, 
+				tables: this.state.tables, 
+				onSelection: function(table){Store.exportTable(table, table.name);}}
+			  
 			)
 
 		      ), 
@@ -1260,8 +1272,6 @@
 		    case "box":
 			card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
 			break;
-
-
 		}
 
 		this.props.onRequestHide();
@@ -1974,7 +1984,7 @@
 		function sortRegions (rows) {
 		    return rows.sort(function(a,b){
 			var order = ["DG", "CA3", "CA1", "SUB"];
-			return d3.descending(order.indexOf(a), order.indexOf(b)); 
+			return d3.ascending(order.indexOf(a), order.indexOf(b)); 
 		    })
 		}
 
@@ -1988,7 +1998,7 @@
 		    }
 		    else if (d.attribute_type === 'CATEGORICAL') {
 			var domain = d3.set(_.pluck(data, name)).values();
-			domain = (d.name == "region") ? sortRegions(domain) : domain;
+			domain = (d.name == "Region") ? sortRegions(domain) : domain;
 			y[name] = d3.scale.ordinal()
 			    .domain(domain)
 			    .rangePoints([height, 0]);
@@ -29536,6 +29546,52 @@
 	};
 
 	module.exports = keyMirror;
+
+
+/***/ },
+/* 223 */,
+/* 224 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var _ = __webpack_require__(2);
+
+	var BS = __webpack_require__(33);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	    getDefaultProps: function() {
+		return {
+		    tables: {},
+		    label: "Export",
+		    header: "Export to Excel",
+		    bsStyle: "default"
+		};
+	    },
+
+	    render: function() {
+		var handleClick = this.props.onSelection;
+		var header = this.props.header;
+		return (
+	            React.createElement(BS.DropdownButton, {className: this.props.className, style: this.props.style, bsStyle: this.props.bsStyle, title: this.props.label}, 
+		      React.createElement(BS.MenuItem, {header: true}, " ", header, " "), 
+		      
+		      
+			  _.values(this.props.tables).map(function(table, i) {
+			      return(
+	                          React.createElement(BS.MenuItem, {eventKey: i, onSelect:  handleClick.bind(this, table) }, 
+				  table.name
+				  )
+			      )
+			  })
+		       
+	            )
+		)
+	    }
+
+	});
 
 
 /***/ }
