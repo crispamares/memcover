@@ -31,8 +31,9 @@ var CardCreationMenu = React.createClass({
 	    case "scatter":
 		card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
 		break;
-	    case "categoricalFilter":
+	    case "columnFilter":
 		card.title = _.capitalize(config.column) + " - " + config.table;
+		card.kind = (config.attribute_type === "QUANTITATIVE") ? "rangeFilter" : "categoricalFilter";
 		break;
 	    case "box":
 		card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
@@ -69,8 +70,8 @@ var CardCreationMenu = React.createClass({
 			      case "regions":
 				  tabNode = <RegionsMenu ref={tab.kind} options={tab.options}/>;
 				  break;
-			      case "categoricalFilter":
-				  tabNode = <CategoricalFilterMenu ref={tab.kind} options={tab.options}/>;
+			      case "columnFilter":
+				  tabNode = <ColumnFilterMenu ref={tab.kind} options={tab.options}/>;
 				  break;
 			      case "box":
 				  tabNode = <BoxMenu ref={tab.kind} options={tab.options}/>;
@@ -293,14 +294,8 @@ var ScatterMenu = React.createClass({
 });
 
 
-var CategoricalFilterMenu = React.createClass({
+var ColumnFilterMenu = React.createClass({
 
-    // options: { 
-    //     tables:["morpho", "clinic"],
-    //     attributes:[
-    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
-    //     ]
-    // }
     mixins: [React.addons.LinkedStateMixin],
     getInitialState: function() {
 	var table = this.props.table || this.props.options.tables[0];
@@ -311,9 +306,11 @@ var CategoricalFilterMenu = React.createClass({
     },
 
     getConfig: function() {
+	var attribute_type = _.find(this.props.options.columns[this.state.table], {name: this.state.column}).attribute_type;
 	return {
 	    table: this.state.table,
 	    column: this.state.column,
+	    attribute_type: attribute_type
 	};
     },
 

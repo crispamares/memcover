@@ -1,27 +1,23 @@
-.brush{
+.rangeSlider .brush{
     stroke: #aaa;
     shape-rendering: crispEdges;
 }
-.brush .extent {
+.rangeSlider .brush .extent {
     stroke: #fff;
     fill: #000;
     fill-opacity: .125;
 }
-.brush .resize {
+.rangeSlider .brush .resize {
     stroke: #aaa;
     fill: #e7e7e7;
 }
 
-.brush .background {
+.rangeSlider .brush .background {
     fill: #f5f5f5;
     stroke: none;
 }
 
-svg.slider {
-/*background: #f5f5f5;*/
-}
-
-svg.slider .axis path, svg.slider .axis line {
+svg.rangeSlider .axis path, svg.rangeSlider .axis line {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges;

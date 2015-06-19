@@ -10,6 +10,7 @@ var reactify = require('./reactify');
 var DataTable = require('./dataTable');
 var BrainRegions = require('./brainRegions');
 var CategoricalFilter = require('./categoricalFilter');
+var RangeFilter = require('./rangeFilter');
 var SimpleVis = require('./simpleVis');
 var Card = require('./card');
 var CardCreationMenu = require('./cardCreationMenu');
@@ -98,7 +99,7 @@ var Store = {
     },
 	
     /**
-     * @param kind: "categorical", "quantitative"
+     * @param kind: "categorical", "range"
      * @return: condition
      */
     createCondition: function(selection, column, kind) {
@@ -152,6 +153,12 @@ var Store = {
     toggleCategory: function(condition, category) {
 	var rpc = Context.instance().rpc;
 	return rpc.call('ConditionSrv.toggle_category', [condition, category]);
+    },
+
+    setRange: function(condition, range) {
+	var rpc = Context.instance().rpc;
+
+	return rpc.call('ConditionSrv.set_range', [condition, range[0], range[1], false]);
     },
 
     getFacetedData: function(table, selection, attr, facetAttr) {
@@ -299,18 +306,20 @@ module.exports = React.createClass({
 	    Store.enableCondition(condition);
 	    return;
 	}
+	console.log("Creating a new condition:", kind, table, selection);
 	var self = this;
 	Store.createCondition(selection, column, kind)
 	    .then(function(condition) { 
-		Store.includeAll(condition)
-		    .then(function() { 
-			Store.linkCondition( condition, function(grammar) {
-			    self.putState(
-				["conditions", table, selection, column],
-				{name: condition, grammar: grammar});
-			    console.log("GRAMMAR: ", grammar);
-			}); 
-		    });
+		var linkCondition = function() { 
+		    Store.linkCondition( condition, function(grammar) {
+			self.putState(
+			    ["conditions", table, selection, column],
+			    {name: condition, grammar: grammar});
+			console.log("GRAMMAR: ", grammar);
+		    }); 
+		}
+		if (kind === "categorical") Store.includeAll(condition).then(linkCondition);
+		else linkCondition();
 	    });
     },
 
@@ -362,6 +371,33 @@ module.exports = React.createClass({
 				 onClickedCategory={Store.toggleCategory.bind(this, condition)} />);
 	return component;
     },
+
+
+
+    renderRangeFilterCard: function(card, size) {
+	var table = card.config.table;
+	var column = card.config.column;
+	var selection = this.state.tables[table].selection;
+
+	var initCondition = this.initCondition.bind(this, "range", table, selection, column);
+
+	var conditionPath = ["conditions", table, selection, column];
+	var condition = _.get(this.state, conditionPath.concat(["name"]));
+	var disableCondition = Store.disableCondition.bind(this, condition);
+
+	var domain = _.get(this.state, conditionPath.concat(["grammar", "domain"])) || {min:0, max:1};
+	var range = _.get(this.state, conditionPath.concat(["grammar", "range"])) || domain;
+	var extent = [ range['min'], range['max'] ];
+
+	var component = (<RangeFilter {...size} 
+				 onMount={initCondition}
+				 onUnmount={disableCondition}
+				 domain={domain}
+				 extent={extent}
+				 onChange={Store.setRange.bind(this, condition)} />);
+	return component;
+    },
+
     
     render: function(){
 	var self = this;
@@ -388,17 +424,15 @@ module.exports = React.createClass({
 		function(value, key){return {name: key, included: true};}
 	    );
 	});
-	var quantitativeColumns = _.mapValues(self.state.tables, function(table){
-	    return _.chain(table.schema.attributes)
-		.filter({attribute_type: "QUANTITATIVE"})
-		.map(function(value, key){return {name: value.name};})
-		.value();
+
+	var columns = _.mapValues(self.state.tables, function(table){
+	    return _.map(table.schema.attributes, function(v, key){return {name: v.name, attribute_type: v.attribute_type};});
 	});
-	var categoricalColumns = _.mapValues(self.state.tables, function(table){
-	    return _.chain(table.schema.attributes)
-		.filter({attribute_type: "CATEGORICAL"})
-		.map(function(value, key){return {name: value.name};})
-		.value();
+	var quantitativeColumns = _.mapValues(columns, function(tableColumns){
+	    return _.filter(tableColumns, {attribute_type: "QUANTITATIVE"});
+	});
+	var categoricalColumns = _.mapValues(columns, function(tableColumns){
+	    return _.filter(tableColumns, {attribute_type: "CATEGORICAL"});
 	});
 
 	var creationVisMenuTabs = [
@@ -410,7 +444,7 @@ module.exports = React.createClass({
 
 	var creationFilterMenuTabs = [
 	    { kind: "regions", title: "Regions", options: {}},
-	    { kind: "categoricalFilter", title: "Categorical Filter", options: { tables: tables, columns: categoricalColumns } },
+	    { kind: "columnFilter", title: "Columns Filter", options: { tables: tables, columns: columns } },
 	];
 
 	return (
@@ -491,6 +525,9 @@ module.exports = React.createClass({
 			     break;
 			 case "categoricalFilter":
 			     component =  self.renderCategroricalFilterCard(card, size);
+			     break;
+			 case "rangeFilter":
+			     component =  self.renderRangeFilterCard(card, _.set(size, "height", 45));
 			     break;
 			 case "box":
 			     var table = card.config.table;
