@@ -1379,7 +1379,7 @@
 		var tabs = this.props.tabs
 
 		return (
-		    React.createElement(Modal, React.__spread({},  this.props, {bsSize: "large", title: "Select a card to be added", animation: true}), 
+		    React.createElement(Modal, React.__spread({},  this.props, {bsSize: "large", title: "Add new card", animation: true}), 
 		      React.createElement("div", {className: "modal-body"}, 
 			
 			React.createElement(TabbedArea, {activeKey: this.state.activeTab, onSelect: this.handleSelectTab}, 
@@ -1395,7 +1395,7 @@
 					  tabNode = React.createElement(ScatterMenu, {ref: tab.kind, options: tab.options});
 					  break;
 				      case "regions":
-					  tabNode = React.createElement(DummyMenu, {ref: tab.kind, options: tab.options});
+					  tabNode = React.createElement(RegionsMenu, {ref: tab.kind, options: tab.options});
 					  break;
 				      case "categoricalFilter":
 					  tabNode = React.createElement(CategoricalFilterMenu, {ref: tab.kind, options: tab.options});
@@ -1470,6 +1470,15 @@
 	    render: function() { return (React.createElement("span", null));}
 	});
 
+	var RegionsMenu = React.createClass({displayName: "RegionsMenu",
+	    getConfig: function() { return {};},
+	    render: function() { return ( 
+		React.createElement("div", {style: {"text-align": "center"}}, 
+		  React.createElement("img", {height: "200px", style: {margin: "20px auto 0 auto"}, src: "assets/hipo_foto.svg"})
+		)
+	    );}
+	});
+
 
 	var DataTableMenu = React.createClass({displayName: "DataTableMenu",
 
@@ -1524,7 +1533,7 @@
 			  React.createElement("form", {style:  {position: "relative"} }, 
 			    React.createElement(TableMenuItem, {tableLink: this.linkState('table'), tables: options.tables}, " "), 
 			    React.createElement("label", null, " Columns: "), 
-			    React.createElement(BS.ButtonGroup, {style:  {"margin-left": "30px", position: "absolute", right: "0px"} }, 
+			    React.createElement(BS.ButtonGroup, {style:  {position: "absolute", right: "0px"} }, 
 	                      React.createElement(Button, {onClick: function(){handleMultiCheck(true)}}, " Select All "), 
 	                      React.createElement(Button, {onClick: function(){handleMultiCheck(false)}}, " Unselect All ")
 			    ), 

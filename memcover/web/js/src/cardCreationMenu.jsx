@@ -51,7 +51,7 @@ var CardCreationMenu = React.createClass({
 	var tabs = this.props.tabs
 
 	return (
-	    <Modal {...this.props} bsSize="large" title='Select a card to be added' animation={true}>
+	    <Modal {...this.props} bsSize="large" title="Add new card" animation={true}>
 	      <div className='modal-body'>
 		
 		<TabbedArea activeKey={this.state.activeTab} onSelect={this.handleSelectTab}>
@@ -67,7 +67,7 @@ var CardCreationMenu = React.createClass({
 				  tabNode = <ScatterMenu ref={tab.kind} options={tab.options}/>;
 				  break;
 			      case "regions":
-				  tabNode = <DummyMenu ref={tab.kind} options={tab.options}/>;
+				  tabNode = <RegionsMenu ref={tab.kind} options={tab.options}/>;
 				  break;
 			      case "categoricalFilter":
 				  tabNode = <CategoricalFilterMenu ref={tab.kind} options={tab.options}/>;
@@ -142,6 +142,15 @@ var DummyMenu = React.createClass({
     render: function() { return (<span></span>);}
 });
 
+var RegionsMenu = React.createClass({
+    getConfig: function() { return {};},
+    render: function() { return ( 
+	<div style={{"text-align": "center"}}>
+	  <img height="200px" style={{margin: "20px auto 0 auto"}}  src="assets/hipo_foto.svg"/>
+	</div>
+    );}
+});
+
 
 var DataTableMenu = React.createClass({
 
@@ -196,7 +205,7 @@ var DataTableMenu = React.createClass({
 		  <form style={ {position: "relative"} }>
 		    <TableMenuItem tableLink={this.linkState('table')} tables={options.tables}> </TableMenuItem>
 		    <label> Columns: </label>
-		    <BS.ButtonGroup style={ {"margin-left": "30px", position: "absolute", right: "0px"} }>
+		    <BS.ButtonGroup style={ {position: "absolute", right: "0px"} }>
                       <Button onClick={function(){handleMultiCheck(true)}}> Select All </Button>
                       <Button onClick={function(){handleMultiCheck(false)}}> Unselect All </Button>
 		    </BS.ButtonGroup>
