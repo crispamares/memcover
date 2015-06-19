@@ -154,34 +154,62 @@ var DataTableMenu = React.createClass({
     // }
     mixins: [React.addons.LinkedStateMixin],
     getInitialState: function() {
-	return {table: this.props.options.tables[0]};
+	return {
+	    table: this.props.options.tables[0],
+	    columns: this.props.options.columns
+	};
     },
 
     getConfig: function() {
 	var self = this;
-	var columns = this.props.options.columns[ this.state.table ].map(
-	    function(column, i){return {name: column.name, included: self.refs["col"+i].getChecked()};})
-
+//	var columns = this.props.options.columns[ this.state.table ].map(
+//	    function(column, i){return {name: column.name, included: self.refs["col"+i].getChecked()};})
+	var columns = this.state.columns[this.state.table];
 	return {
 	    table: this.state.table,
 	    columns: columns
 	};
     },
 
+    handleCheck: function(table, column_i, checked) {
+	var state = _.set(this.state, ["columns", table, column_i, "included"], checked);
+	console.log(state);
+	this.setState(state);
+    },
+
+    handleMultiCheck: function(table, checked) {
+	var columns = this.state.columns[table];
+	columns = _.map(columns, function(column) {column.included = checked; return column;});
+	var state = _.set(this.state, ["columns", table], columns);
+	this.setState(state);
+    },
+
     render: function() {
 	var options = this.props.options;
-	var columns = options.columns[this.state.table];
+	var columns = this.state.columns[this.state.table];
+	var handleCheck = this.handleCheck.bind(this, this.state.table);
+	var handleMultiCheck = this.handleMultiCheck.bind(this, this.state.table);
 	return (
-            <form>
-	      <TableMenuItem tableLink={this.linkState('table')} tables={options.tables}> </TableMenuItem>
-              <label> Columns: </label>
-	      {
-		  columns.map(function(column, i){
-		      return (<Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
-			  label={column.name} defaultChecked={column.included}/>);
-		  })
-	       }
-            </form>
+            <div>
+              <div className="row">
+		<div className="col-sm-12">
+		  <form style={ {position: "relative"} }>
+		    <TableMenuItem tableLink={this.linkState('table')} tables={options.tables}> </TableMenuItem>
+		    <label> Columns: </label>
+		    <BS.ButtonGroup style={ {"margin-left": "30px", position: "absolute", right: "0px"} }>
+                      <Button onClick={function(){handleMultiCheck(true)}}> Select All </Button>
+                      <Button onClick={function(){handleMultiCheck(false)}}> Unselect All </Button>
+		    </BS.ButtonGroup>
+		    {
+			columns.map(function(column, i){
+			    return (<Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
+				label={column.name} onChange={function(ev) {handleCheck(i, ev.target.checked)}} checked={column.included}/>);
+			})
+		     }
+		  </form>
+		</div>
+	      </div>
+	    </div>
 	);
 
     }
