@@ -9,7 +9,7 @@ module.exports = {
     },
 
     componentWillUnmount: function() {
-	this.props.onUnmount && this.props.Unmount();
+	this.props.onUnmount && this.props.onUnmount();
     },
 
 };

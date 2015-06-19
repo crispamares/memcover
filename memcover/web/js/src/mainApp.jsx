@@ -62,14 +62,29 @@ var Store = {
 	    .catch(function(e){console.error(e);});
 	return promise;
     },
-    
+
+    isSelectionEmpty: function(selection) {
+	var rpc = Context.instance().rpc;
+
+	return rpc.call('DynSelectSrv.grammar_of_conditions', [selection])
+	    .then(function (conditions) {
+		if (conditions.length === 0) return true;
+		if (_.any(conditions, {enabled: true})) return false;
+		return true;
+	    });	    
+    },
+
     linkTableToSelection: function(table, selection, onChange) {
 	var rpc = Context.instance().rpc;
 	var hub = Context.instance().hub;
-	var self = this;
 
-	hub.subscribe(selection + ':change', function(){	    
-	    rpc.call('DynSelectSrv.view_args', [selection])
+	hub.subscribe(selection + ':change', function(){
+	    Store.isSelectionEmpty(selection)
+		.then(function (empty) {
+		    var view_args = {query: {}, projection: {}};
+		    if (! empty) view_args = rpc.call('DynSelectSrv.view_args', [selection]);
+		    return view_args;
+		})
 		.then(function(viewArgs){
 		    console.log("viewArgs", viewArgs);
 		    return rpc.call("TableSrv.find", [table, viewArgs.query, viewArgs.projection]);
@@ -124,6 +139,16 @@ var Store = {
 	return rpc.call('ConditionSrv.grammar', [condition]).then( onChange );
     },
 
+    enableCondition: function(condition) {
+	var rpc = Context.instance().rpc;
+	return rpc.call('ConditionSrv.enable', [condition]);
+    },
+
+    disableCondition: function(condition) {
+	var rpc = Context.instance().rpc;
+	return rpc.call('ConditionSrv.disable', [condition]);
+    },
+
     toggleCategory: function(condition, category) {
 	var rpc = Context.instance().rpc;
 	return rpc.call('ConditionSrv.toggle_category', [condition, category]);
@@ -132,10 +157,10 @@ var Store = {
     getFacetedData: function(table, selection, attr, facetAttr) {
 	var rpc = Context.instance().rpc;
 
-	return rpc.call('DynSelectSrv.get_conditions', [selection])
-	    .then(function (condition) {
+	return Store.isSelectionEmpty(selection)
+	    .then(function (empty) {
 		var query = null;
-		if (condition.length === 0) query = {};
+		if (empty) query = {};
 		else query = rpc.call('DynSelectSrv.query', [selection]);
 		return query;
 		})
@@ -197,8 +222,8 @@ module.exports = React.createClass({
 	};
 
 	var tables = {};
-	tables[this.props.morphoTable] = {name: this.props.morphoTable, data: [], schema: {attributes:{}}, selection: this.props.morphoSelection};
-	tables[this.props.clinicTable] = {name: this.props.clinicTable, data: [], schema: {attributes:{}}, selection: this.props.clinicSelection};
+	//tables[this.props.morphoTable] = {name: this.props.morphoTable, data: [], schema: {attributes:{}}, selection: this.props.morphoSelection};
+	//tables[this.props.clinicTable] = {name: this.props.clinicTable, data: [], schema: {attributes:{}}, selection: this.props.clinicSelection};
 	tables[this.props.joinedTable] = {name: this.props.joinedTable, data: [], schema: {attributes:{}}, selection: this.props.joinedSelection};
 
 
@@ -268,6 +293,12 @@ module.exports = React.createClass({
     },
 
     initCondition: function(kind, table, selection, column) {
+	var condition = _.get(this.state, ["conditions", table, selection, column, "name"]);
+	if (condition) {
+	    console.log("Don't create a new condition. Already created");
+	    Store.enableCondition(condition);
+	    return;
+	}
 	var self = this;
 	Store.createCondition(selection, column, kind)
 	    .then(function(condition) { 
@@ -284,13 +315,15 @@ module.exports = React.createClass({
     },
 
     renderRegionsCard: function(card, size) {
-	var initRegions = this.initCondition.bind(this, "categorical", this.props.morphoTable, this.props.morphoSelection, "Region");
+	var initRegions = this.initCondition.bind(this, "categorical", this.props.joinedTable, this.props.joinedSelection, "Region");
 
-	var conditionPath = ["conditions", this.props.morphoTable, this.props.morphoSelection, "Region"];
+	var conditionPath = ["conditions", this.props.joinedTable, this.props.joinedSelection, "Region"];
 	var condition = _.get(this.state, conditionPath.concat(["name"]));
+	var disableCondition = Store.disableCondition.bind(this, condition);
 
 	var component = (<BrainRegions {...size} 
 			     onMount={initRegions}
+			     onUnmount={disableCondition}
 			     includedRegions={_.get(this.state, conditionPath.concat(["grammar", "included_categories"]), [])}
 			     onClickRegion={Store.toggleCategory.bind(this, condition)}>
 	</BrainRegions>);
@@ -307,6 +340,7 @@ module.exports = React.createClass({
 
 	var conditionPath = ["conditions", table, selection, column];
 	var condition = _.get(this.state, conditionPath.concat(["name"]));
+	var disableCondition = Store.disableCondition.bind(this, condition);
 
 	var included = _.get(this.state, conditionPath.concat(["grammar", "included_categories"]));
 	var excluded = _.get(this.state, conditionPath.concat(["grammar", "excluded_categories"]));
@@ -323,6 +357,7 @@ module.exports = React.createClass({
 
 	var component = (<CategoricalFilter {...size} 
 				 onMount={initCondition}
+				 onUnmount={disableCondition}
 				 categories={categories} 
 				 onClickedCategory={Store.toggleCategory.bind(this, condition)} />);
 	return component;
