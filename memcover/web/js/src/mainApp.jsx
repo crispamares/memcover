@@ -134,6 +134,7 @@ var Store = {
 
 	return rpc.call('DynSelectSrv.query', [selection])
 	    .then(function (query) {
+		query[attr] = {$type : 1}; // Only Number types, not NaN
 		var aggregation = [{$match: query},
 		    {$group: {_id: '$'+facetAttr, 
 			'list': {$push: '$'+attr},
