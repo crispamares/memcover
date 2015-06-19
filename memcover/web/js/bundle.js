@@ -233,7 +233,13 @@
 	    getFacetedData: function(table, selection, attr, facetAttr) {
 		var rpc = Context.instance().rpc;
 
-		return rpc.call('DynSelectSrv.query', [selection])
+		return rpc.call('DynSelectSrv.get_conditions', [selection])
+		    .then(function (condition) {
+			var query = null;
+			if (condition.length === 0) query = {};
+			else query = rpc.call('DynSelectSrv.query', [selection]);
+			return query;
+			})
 		    .then(function (query) {
 			query[attr] = {$type : 1}; // Only Number types, not NaN
 			var aggregation = [{$match: query},
