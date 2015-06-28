@@ -98,17 +98,26 @@ var CardCreationMenu = React.createClass({
 
 module.exports = CardCreationMenu;
 
+/**
+ * Shows a table selection only when props.tables has more than one item
+ */
 var TableMenuItem = React.createClass({
     render: function() {
-	return (
-	      <Input type="select" label="Data Table" ref="table" valueLink={this.props.tableLink}>
+	if (this.props.tables.length > 1) {
+	    return (
+		<Input type="select" label="Data Table" ref="table" valueLink={this.props.tableLink}>
 	        {
 		    this.props.tables.map(function(table, i){
 			return (<option  key={"table" + i} value={table}> {table} </option>);
 		    })
 		 }
               </Input>
-	)}    
+	    )
+	}
+	else {
+	    return (<div></div>);
+	}
+    }
 });
 
 var RadioColumnsMenuItem = React.createClass({
