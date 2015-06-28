@@ -505,6 +505,10 @@ module.exports = React.createClass({
 				 margin={{top: 50, right: 40, bottom: 10, left: 40}}
 				 attributes={attributes}
 				 onBrush={function(extent){/*console.log(extent);*/}}
+				 onAttributeSort={ function(attributes){ 
+				     var columns = _.map(attributes, function(attr){return {name: attr.name, included: true}});
+				     self.putState( ["cards", card.key, "config", "columns"], columns );}
+				 } 
 				 >
 			     </PCPChart>);
 			     break;

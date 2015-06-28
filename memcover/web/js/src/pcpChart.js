@@ -69,7 +69,6 @@ module.exports = {
 			.attr("class", "axis")
 		      .append("text")
 			.attr("text-anchor", "middle")
-			.attr("y", function(d,i){return (i%2)? -9 : -27;})
 			.attr("class", "dimension") ;})
 
 		.call(function(g) {
@@ -82,17 +81,17 @@ module.exports = {
 		      .origin(function(d) { return {x: scales.x(d)}; })
 		      .on("dragstart", this._dragstart(props.attributes, dragState))
 		      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
-		      .on("dragend", this._dragend(scales, props.attributes, width, path))
+		      .on("dragend", this._dragend(scales, props.attributes, width, path, svg))
 		     );
 	coordinates.selectAll("g.axis")
 	    .each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); });
-	coordinates.selectAll("text.dimension")			
-	    .text(function(d){return _.capitalize(String(d));});
 	coordinates.selectAll("g.brush")
 		.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
 	    .selectAll("rect")
 		.attr("x", -8)
 		.attr("width", 16);
+
+	this._humanizeCoordinateLabels(coordinates.selectAll("text.dimension"), props.attributes);
 
 	coordinates.exit().remove();
 
@@ -116,14 +115,17 @@ module.exports = {
 	};
     },
 
-    _dragend: function(scales, attributes, width, path) {
+    _dragend: function(scales, attributes, width, path, svg) {
 	var x = scales.x;
-
+	var self = this;
 	return function dragend(d) {
 	    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
 	    var t = d3.transition().duration(500);
 	    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
 	    t.selectAll(".foreground path").attr("d", path);
+
+	    // TODO: Sort Coordinates after the animation
+	    _.delay(function(){self.props.onAttributeSort(attributes)}, 500);
 	};
     },
 
@@ -209,6 +211,11 @@ module.exports = {
 	    return line(_.pluck(attributes, "name")
 			.map(function(a) { return [scales.x(a), scales.y[a](d[a])]; }));  	
 	};
+    },
+
+    _humanizeCoordinateLabels: function(textSelection, attributes) {
+	textSelection.text(function(d){return _.capitalize(String(d));});
+	textSelection.transition().attr("y", function(d,i){return (_.findIndex(attributes, {name:d}) %2)? -9 : -27;});
     }
 
 };
