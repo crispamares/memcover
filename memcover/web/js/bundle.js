@@ -4604,7 +4604,7 @@
 	var _ = __webpack_require__(2);
 
 	module.exports = {
-	    createChart: function(container, props, state){
+	    createChart: function(container, props, state) {
 		var margin = this.props.margin;
 		var width = this.props.width - margin.left - margin.right;
 		var height = this.props.height - margin.top - margin.bottom;
@@ -4616,7 +4616,9 @@
 		  .append("g")
 		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+		svg.append("g").attr("class", "nanAxis");
 		svg.append("g").attr("class", "foreground");
+
 	    },
 
 	    cleanChart: function(container, props, state){
@@ -4629,22 +4631,22 @@
 		    this.createChart(container, props, state);
 		    return null
 		};
-		console.log("UPDATE"); 
 		var self = this;
+		var nanMargin = 50;
 		var margin = props.margin;
 		var width = props.width - margin.left - margin.right;
-		var height = props.height - margin.top - margin.bottom;
-
+		var height = props.height - margin.top - margin.bottom - nanMargin;
+		var nanY = height + (nanMargin / 2);
 
 		var axis = d3.svg.axis().orient("left");
 		var scales = this._scales(width, height, props.data, props.attributes);
-		var path = this._path(props.attributes, scales);
+		var path = this._path(props.attributes, scales, nanY);
 		var dragState = {};
 
 
 		var realSvg = d3.select(container).select("svg");
-		realSvg.attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom);
+		realSvg.attr("width", props.width)
+		    .attr("height", props.height);
 
 		var svg = d3.select(container).select("svg > g")
 		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -4692,10 +4694,26 @@
 		    .selectAll("rect")
 			.attr("x", -8)
 			.attr("width", 16);
-
 		this._humanizeCoordinateLabels(coordinates.selectAll("text.dimension"), props.attributes);
-
 		coordinates.exit().remove();
+
+
+		// Nan Axis
+		var x1 = scales.x.range()[0];
+		var x2 = _.last(scales.x.range());
+		var nanAxis = svg.selectAll("g.nanAxis").selectAll("g.axis").data(["nan"]);
+		nanAxis.enter()
+		    .append("g")
+		    .attr("class", "axis")
+		    .each(function(){
+			d3.select(this).append("line");
+			d3.select(this).append("text")
+			    .text("NaN")
+			    .attr("text-anchor", "right");
+		    });
+		nanAxis.attr("transform", "translate("+ 0 +", "+ nanY  +")");
+		nanAxis.selectAll("line").attr({x1:x1, y1:0, x2:x2, y2:0});
+		nanAxis.selectAll("text").attr("x", x1 - 40);
 
 		return null;
 	    },
@@ -4806,12 +4824,14 @@
 	    },
 
 	    // Cousure. Returns the path for a given data point.
-	    _path : function (attributes, scales) {
-		var line = d3.svg.line()
-			.defined(function(d){return !isNaN(d[1]);});
+	    _path : function (attributes, scales, nanY) {
+		var line = d3.svg.line();
+	//		.defined(function(d){return !isNaN(d[1]);});  // Breaks the line
 		return function (d) {
 		    return line(_.pluck(attributes, "name")
-				.map(function(a) { return [scales.x(a), scales.y[a](d[a])]; }));  	
+				.map(function(a) { 
+				    var y = scales.y[a](d[a])
+				    return [scales.x(a), !isNaN(y) ? y : nanY ]; }));
 		};
 	    },
 
