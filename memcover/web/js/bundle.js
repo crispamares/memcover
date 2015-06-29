@@ -103,28 +103,27 @@
 
 	var React = __webpack_require__(1);
 	var _ = __webpack_require__(2);
-	var ReactGridLayout = __webpack_require__(40);
+	var ReactGridLayout = __webpack_require__(20);
 
 	var Context = __webpack_require__(4);
 
-	var reactify = __webpack_require__(29);
-	var DataTable = __webpack_require__(30);
-	var BrainRegions = __webpack_require__(31);
-	var CategoricalFilter = __webpack_require__(32);
-	var RangeFilter = __webpack_require__(33);
-	var SimpleVis = __webpack_require__(34);
-	var Card = __webpack_require__(35);
-	var CardCreationMenu = __webpack_require__(36);
-	var AnalysisMenu = __webpack_require__(37);
+	var reactify = __webpack_require__(6);
+	var DataTable = __webpack_require__(7);
+	var BrainRegions = __webpack_require__(8);
+	var CategoricalFilter = __webpack_require__(9);
+	var RangeFilter = __webpack_require__(10);
+	var Card = __webpack_require__(12);
+	var CardCreationMenu = __webpack_require__(13);
+	var AnalysisMenu = __webpack_require__(14);
 
-	var PCPChart = reactify(__webpack_require__(38), "PCPChart");
-	var BoxChart = reactify(__webpack_require__(39), "BoxChart");
-	var ScatterChart = __webpack_require__(42).ScatterChart;
+	var PCPChart = reactify(__webpack_require__(15), "PCPChart");
+	var BoxChart = reactify(__webpack_require__(16), "BoxChart");
+	var ScatterChart = reactify(__webpack_require__(226), "ScatterChart");
 
 	/**
 	 *  Bootstrap requires
 	 */
-	var BS = __webpack_require__(43);
+	var BS = __webpack_require__(35);
 	var Navbar = BS.Navbar;
 	var Nav = BS.Nav;
 	var NavItem = BS.NavItem;
@@ -614,14 +613,14 @@
 				     ));
 				     break;
 				 case "scatter":
-				     var values = []; // NaN Filtered 
+				     var data = []
+				     // Filter NaNs 
 				     _.reduce(self.state.tables[card.config.table].data, function(acc, row) {
 					 if ( _.isNumber(row[card.config.xColumn]) && _.isNumber(row[card.config.yColumn]) ) {
 					     acc.push({x: row[card.config.xColumn], y: row[card.config.yColumn]});
 					 }
 					 return acc;
-				     }, values);
-				     var data = [{ name: "series1", values: values}];
+				     }, data);
 				     
 				     component = (React.createElement(ScatterChart, React.__spread({},  size,  card.config, {data: data})));
 				     break;
@@ -677,7 +676,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6), __webpack_require__(7), __webpack_require__(8)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(17), __webpack_require__(18), __webpack_require__(19)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket, WsRpc, Hub) {
 
 	    var Context = function(server, path, port){
 		var self = this;
@@ -838,24 +837,24 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var timed = __webpack_require__(9);
-		var array = __webpack_require__(10);
-		var flow = __webpack_require__(11);
-		var fold = __webpack_require__(12);
-		var inspect = __webpack_require__(13);
-		var generate = __webpack_require__(14);
-		var progress = __webpack_require__(15);
-		var withThis = __webpack_require__(16);
-		var unhandledRejection = __webpack_require__(17);
-		var TimeoutError = __webpack_require__(18);
+		var timed = __webpack_require__(22);
+		var array = __webpack_require__(23);
+		var flow = __webpack_require__(24);
+		var fold = __webpack_require__(25);
+		var inspect = __webpack_require__(26);
+		var generate = __webpack_require__(27);
+		var progress = __webpack_require__(28);
+		var withThis = __webpack_require__(29);
+		var unhandledRejection = __webpack_require__(30);
+		var TimeoutError = __webpack_require__(31);
 
 		var Promise = [array, flow, fold, generate, progress,
 			inspect, withThis, timed, unhandledRejection]
 			.reduce(function(Promise, feature) {
 				return feature(Promise);
-			}, __webpack_require__(19));
+			}, __webpack_require__(32));
 
-		var apply = __webpack_require__(20)(Promise);
+		var apply = __webpack_require__(33)(Promise);
 
 		// Public API
 
@@ -1054,11 +1053,1209 @@
 
 		return when;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(21));
+	})(__webpack_require__(41));
 
 
 /***/ },
 /* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var ChartContainerMixin = __webpack_require__(36);
+	var LifecycleMixin = __webpack_require__(37);
+
+	module.exports = function(chart, displayName){
+	    return React.createClass({displayName: displayName, mixins : [ChartContainerMixin, LifecycleMixin, chart]});
+	};
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	Object.assign = Object.assign || __webpack_require__(44);
+	var FixedDataTable = __webpack_require__(50);
+	var _ = __webpack_require__(2);
+
+	var Table = FixedDataTable.Table;
+	var Column = FixedDataTable.Column;
+
+
+	module.exports = React.createClass({displayName: "exports",
+	    getInitialState: function() {
+		 
+		var initialColumnWith = (this.props.columnNames.length) ?
+					Math.round(this.props.width / this.props.columnNames.length)
+		                        : 0;
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+		return {
+		    "columnWidths": columnWidths
+		};
+	    },
+	    getDefaultProps: function(){
+		return {
+		    rows: [],
+		    columnNames: []
+		}
+	    },
+	    _rowGetter: function(i) {return this.props.rows[i];},
+	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
+		this.state.columnWidths[dataKey] = newColumnWidth;
+	//	isColumnResizing = false;
+	    },
+	    render: function(){
+		var columnNames = this.props.columnNames;
+		var initialColumnWith = (this.props.columnNames.length) ?
+					Math.round(this.props.width / this.props.columnNames.length)
+		                        : 0;
+		var columnWidths = {};
+		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+
+		if (this.props.rows.length == 0) return (React.createElement("div", null));
+
+		return (
+		    React.createElement(Table, {
+			    rowHeight: 50, 
+			    rowGetter: this._rowGetter, 
+			    rowsCount: this.props.rows.length, 
+			    width: this.props.width, 
+			    height: this.props.height, 
+			    headerHeight: 50, 
+			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
+
+		      
+			  this.props.columnNames.map(function(name){
+			      return (
+				  React.createElement(Column, {
+				  label: name, 
+				  width: columnWidths[name], 			  
+				  dataKey: name, 
+				  isResizable: false}
+				  )
+			      );
+			  })
+		       
+		    )
+		);
+	    }
+	});
+
+
+
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(21);
+	var _ = __webpack_require__(2);
+
+	var LifecycleMixin = __webpack_require__(37);
+
+	module.exports = React.createClass({displayName: "exports",
+	    mixins: [LifecycleMixin],
+
+	    getDefaultProps: function() {
+		return {
+		    includedRegions: ["SUB", "DG", "CA3", "CA1"]
+		};
+	    },
+
+	    componentDidMount: function() {
+		var container = this.refs.container.getDOMNode();
+
+		container.addEventListener("load", function(){
+		    var svg = d3.select(container.contentDocument);
+
+		    this.update(svg, this.props, this.state);
+		}.bind(this));
+	    },
+
+	    shouldComponentUpdate: function(nextProps, nextState) {
+		var container = this.refs.container.getDOMNode();
+		container.setAttribute("width", nextProps.width - 10);
+		container.setAttribute("height", nextProps.height - 10);
+
+		var svg = d3.select(container.contentDocument);
+
+		this.update(svg, nextProps, nextState);
+		// render is not called again so the container is there until
+		// the end.
+		return false;
+	    },
+
+	    update: function(svg, props, state) {
+		var self = this;
+
+		var region = svg.selectAll("g.region")
+		    .datum(function() { return this.id; })
+		    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
+		    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d);};});
+
+		region.selectAll("path")
+		    .datum(function() { return this.parentNode.id; })
+		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "rgb(49, 130, 189)" : "#EEE";});
+
+		region.selectAll("text")
+		    .datum(function() { return this.parentNode.id; })
+		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
+		
+		props.includedRegions.forEach(function(region){
+		    svg.select("#"+region).select("text").style("fill", "white");
+		});
+
+	    },
+
+	    render: function(){
+		return (
+	            React.createElement("div", null, 
+		      React.createElement("object", {ref: "container", id: "svgobject", 
+			      type: "image/svg+xml", 
+			      width: this.props.width, 
+			      height: this.props.height, 
+			      data: "assets/hipo_foto.svg"}
+		      )
+	            )
+		);
+	    }
+	});
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(21);
+	var _ = __webpack_require__(2);
+
+	var LifecycleMixin = __webpack_require__(37);
+	var BS = __webpack_require__(35);
+	var Input = BS.Input;
+
+
+	module.exports = React.createClass({displayName: "exports",
+	    mixins: [LifecycleMixin],
+
+	    getDefaultProps: function() {
+		return {
+		    categories: []  // {name: "cat1", included: false}
+		};
+	    },
+
+	    render: function() {
+		var onClickedCategory = this.props.onClickedCategory;
+
+		return (
+		    React.createElement("form", {className: "form-inline"}, 
+		      
+			  this.props.categories.map(function(category, i){
+			      return (React.createElement(Input, {style:  {"margin-left": 20}, type: "checkbox", ref: "cat" + i, key: "cat" + category.name, 
+				  label: category.name, checked: category.included, 
+					      onChange: onClickedCategory.bind(this, category.name)})
+			      );
+			  })
+		       
+	            )
+		)
+	    }
+
+	});
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var d3 = __webpack_require__(21);
+	var _ = __webpack_require__(2);
+
+	var reactify = __webpack_require__(6);
+	var LifecycleMixin = __webpack_require__(37);
+	var BS = __webpack_require__(35);
+
+	var RangeSlider = reactify(__webpack_require__(39), "RangeSlider");
+
+	module.exports = React.createClass({displayName: "exports",
+	    mixins: [LifecycleMixin],
+
+	    getDefaultProps: function() {
+		return {
+		    domain: {min: 0, max: 1},
+		    extent: [0,1],
+		    height: 45
+		};
+	    },
+
+	    render: function() {
+
+		var onChange = _.throttle(this.props.onChange, 100);
+		var domain = this.props.domain;
+		var extent =  this.props.extent;
+
+		return (
+	            React.createElement(RangeSlider, {domain: domain, 
+			    extent: extent, 
+			    onMove: onChange, 
+			    width: this.props.width, 
+			    height: this.props.height}
+		    )
+		)
+	    }
+	});
+
+
+/***/ },
+/* 11 */,
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var _ = __webpack_require__(2);
+
+
+	module.exports = React.createClass({displayName: "exports",
+
+	    render: function() {
+		var title = this.props.title;
+
+		/* var child = React.cloneElement(
+		   React.Children.only(this.props.children), 
+		   {width: this.props.width, height: this.props.height}); */
+		var contentSize = {width: this.props.size.width + 15, height: this.props.size.height + 15};
+
+		return (
+		    React.createElement("div", {className: "card", key: this.props.key}, 
+		      React.createElement("div", {className: "card-header"}, 
+			React.createElement("div", {className: "card-move btn btn-xs btn-default card-anchor glyphicon glyphicon-move", "aria-hidden": "true"}), 
+
+			React.createElement("span", {className: "h4 card-anchor"}, title), 
+
+			React.createElement("button", {className: "card-close btn btn-xs btn-default glyphicon glyphicon-remove", "aria-hidden": "true", onClick: this.props.onClose})
+
+		      ), 
+		      React.createElement("div", {className: "card-content", style: contentSize}, 
+			this.props.children		
+		      )
+		    )
+		);
+	    }
+	});
+
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var _ = __webpack_require__(2);
+
+	/**
+	 *  Bootstrap requires
+	 */
+	var BS = __webpack_require__(35);
+	var Button = BS.Button;
+	var Modal = BS.Modal;
+	var TabbedArea = BS.TabbedArea;
+	var TabPane = BS.TabPane;
+	var Input = BS.Input;
+	var Col = BS.Col;
+
+	var CardCreationMenu = React.createClass({displayName: "CardCreationMenu",
+	    getInitialState: function() {
+		return {
+		    activeTab: this.props.tabs[0].kind
+		};
+	    },
+
+	    handleCreateCard: function() {
+
+		var config = this.refs[this.state.activeTab].getConfig();
+		var card = {kind:this.state.activeTab, title: config.table, config: config};
+
+		switch (this.state.activeTab) {
+		    // Nothing special for: ["table", "pcp", "regions"]
+		    case "scatter":
+			card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
+			break;
+		    case "columnFilter":
+			card.title = _.capitalize(config.column) + " - " + config.table;
+			card.kind = (config.attribute_type === "QUANTITATIVE") ? "rangeFilter" : "categoricalFilter";
+			break;
+		    case "box":
+			card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
+			break;
+		}
+
+		this.props.onRequestHide();
+		this.props.onCreateCard(card);
+	    },
+
+	    handleSelectTab: function(activeTab) {
+		this.setState({activeTab: activeTab});
+	    },
+
+	    render: function(){ 
+		var tabs = this.props.tabs
+
+		return (
+		    React.createElement(Modal, React.__spread({},  this.props, {bsSize: "large", title: "Add new card", animation: true}), 
+		      React.createElement("div", {className: "modal-body"}, 
+			
+			React.createElement(TabbedArea, {activeKey: this.state.activeTab, onSelect: this.handleSelectTab}, 
+			  
+			      tabs.map(function(tab) {
+				  var tabNode = null;
+				  switch (tab.kind) {
+				      case "table":
+				      case "pcp":
+					  tabNode = React.createElement(DataTableMenu, {ref: tab.kind, options: tab.options});
+					  break;
+				      case "scatter":
+					  tabNode = React.createElement(ScatterMenu, {ref: tab.kind, options: tab.options});
+					  break;
+				      case "regions":
+					  tabNode = React.createElement(RegionsMenu, {ref: tab.kind, options: tab.options});
+					  break;
+				      case "columnFilter":
+					  tabNode = React.createElement(ColumnFilterMenu, {ref: tab.kind, options: tab.options});
+					  break;
+				      case "box":
+					  tabNode = React.createElement(BoxMenu, {ref: tab.kind, options: tab.options});
+					  break;
+				  }
+				  return (
+				      React.createElement(TabPane, {eventKey: tab.kind, tab: tab.title}, 
+					tabNode
+				      )			  
+				  );
+			      })
+			  
+			)
+			
+		      ), 
+		      React.createElement("div", {className: "modal-footer"}, 
+			React.createElement(Button, {onClick: this.props.onRequestHide}, "Close"), 
+			React.createElement(Button, {onClick: this.handleCreateCard, bsStyle: "primary"}, "Create Card")
+		      )
+		    )
+		);
+	    }
+	});
+
+	module.exports = CardCreationMenu;
+
+	/**
+	 * Shows a table selection only when props.tables has more than one item
+	 */
+	var TableMenuItem = React.createClass({displayName: "TableMenuItem",
+	    render: function() {
+		if (this.props.tables.length > 1) {
+		    return (
+			React.createElement(Input, {type: "select", label: "Data Table", ref: "table", valueLink: this.props.tableLink}, 
+		        
+			    this.props.tables.map(function(table, i){
+				return (React.createElement("option", {key: "table" + i, value: table}, " ", table, " "));
+			    })
+			 
+	              )
+		    )
+		}
+		else {
+		    return (React.createElement("div", null));
+		}
+	    }
+	});
+
+	var RadioColumnsMenuItem = React.createClass({displayName: "RadioColumnsMenuItem",
+	    render: function() {
+		
+		return (
+			  React.createElement("form", null, 
+			    React.createElement("div", null, 
+			      React.createElement("label", null, " ", this.props.label, " ")
+			    ), 
+			    React.createElement("div", {className: "radio"}, 
+			      
+				  this.props.columns.map(function(column, i){
+				      return (
+					  React.createElement("label", {className: "radio"}, 
+					  React.createElement("input", {type: "radio", name: "columns", ref: "col" + i, key: "col" + column.name, 
+					  defaultChecked: column.included}), 
+					  column.name
+					  )
+				      );
+				  })
+			       
+			    )
+			  )
+
+		)}    
+	});
+
+
+	var DummyMenu = React.createClass({displayName: "DummyMenu",
+	    getConfig: function() { return {};},
+	    render: function() { return (React.createElement("span", null));}
+	});
+
+	var RegionsMenu = React.createClass({displayName: "RegionsMenu",
+	    getConfig: function() { return {};},
+	    render: function() { return ( 
+		React.createElement("div", {style: {"text-align": "center"}}, 
+		  React.createElement("img", {height: "200px", style: {margin: "20px auto 0 auto"}, src: "assets/hipo_foto.svg"})
+		)
+	    );}
+	});
+
+
+	var DataTableMenu = React.createClass({displayName: "DataTableMenu",
+
+	    // options: { 
+	    //     tables:["morpho", "clinic"],
+	    //     columns:[
+	    // 	     {name: "col1", included: true}, 
+	    // 	     {name: "col2", included: false}
+	    //     ]
+	    // }
+	    mixins: [React.addons.LinkedStateMixin],
+	    getInitialState: function() {
+		return {
+		    table: this.props.options.tables[0],
+		    columns: this.props.options.columns
+		};
+	    },
+
+	    getConfig: function() {
+		var self = this;
+	//	var columns = this.props.options.columns[ this.state.table ].map(
+	//	    function(column, i){return {name: column.name, included: self.refs["col"+i].getChecked()};})
+		var columns = this.state.columns[this.state.table];
+		return {
+		    table: this.state.table,
+		    columns: columns
+		};
+	    },
+
+	    handleCheck: function(table, column_i, checked) {
+		var state = _.set(this.state, ["columns", table, column_i, "included"], checked);
+		console.log(state);
+		this.setState(state);
+	    },
+
+	    handleMultiCheck: function(table, checked) {
+		var columns = this.state.columns[table];
+		columns = _.map(columns, function(column) {column.included = checked; return column;});
+		var state = _.set(this.state, ["columns", table], columns);
+		this.setState(state);
+	    },
+
+	    render: function() {
+		var options = this.props.options;
+		var columns = this.state.columns[this.state.table];
+		var handleCheck = this.handleCheck.bind(this, this.state.table);
+		var handleMultiCheck = this.handleMultiCheck.bind(this, this.state.table);
+		return (
+	            React.createElement("div", null, 
+	              React.createElement("div", {className: "row"}, 
+			React.createElement("div", {className: "col-sm-12"}, 
+			  React.createElement("form", {style:  {position: "relative"} }, 
+			    React.createElement(TableMenuItem, {tableLink: this.linkState('table'), tables: options.tables}, " "), 
+			    React.createElement("label", null, " Columns: "), 
+			    React.createElement(BS.ButtonGroup, {style:  {position: "absolute", right: "0px"} }, 
+	                      React.createElement(Button, {onClick: function(){handleMultiCheck(true)}}, " Select All "), 
+	                      React.createElement(Button, {onClick: function(){handleMultiCheck(false)}}, " Unselect All ")
+			    ), 
+			    
+				columns.map(function(column, i){
+				    return (React.createElement(Input, {type: "checkbox", ref: "col" + i, key: "col" + column.name, 
+					label: column.name, onChange: function(ev) {handleCheck(i, ev.target.checked)}, checked: column.included}));
+				})
+			     
+			  )
+			)
+		      )
+		    )
+		);
+
+	    }
+	});
+
+
+
+	var ScatterMenu = React.createClass({displayName: "ScatterMenu",
+
+	    // options: { 
+	    //     tables:["morpho", "clinic"],
+	    //     attributes:[
+	    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
+	    //     ]
+	    // }
+	    mixins: [React.addons.LinkedStateMixin],
+	    getInitialState: function() {
+		var table = this.props.table || this.props.options.tables[0];
+		return {
+		    table: table,
+		    xColumn: this.props.xColumn || this.props.options.columns[table][0].name,
+		    yColumn: this.props.yColumn || this.props.options.columns[table][0].name,
+		};
+	    },
+
+	    getConfig: function() {
+		return {
+		    table: this.state.table,
+		    xColumn: this.state.xColumn,
+		    yColumn: this.state.yColumn,
+		};
+	    },
+
+	    handleTableChange: function(table) {
+		this.setState({
+		    table: table,
+		    xColumn: this.props.options.columns[table][0].name,
+		    yColumn: this.props.options.columns[table][0].name,
+		});
+	    },
+
+	    render: function() {
+		var options = this.props.options;
+		var columns = options.columns[this.state.table];
+		var tableLink = {
+		    value: this.state.table,
+		    requestChange: this.handleTableChange
+		};
+
+		return (
+	            React.createElement("div", null, 
+	              React.createElement("form", null, 
+	 		React.createElement(TableMenuItem, {tableLink: tableLink, tables: options.tables})
+		      ), 
+
+		      React.createElement(Input, {type: "select", label: "X Coordinate", ref: "x", valueLink: this.linkState('xColumn')}, 
+		      
+			  columns.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
+		       
+		      ), 
+
+		      React.createElement(Input, {type: "select", label: "Y Coordinate", ref: "y", valueLink: this.linkState('yColumn')}, 
+		      
+			  columns.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
+		       
+		      )
+
+	            )
+		);
+
+	    }
+	});
+
+
+	var ColumnFilterMenu = React.createClass({displayName: "ColumnFilterMenu",
+
+	    mixins: [React.addons.LinkedStateMixin],
+	    getInitialState: function() {
+		var table = this.props.table || this.props.options.tables[0];
+		return {
+		    table: table,
+		    column: this.props.column || this.props.options.columns[table][0].name,
+		};
+	    },
+
+	    getConfig: function() {
+		var attribute_type = _.find(this.props.options.columns[this.state.table], {name: this.state.column}).attribute_type;
+		return {
+		    table: this.state.table,
+		    column: this.state.column,
+		    attribute_type: attribute_type
+		};
+	    },
+
+	    handleTableChange: function(table) {
+		this.setState({
+		    table: table,
+		    column: this.props.options.columns[table][0].name,
+		});
+	    },
+
+	    render: function() {
+		var options = this.props.options;
+		var columns = options.columns[this.state.table];
+		var tableLink = {
+		    value: this.state.table,
+		    requestChange: this.handleTableChange
+		};
+
+		return (
+	            React.createElement("div", null, 
+	              React.createElement("form", null, 
+	 		React.createElement(TableMenuItem, {tableLink: tableLink, tables: options.tables})
+		      ), 
+
+		      React.createElement(Input, {type: "select", label: "Column", ref: "col", valueLink: this.linkState('column')}, 
+		      
+			  columns.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
+		       
+		      )
+
+	            )
+		);
+
+	    }
+	});
+
+
+	var BoxMenu = React.createClass({displayName: "BoxMenu",
+
+	    // options: { 
+	    //     tables:["morpho", "clinic"],
+	    //     attributes:[
+	    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
+	    //     ]
+	    // }
+	    mixins: [React.addons.LinkedStateMixin],
+	    getInitialState: function() {
+		var table = this.props.table || this.props.options.tables[0];
+		return {
+		    table: table,
+		    attr: this.props.attr || this.props.options.quantitativeColumns[table][0].name,
+		    facetAttr: this.props.facetAttr || this.props.options.categoricalColumns[table][0].name,
+		};
+	    },
+
+	    getConfig: function() {
+		return {
+		    table: this.state.table,
+		    attr: this.state.attr,
+		    facetAttr: this.state.facetAttr,
+		};
+	    },
+
+	    handleTableChange: function(table) {
+		this.setState({
+		    table: table,
+		    attr: this.props.options.quantitativeColumns[table][0].name,
+		    facetAttr: this.props.options.categoricalColumns[table][0].name,
+		});
+	    },
+
+	    render: function() {
+		var options = this.props.options;
+		var attrs = options.quantitativeColumns[this.state.table];
+		var facetAttrs = options.categoricalColumns[this.state.table];
+		var tableLink = {
+		    value: this.state.table,
+		    requestChange: this.handleTableChange
+		};
+
+		return (
+	            React.createElement("div", null, 
+	              React.createElement("form", null, 
+	 		React.createElement(TableMenuItem, {tableLink: tableLink, tables: options.tables})
+		      ), 
+
+		      React.createElement(Input, {type: "select", label: "Column", ref: "attr", valueLink: this.linkState('attr')}, 
+		      
+			  attrs.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
+		       
+		      ), 
+
+		      React.createElement(Input, {type: "select", label: "Split By", ref: "facetAttr", valueLink: this.linkState('facetAttr')}, 
+		      
+			  facetAttrs.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
+		       
+		      )
+
+	            )
+		);
+
+	    }
+	});
+
+
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+	var _ = __webpack_require__(2);
+
+	var BS = __webpack_require__(35);
+
+	module.exports = React.createClass({displayName: "exports",
+
+	    getDefaultProps: function() {
+		return {
+		    tables: {},
+		    label: "Export",
+		    header: "Export to Excel",
+		    bsStyle: "default"
+		};
+	    },
+
+	    render: function() {
+		var handleClick = this.props.onSelection;
+		var header = this.props.header;
+		return (
+	            React.createElement(BS.DropdownButton, {className: this.props.className, style: this.props.style, bsStyle: this.props.bsStyle, title: this.props.label}, 
+		      React.createElement(BS.MenuItem, {header: true}, " ", header, " "), 
+		      
+		      
+			  _.values(this.props.tables).map(function(table, i) {
+			      return(
+	                          React.createElement(BS.MenuItem, {eventKey: i, onSelect:  handleClick.bind(this, table) }, 
+				  table.name
+				  )
+			      )
+			  })
+		       
+	            )
+		)
+	    }
+
+	});
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var d3 = __webpack_require__(21);
+	var _ = __webpack_require__(2);
+
+	module.exports = {
+	    createChart: function(container, props, state) {
+		var margin = this.props.margin;
+		var width = this.props.width - margin.left - margin.right;
+		var height = this.props.height - margin.top - margin.bottom;
+
+		var svg = d3.select(container).append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		    .attr("class", "pcp")
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		svg.append("g").attr("class", "nanAxis");
+		svg.append("g").attr("class", "foreground");
+
+	    },
+
+	    cleanChart: function(container, props, state){
+		// unsubscribe things 
+	    },
+
+	    update: function(container, props, state) {
+		if ( !(props.attributes.length && props.data.length)) {
+		    d3.select(container).html('');
+		    this.createChart(container, props, state);
+		    return null
+		};
+		var self = this;
+		var nanMargin = 50;
+		var margin = props.margin;
+		var width = props.width - margin.left - margin.right;
+		var height = props.height - margin.top - margin.bottom - nanMargin;
+		var nanY = height + (nanMargin / 2);
+
+		var axis = d3.svg.axis().orient("left");
+		var scales = this._scales(width, height, props.data, props.attributes);
+		var path = this._path(props.attributes, scales, nanY);
+		var dragState = {};
+
+
+		var realSvg = d3.select(container).select("svg");
+		realSvg.attr("width", props.width)
+		    .attr("height", props.height);
+
+		var svg = d3.select(container).select("svg > g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		// Add foreground lines.
+		var foreground = svg.select("g.foreground");
+		var foregroundLines = foreground.selectAll("path")
+		  .data(props.data, function(d){return d.measure_id;});
+		foregroundLines.enter().append("path");
+		foregroundLines.attr("d", path)
+		    .attr("class", function(d) {return d.patient;})
+		    .attr("title", function(d) {return d.measure_id;});
+		foregroundLines.exit().remove();
+
+		var brushes = this._brushes(scales, props.attributes, props.onBrush, foreground);
+
+		// Add a group element for each trait.
+		var coordinates = svg.selectAll(".coordinate")
+			.data(_.pluck(props.attributes, "name"), function(d){return d;});
+		coordinates.enter().append("g").attr("class", "coordinate")
+			.call(function(g) {
+			    // Add an axis and title.
+			    g.append("g")
+				.attr("class", "axis")
+			      .append("text")
+				.attr("text-anchor", "middle")
+				.attr("class", "dimension") ;})
+
+			.call(function(g) {
+			    // Add a brush for each axis.
+			    g.append("g")
+				.attr("class", "brush"); });
+		coordinates
+			.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
+			.call(d3.behavior.drag()
+			      .origin(function(d) { return {x: scales.x(d)}; })
+			      .on("dragstart", this._dragstart(props.attributes, dragState))
+			      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
+			      .on("dragend", this._dragend(scales, props.attributes, width, path, svg))
+			     );
+		coordinates.selectAll("g.axis")
+		    .each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); });
+		coordinates.selectAll("g.brush")
+			.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
+		    .selectAll("rect")
+			.attr("x", -8)
+			.attr("width", 16);
+		this._humanizeCoordinateLabels(coordinates.selectAll("text.dimension"), props.attributes);
+		coordinates.exit().remove();
+
+
+		// Nan Axis
+		var x1 = scales.x.range()[0];
+		var x2 = _.last(scales.x.range());
+		var nanAxis = svg.selectAll("g.nanAxis").selectAll("g.axis").data(["nan"]);
+		nanAxis.enter()
+		    .append("g")
+		    .attr("class", "axis")
+		    .each(function(){
+			d3.select(this).append("line");
+			d3.select(this).append("text")
+			    .text("NaN")
+			    .attr("text-anchor", "right");
+		    });
+		nanAxis.attr("transform", "translate("+ 0 +", "+ nanY  +")");
+		nanAxis.selectAll("line").attr({x1:x1, y1:0, x2:x2, y2:0});
+		nanAxis.selectAll("text").attr("x", x1 - 40);
+
+		return null;
+	    },
+
+	    _dragstart: function(attributes, dragState) {
+		return function dragstart(d) {
+		    dragState.i = _.pluck(attributes, "name").indexOf(d);
+		};
+	    },
+
+	    _drag: function(scales, dragState, attributes, foregroundLines, path, g){
+		var x = scales.x;
+		
+		return function drag(d) {
+		    x.range()[dragState.i] = d3.event.x;
+		    attributes.sort(function(a, b) { return x(a.name) - x(b.name); });
+		    g.attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+		    foregroundLines.attr("d", path);
+		};
+	    },
+
+	    _dragend: function(scales, attributes, width, path, svg) {
+		var x = scales.x;
+		var self = this;
+		return function dragend(d) {
+		    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+		    var t = d3.transition().duration(500);
+		    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+		    t.selectAll(".foreground path").attr("d", path);
+
+		    // TODO: Sort Coordinates after the animation
+		    _.delay(function(){self.props.onAttributeSort(attributes)}, 500);
+		};
+	    },
+
+	    _scales: function(width, height, data, attributes) {
+		var self = this;
+
+		var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+		var y = {};
+
+		function sortRegions (rows) {
+		    return rows.sort(function(a,b){
+			var order = ["DG", "CA3", "CA1", "SUB"];
+			return d3.ascending(order.indexOf(a), order.indexOf(b)); 
+		    })
+		}
+
+		attributes.forEach(function(d) {
+		    var name = d.name;
+		    if (d.attribute_type === 'QUANTITATIVE') {
+			y[name] = d3.scale.linear()
+			    .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
+					      , function(p) { return p[name]; }))
+			    .range([height, 0]);
+		    }
+		    else if (d.attribute_type === 'CATEGORICAL') {
+			var domain = d3.set(_.pluck(data, name)).values();
+			domain = (d.name == "Region") ? sortRegions(domain) : domain;
+			y[name] = d3.scale.ordinal()
+			    .domain(domain)
+			    .rangePoints([height, 0]);
+		    }
+		});
+
+		return {x: x, y: y};
+	    },
+
+
+	    _brushes: function(scales, attributes, onBrush, foreground) {
+		if (_.isUndefined(onBrush)) return {};
+		var brushes = {};
+		var brush = this._brush(scales, brushes, foreground, onBrush);
+		var brushstart = function() {d3.event.sourceEvent.stopPropagation();};
+		attributes.forEach(function(d) {
+			var name = d.name;
+			if (d.attribute_type === "QUANTITATIVE") {
+			    brushes[name] = d3.svg.brush()
+				.y(scales.y[name])
+				.on("brushstart", brushstart)
+				.on("brush", brush);
+			}
+			else {//TODO: Add CATEGORICAL support
+			    brushes[name] = function(){};
+			    brushes[name].empty = function(){return true;};
+			}
+		});
+		return brushes;
+	    },
+
+	    _brush: function(scales, brushes, foreground, onBrush){
+		var triggerChangeThrottle = _.throttle(onBrush, 30);
+		// Handles a brush event, toggling the display of foreground lines.
+		return function () {
+		    var actives = _.keys(brushes).filter( function(dim) { return !brushes[dim].empty(); });
+		    var extents = _.zipObject(actives, actives.map(function(dim) { return brushes[dim].extent(); }));
+
+		    foreground.selectAll("path")
+			.attr('display', function(d) {
+			    var isInside = actives.every(function(dim) {
+				    //TODO: CATEGORICAL: console.log(extents[dim][0], "<=", d[dim], "&&",  d[dim], "<=" , extents[dim][1]);
+				    return extents[dim][0] <= d[dim] && d[dim] <= extents[dim][1];
+				});
+			    return isInside ? null : 'none';
+			});
+		    triggerChangeThrottle(extents);
+		};
+	    },
+
+	    // Cousure. Returns the path for a given data point.
+	    _path : function (attributes, scales, nanY) {
+		var line = d3.svg.line();
+	//		.defined(function(d){return !isNaN(d[1]);});  // Breaks the line
+		return function (d) {
+		    return line(_.pluck(attributes, "name")
+				.map(function(a) { 
+				    var y = scales.y[a](d[a])
+				    return [scales.x(a), !isNaN(y) ? y : nanY ]; }));
+		};
+	    },
+
+	    _humanizeCoordinateLabels: function(textSelection, attributes) {
+		textSelection.text(function(d){return _.capitalize(String(d));});
+		textSelection.transition().attr("y", function(d,i){return (_.findIndex(attributes, {name:d}) %2)? -9 : -27;});
+	    }
+
+	};
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var d3 = __webpack_require__(21);
+	var _ = __webpack_require__(2);
+	__webpack_require__(38);
+
+
+	module.exports = {
+	    createChart: function(container, props, state){
+		var margin = this.props.margin;
+		var width = this.props.width - margin.left - margin.right;
+		var height = this.props.height - margin.top - margin.bottom;
+
+		var svg = d3.select(container).append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		    .attr("class", "boxChart")
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var gXAxis = svg.append("g")
+		    .attr("class", "x axis");
+
+		var gYAxis = svg.append("g")
+		    .attr("class", "y axis");
+
+		var gBoxes = svg.append("g")
+		    .attr("class", "boxes");
+
+	    },
+
+	    cleanChart: function(container, props, state){
+		// unsubscribe things 
+	    },
+
+	    update: function(container, props, state) {
+		if ( !(props.distributions.length)) {
+		    d3.select(container).html('');
+		    this.createChart(container, props, state);
+		    return null
+		};
+		console.log("Update BOX"); 
+		var self = this;
+		var margin = props.margin;
+		var width = props.width - margin.left - margin.right;
+		var height = props.height - margin.top - margin.bottom;
+
+		var boxWidth = 20;
+		var boxMargin = 25;
+		var boxGroupMargin = 20;
+
+		var color = d3.scale.category10();
+
+		var nDistributions = props.distributions.length;
+		var distributions = _.flatten(_.forEach(props.distributions, function(dist, i){
+		    return _.map(dist, function(v){return v.subset = i;});}));
+		var factedData = _.groupBy(distributions, 'facetAttr');
+		var nBoxGroups = d3.max(_.map(props.distributions, 'length'));
+		
+		var boxGroupWidth = nDistributions * (boxWidth + 2 * boxMargin);
+
+		// -----------------------------
+		//     Update the axes
+		// -----------------------------
+
+		var x = d3.scale.ordinal()
+		    .domain(_.keys(factedData))
+		    .rangePoints([0,width], 1);
+
+		var y = d3.scale.linear()
+		    .domain(self.getDomain(distributions))
+		    .rangeRound([height, 0])
+		    .nice();
+
+		var boxPlot = d3.box()
+		    .height(height)
+		    .width(boxWidth)
+		    .whiskers(iqr(1.5))
+		    .domain(y.domain())
+		    .tickFormat(function(){return "";}); // No labels
+
+		var xGroup = d3.scale.linear()
+		    .rangeRound([0, width])
+		    .domain([0, nBoxGroups]);
+
+		var xAxis =  d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom");
+
+		var yAxis =  d3.svg.axis()
+		    .scale(y)
+		    .ticks(5)
+		    .orient("left");
+		
+		// -----------------------------
+		//     Update the layers
+		// -----------------------------
+
+		var realSvg = d3.select(container).select("svg");
+		realSvg.attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom);
+
+		var svg = d3.select(container).select("svg > g")
+		    .attr("transform", "translate(" + (margin.left) + "," + margin.top + ")");
+
+		var gXAxis = svg.select("g.x")
+		    .attr("transform", "translate(0," + height + ")")
+		    .transition().call(xAxis);
+
+		var gYAxis = svg.select("g.y")
+		    .transition().call(yAxis);
+
+		var gBoxes = svg.select("g.boxes");
+
+		// -----------------------------
+		//     Update the boxPlots
+		// -----------------------------
+
+		var boxGroup = gBoxes.selectAll('g.boxGroup')
+		    .data(_.values(factedData));
+		boxGroup.enter().append('g')
+		    .classed('boxGroup', true);
+
+		var box = boxGroup.selectAll('g.box')
+		    .data(function(d) { return d; });
+
+		box.enter().append('g')
+		    .classed('box', true);
+
+		boxGroup.attr("transform", function(d,i) {return "translate(" + x(d[0].facetAttr) + ",0)";});
+
+		box.attr("transform", function(d,i) {
+		    var offset = - (boxWidth/2); //boxMargin + ((boxGroupWidth/2) * d.subset);
+		    return "translate(" + offset + ",0)";})
+		    .datum(function(d){return d.list;})
+		    .call(boxPlot);
+		
+		box.exit().remove();
+		boxGroup.exit().remove();
+
+		return null;
+	    },
+
+	    getDomain : function(distributions) {
+		var minmax = function(acc, v){
+		    acc.min = Math.min(acc.min, v.min);
+		    acc.max = Math.max(acc.max, v.max);
+		    return acc;
+		};
+		var domain =  _.reduce(_.flatten(distributions), minmax, {'min':Infinity, 'max':-Infinity});	    
+		return [domain.min, domain.max];
+	    }
+
+	};
+
+	// Returns a function to compute the interquartile range.
+	function iqr(k) {
+	    return function(d, i) {
+		var q1 = d.quartiles[0],
+	        q3 = d.quartiles[2],
+	        iqr = (q3 - q1) * k,
+	        i = -1,
+	        j = d.length;
+		while (d[++i] < q1 - iqr);
+		while (d[--j] > q3 + iqr);
+		return [i, j];
+	    };
+	}
+
+
+/***/ },
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;// MIT License:
@@ -1258,11 +2455,11 @@
 
 
 /***/ },
-/* 7 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(5), __webpack_require__(17)], __WEBPACK_AMD_DEFINE_RESULT__ = function(when, ReconnectingWebSocket) {
 
 	    var WsRpc = function(server, path, port){
 		var self = this;
@@ -1418,10 +2615,10 @@
 
 
 /***/ },
-/* 8 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(6)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(17)], __WEBPACK_AMD_DEFINE_RESULT__ = function(ReconnectingWebSocket) {
 
 	    var Hub = function(server, port, rpc, gateway){
 		var self = this;
@@ -1531,7 +2728,21 @@
 
 
 /***/ },
-/* 9 */
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(42);
+	module.exports.Responsive = __webpack_require__(43);
+
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = d3;
+
+/***/ },
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1541,8 +2752,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var env = __webpack_require__(22);
-		var TimeoutError = __webpack_require__(18);
+		var env = __webpack_require__(45);
+		var TimeoutError = __webpack_require__(31);
 
 		function setTimeout(f, ms, x, y) {
 			return env.setTimer(function() {
@@ -1611,11 +2822,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 10 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -1625,8 +2836,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var state = __webpack_require__(23);
-		var applier = __webpack_require__(20);
+		var state = __webpack_require__(46);
+		var applier = __webpack_require__(33);
 
 		return function array(Promise) {
 
@@ -1906,11 +3117,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 11 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2072,11 +3283,11 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 12 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2105,11 +3316,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 13 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2119,7 +3330,7 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var inspect = __webpack_require__(23).inspect;
+		var inspect = __webpack_require__(46).inspect;
 
 		return function inspection(Promise) {
 
@@ -2131,11 +3342,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 14 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2202,11 +3413,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 15 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2232,11 +3443,11 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 16 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2275,12 +3486,12 @@
 		};
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 
 /***/ },
-/* 17 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2290,8 +3501,8 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function(require) {
 
-		var setTimer = __webpack_require__(22).setTimer;
-		var format = __webpack_require__(24);
+		var setTimer = __webpack_require__(45).setTimer;
+		var format = __webpack_require__(47);
 
 		return function unhandledRejection(Promise) {
 
@@ -2368,11 +3579,11 @@
 		function noop() {}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 18 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2401,10 +3612,10 @@
 
 		return TimeoutError;
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 /***/ },
-/* 19 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2414,20 +3625,20 @@
 	(function(define) { 'use strict';
 	!(__WEBPACK_AMD_DEFINE_RESULT__ = function (require) {
 
-		var makePromise = __webpack_require__(25);
-		var Scheduler = __webpack_require__(26);
-		var async = __webpack_require__(22).asap;
+		var makePromise = __webpack_require__(48);
+		var Scheduler = __webpack_require__(49);
+		var async = __webpack_require__(45).asap;
 
 		return makePromise({
 			scheduler: new Scheduler(async)
 		});
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	})(__webpack_require__(21));
+	})(__webpack_require__(41));
 
 
 /***/ },
-/* 20 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2482,20 +3693,1401 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 
 
 /***/ },
-/* 21 */
+/* 34 */,
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _Accordion = __webpack_require__(52);
+
+	var _Accordion2 = _interopRequireDefault(_Accordion);
+
+	var _Affix = __webpack_require__(53);
+
+	var _Affix2 = _interopRequireDefault(_Affix);
+
+	var _AffixMixin = __webpack_require__(54);
+
+	var _AffixMixin2 = _interopRequireDefault(_AffixMixin);
+
+	var _Alert = __webpack_require__(55);
+
+	var _Alert2 = _interopRequireDefault(_Alert);
+
+	var _BootstrapMixin = __webpack_require__(56);
+
+	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
+
+	var _Badge = __webpack_require__(57);
+
+	var _Badge2 = _interopRequireDefault(_Badge);
+
+	var _Button = __webpack_require__(58);
+
+	var _Button2 = _interopRequireDefault(_Button);
+
+	var _ButtonGroup = __webpack_require__(59);
+
+	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
+
+	var _ButtonInput = __webpack_require__(60);
+
+	var _ButtonInput2 = _interopRequireDefault(_ButtonInput);
+
+	var _ButtonToolbar = __webpack_require__(61);
+
+	var _ButtonToolbar2 = _interopRequireDefault(_ButtonToolbar);
+
+	var _CollapsableNav = __webpack_require__(62);
+
+	var _CollapsableNav2 = _interopRequireDefault(_CollapsableNav);
+
+	var _CollapsibleNav = __webpack_require__(63);
+
+	var _CollapsibleNav2 = _interopRequireDefault(_CollapsibleNav);
+
+	var _Carousel = __webpack_require__(64);
+
+	var _Carousel2 = _interopRequireDefault(_Carousel);
+
+	var _CarouselItem = __webpack_require__(65);
+
+	var _CarouselItem2 = _interopRequireDefault(_CarouselItem);
+
+	var _Col = __webpack_require__(66);
+
+	var _Col2 = _interopRequireDefault(_Col);
+
+	var _CollapsableMixin = __webpack_require__(67);
+
+	var _CollapsableMixin2 = _interopRequireDefault(_CollapsableMixin);
+
+	var _CollapsibleMixin = __webpack_require__(68);
+
+	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
+
+	var _DropdownButton = __webpack_require__(69);
+
+	var _DropdownButton2 = _interopRequireDefault(_DropdownButton);
+
+	var _DropdownMenu = __webpack_require__(70);
+
+	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
+
+	var _DropdownStateMixin = __webpack_require__(71);
+
+	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
+
+	var _FadeMixin = __webpack_require__(72);
+
+	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
+
+	var _Glyphicon = __webpack_require__(73);
+
+	var _Glyphicon2 = _interopRequireDefault(_Glyphicon);
+
+	var _Grid = __webpack_require__(74);
+
+	var _Grid2 = _interopRequireDefault(_Grid);
+
+	var _Input = __webpack_require__(75);
+
+	var _Input2 = _interopRequireDefault(_Input);
+
+	var _Interpolate = __webpack_require__(76);
+
+	var _Interpolate2 = _interopRequireDefault(_Interpolate);
+
+	var _Jumbotron = __webpack_require__(77);
+
+	var _Jumbotron2 = _interopRequireDefault(_Jumbotron);
+
+	var _Label = __webpack_require__(78);
+
+	var _Label2 = _interopRequireDefault(_Label);
+
+	var _ListGroup = __webpack_require__(79);
+
+	var _ListGroup2 = _interopRequireDefault(_ListGroup);
+
+	var _ListGroupItem = __webpack_require__(80);
+
+	var _ListGroupItem2 = _interopRequireDefault(_ListGroupItem);
+
+	var _MenuItem = __webpack_require__(81);
+
+	var _MenuItem2 = _interopRequireDefault(_MenuItem);
+
+	var _Modal = __webpack_require__(82);
+
+	var _Modal2 = _interopRequireDefault(_Modal);
+
+	var _Nav = __webpack_require__(83);
+
+	var _Nav2 = _interopRequireDefault(_Nav);
+
+	var _Navbar = __webpack_require__(84);
+
+	var _Navbar2 = _interopRequireDefault(_Navbar);
+
+	var _NavItem = __webpack_require__(85);
+
+	var _NavItem2 = _interopRequireDefault(_NavItem);
+
+	var _ModalTrigger = __webpack_require__(86);
+
+	var _ModalTrigger2 = _interopRequireDefault(_ModalTrigger);
+
+	var _OverlayTrigger = __webpack_require__(87);
+
+	var _OverlayTrigger2 = _interopRequireDefault(_OverlayTrigger);
+
+	var _OverlayMixin = __webpack_require__(88);
+
+	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
+
+	var _PageHeader = __webpack_require__(89);
+
+	var _PageHeader2 = _interopRequireDefault(_PageHeader);
+
+	var _Panel = __webpack_require__(90);
+
+	var _Panel2 = _interopRequireDefault(_Panel);
+
+	var _PanelGroup = __webpack_require__(91);
+
+	var _PanelGroup2 = _interopRequireDefault(_PanelGroup);
+
+	var _PageItem = __webpack_require__(92);
+
+	var _PageItem2 = _interopRequireDefault(_PageItem);
+
+	var _Pager = __webpack_require__(93);
+
+	var _Pager2 = _interopRequireDefault(_Pager);
+
+	var _Popover = __webpack_require__(94);
+
+	var _Popover2 = _interopRequireDefault(_Popover);
+
+	var _ProgressBar = __webpack_require__(95);
+
+	var _ProgressBar2 = _interopRequireDefault(_ProgressBar);
+
+	var _Row = __webpack_require__(96);
+
+	var _Row2 = _interopRequireDefault(_Row);
+
+	var _SplitButton = __webpack_require__(97);
+
+	var _SplitButton2 = _interopRequireDefault(_SplitButton);
+
+	var _SubNav = __webpack_require__(98);
+
+	var _SubNav2 = _interopRequireDefault(_SubNav);
+
+	var _TabbedArea = __webpack_require__(99);
+
+	var _TabbedArea2 = _interopRequireDefault(_TabbedArea);
+
+	var _Table = __webpack_require__(100);
+
+	var _Table2 = _interopRequireDefault(_Table);
+
+	var _TabPane = __webpack_require__(101);
+
+	var _TabPane2 = _interopRequireDefault(_TabPane);
+
+	var _Thumbnail = __webpack_require__(102);
+
+	var _Thumbnail2 = _interopRequireDefault(_Thumbnail);
+
+	var _Tooltip = __webpack_require__(103);
+
+	var _Tooltip2 = _interopRequireDefault(_Tooltip);
+
+	var _Well = __webpack_require__(104);
+
+	var _Well2 = _interopRequireDefault(_Well);
+
+	var _styleMaps = __webpack_require__(105);
+
+	var _styleMaps2 = _interopRequireDefault(_styleMaps);
+
+	exports['default'] = {
+	  Accordion: _Accordion2['default'],
+	  Affix: _Affix2['default'],
+	  AffixMixin: _AffixMixin2['default'],
+	  Alert: _Alert2['default'],
+	  BootstrapMixin: _BootstrapMixin2['default'],
+	  Badge: _Badge2['default'],
+	  Button: _Button2['default'],
+	  ButtonGroup: _ButtonGroup2['default'],
+	  ButtonInput: _ButtonInput2['default'],
+	  ButtonToolbar: _ButtonToolbar2['default'],
+	  CollapsableNav: _CollapsableNav2['default'],
+	  CollapsibleNav: _CollapsibleNav2['default'],
+	  Carousel: _Carousel2['default'],
+	  CarouselItem: _CarouselItem2['default'],
+	  Col: _Col2['default'],
+	  CollapsableMixin: _CollapsableMixin2['default'],
+	  CollapsibleMixin: _CollapsibleMixin2['default'],
+	  DropdownButton: _DropdownButton2['default'],
+	  DropdownMenu: _DropdownMenu2['default'],
+	  DropdownStateMixin: _DropdownStateMixin2['default'],
+	  FadeMixin: _FadeMixin2['default'],
+	  Glyphicon: _Glyphicon2['default'],
+	  Grid: _Grid2['default'],
+	  Input: _Input2['default'],
+	  Interpolate: _Interpolate2['default'],
+	  Jumbotron: _Jumbotron2['default'],
+	  Label: _Label2['default'],
+	  ListGroup: _ListGroup2['default'],
+	  ListGroupItem: _ListGroupItem2['default'],
+	  MenuItem: _MenuItem2['default'],
+	  Modal: _Modal2['default'],
+	  Nav: _Nav2['default'],
+	  Navbar: _Navbar2['default'],
+	  NavItem: _NavItem2['default'],
+	  ModalTrigger: _ModalTrigger2['default'],
+	  OverlayTrigger: _OverlayTrigger2['default'],
+	  OverlayMixin: _OverlayMixin2['default'],
+	  PageHeader: _PageHeader2['default'],
+	  Panel: _Panel2['default'],
+	  PanelGroup: _PanelGroup2['default'],
+	  PageItem: _PageItem2['default'],
+	  Pager: _Pager2['default'],
+	  Popover: _Popover2['default'],
+	  ProgressBar: _ProgressBar2['default'],
+	  Row: _Row2['default'],
+	  SplitButton: _SplitButton2['default'],
+	  SubNav: _SubNav2['default'],
+	  TabbedArea: _TabbedArea2['default'],
+	  Table: _Table2['default'],
+	  TabPane: _TabPane2['default'],
+	  Thumbnail: _Thumbnail2['default'],
+	  Tooltip: _Tooltip2['default'],
+	  Well: _Well2['default'],
+	  styleMaps: _styleMaps2['default']
+	};
+	module.exports = exports['default'];
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+
+	module.exports = {
+	    getDefaultProps: function() {
+		var margin = {top: 20, right: 10, bottom: 20, left: 10};
+		return {
+		    margin: margin
+		};
+	    },
+
+	    componentDidMount: function() {
+		var container = this.refs.container.getDOMNode();
+		this.createChart(container, this.props, this.state);
+		this.update(container, this.props, this.state);
+	    },
+
+	    componentWillUnmount: function() {
+		var container = this.refs.container.getDOMNode();
+		this.cleanChart(container, this.props, this.state);
+	    },
+
+	    shouldComponentUpdate: function(nextProps, nextState) {
+		var container = this.refs.container.getDOMNode();
+		this.update(container, nextProps, nextState);
+		// render is not called again so the container is there until
+		// the end.
+		return false;
+	    },
+
+	    render: function(){
+		return (
+	            React.createElement("div", {ref: "container"})
+		);
+	    }
+	};
+
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var React = __webpack_require__(1);
+
+	module.exports = {
+
+	    componentDidMount: function() {
+		this.props.onMount && this.props.onMount();
+	    },
+
+	    componentWillUnmount: function() {
+		this.props.onUnmount && this.props.onUnmount();
+	    },
+
+	};
+
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var d3 = __webpack_require__(21);
+
+	// Source: http://bl.ocks.org/mbostock/4061502
+	// Inspired by http://informationandvisualization.de/blog/box-plot
+	d3.box = function() {
+	  var width = 1,
+	      height = 1,
+	      duration = 0,
+	      domain = null,
+	      value = Number,
+	      whiskers = boxWhiskers,
+	      quartiles = boxQuartiles,
+	      tickFormat = null;
+
+	  // For each small multiple…
+	  function box(g) {
+	    g.each(function(d, i) {
+	      d = d.map(value).sort(d3.ascending);
+	      var g = d3.select(this),
+	          n = d.length,
+	          min = d[0],
+	          max = d[n - 1];
+
+	      // Compute quartiles. Must return exactly 3 elements.
+	      var quartileData = d.quartiles = quartiles(d);
+
+	      // Compute whiskers. Must return exactly 2 elements, or null.
+	      var whiskerIndices = whiskers && whiskers.call(this, d, i),
+	          whiskerData = whiskerIndices && whiskerIndices.map(function(i) { return d[i]; });
+
+	      // Compute outliers. If no whiskers are specified, all data are "outliers".
+	      // We compute the outliers as indices, so that we can join across transitions!
+	      var outlierIndices = whiskerIndices
+	          ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n))
+	          : d3.range(n);
+
+	      // Compute the new x-scale.
+	      var x1 = d3.scale.linear()
+	          .domain(domain && domain.call(this, d, i) || [min, max])
+	          .range([height, 0]);
+
+	      // Retrieve the old x-scale, if this is an update.
+	      var x0 = this.__chart__ || d3.scale.linear()
+	          .domain([0, Infinity])
+	          .range(x1.range());
+
+	      // Stash the new scale.
+	      this.__chart__ = x1;
+
+	      // Note: the box, median, and box tick elements are fixed in number,
+	      // so we only have to handle enter and update. In contrast, the outliers
+	      // and other elements are variable, so we need to exit them! Variable
+	      // elements also fade in and out.
+
+	      // Update center line: the vertical line spanning the whiskers.
+	      var center = g.selectAll("line.center")
+	          .data(whiskerData ? [whiskerData] : []);
+
+	      center.enter().insert("line", "rect")
+	          .attr("class", "center")
+	          .attr("x1", width / 2)
+	          .attr("y1", function(d) { return x0(d[0]); })
+	          .attr("x2", width / 2)
+	          .attr("y2", function(d) { return x0(d[1]); })
+	          .style("opacity", 1e-6)
+	        .transition()
+	          .duration(duration)
+	          .style("opacity", 1)
+	          .attr("y1", function(d) { return x1(d[0]); })
+	          .attr("y2", function(d) { return x1(d[1]); });
+
+	      center.transition()
+	          .duration(duration)
+	          .style("opacity", 1)
+	          .attr("y1", function(d) { return x1(d[0]); })
+	          .attr("y2", function(d) { return x1(d[1]); });
+
+	      center.exit().transition()
+	          .duration(duration)
+	          .style("opacity", 1e-6)
+	          .attr("y1", function(d) { return x1(d[0]); })
+	          .attr("y2", function(d) { return x1(d[1]); })
+	          .remove();
+
+	      // Update innerquartile box.
+	      var box = g.selectAll("rect.box")
+	          .data([quartileData]);
+
+	      box.enter().append("rect")
+	          .attr("class", "box")
+	          .attr("x", 0)
+	          .attr("y", function(d) { return x0(d[2]); })
+	          .attr("width", width)
+	          .attr("height", function(d) { return x0(d[0]) - x0(d[2]); })
+	        .transition()
+	          .duration(duration)
+	          .attr("y", function(d) { return x1(d[2]); })
+	          .attr("height", function(d) { return x1(d[0]) - x1(d[2]); });
+
+	      box.transition()
+	          .duration(duration)
+	          .attr("y", function(d) { return x1(d[2]); })
+	          .attr("height", function(d) { return x1(d[0]) - x1(d[2]); });
+
+	      // Update median line.
+	      var medianLine = g.selectAll("line.median")
+	          .data([quartileData[1]]);
+
+	      medianLine.enter().append("line")
+	          .attr("class", "median")
+	          .attr("x1", 0)
+	          .attr("y1", x0)
+	          .attr("x2", width)
+	          .attr("y2", x0)
+	        .transition()
+	          .duration(duration)
+	          .attr("y1", x1)
+	          .attr("y2", x1);
+
+	      medianLine.transition()
+	          .duration(duration)
+	          .attr("y1", x1)
+	          .attr("y2", x1);
+
+	      // Update whiskers.
+	      var whisker = g.selectAll("line.whisker")
+	          .data(whiskerData || []);
+
+	      whisker.enter().insert("line", "circle, text")
+	          .attr("class", "whisker")
+	          .attr("x1", 0)
+	          .attr("y1", x0)
+	          .attr("x2", width)
+	          .attr("y2", x0)
+	          .style("opacity", 1e-6)
+	        .transition()
+	          .duration(duration)
+	          .attr("y1", x1)
+	          .attr("y2", x1)
+	          .style("opacity", 1);
+
+	      whisker.transition()
+	          .duration(duration)
+	          .attr("y1", x1)
+	          .attr("y2", x1)
+	          .style("opacity", 1);
+
+	      whisker.exit().transition()
+	          .duration(duration)
+	          .attr("y1", x1)
+	          .attr("y2", x1)
+	          .style("opacity", 1e-6)
+	          .remove();
+
+	      // Update outliers.
+	      var outlier = g.selectAll("circle.outlier")
+	          .data(outlierIndices, Number);
+
+	      outlier.enter().insert("circle", "text")
+	          .attr("class", "outlier")
+	          .attr("r", 5)
+	          .attr("cx", width / 2)
+	          .attr("cy", function(i) { return x0(d[i]); })
+	          .style("opacity", 1e-6)
+	        .transition()
+	          .duration(duration)
+	          .attr("cy", function(i) { return x1(d[i]); })
+	          .style("opacity", 1);
+
+	      outlier.transition()
+	          .duration(duration)
+	          .attr("cy", function(i) { return x1(d[i]); })
+	          .style("opacity", 1);
+
+	      outlier.exit().transition()
+	          .duration(duration)
+	          .attr("cy", function(i) { return x1(d[i]); })
+	          .style("opacity", 1e-6)
+	          .remove();
+
+	      // Compute the tick format.
+	      var format = tickFormat || x1.tickFormat(8);
+
+	      // Update box ticks.
+	      var boxTick = g.selectAll("text.box")
+	          .data(quartileData);
+
+	      boxTick.enter().append("text")
+	          .attr("class", "box")
+	          .attr("dy", ".3em")
+	          .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
+	          .attr("x", function(d, i) { return i & 1 ? width : 0 })
+	          .attr("y", x0)
+	          .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
+	          .text(format)
+	        .transition()
+	          .duration(duration)
+	          .attr("y", x1);
+
+	      boxTick.transition()
+	          .duration(duration)
+	          .text(format)
+	          .attr("y", x1);
+
+	      // Update whisker ticks. These are handled separately from the box
+	      // ticks because they may or may not exist, and we want don't want
+	      // to join box ticks pre-transition with whisker ticks post-.
+	      var whiskerTick = g.selectAll("text.whisker")
+	          .data(whiskerData || []);
+
+	      whiskerTick.enter().append("text")
+	          .attr("class", "whisker")
+	          .attr("dy", ".3em")
+	          .attr("dx", 6)
+	          .attr("x", width)
+	          .attr("y", x0)
+	          .text(format)
+	          .style("opacity", 1e-6)
+	        .transition()
+	          .duration(duration)
+	          .attr("y", x1)
+	          .style("opacity", 1);
+
+	      whiskerTick.transition()
+	          .duration(duration)
+	          .text(format)
+	          .attr("y", x1)
+	          .style("opacity", 1);
+
+	      whiskerTick.exit().transition()
+	          .duration(duration)
+	          .attr("y", x1)
+	          .style("opacity", 1e-6)
+	          .remove();
+	    });
+	    d3.timer.flush();
+	  }
+
+	  box.width = function(x) {
+	    if (!arguments.length) return width;
+	    width = x;
+	    return box;
+	  };
+
+	  box.height = function(x) {
+	    if (!arguments.length) return height;
+	    height = x;
+	    return box;
+	  };
+
+	  box.tickFormat = function(x) {
+	    if (!arguments.length) return tickFormat;
+	    tickFormat = x;
+	    return box;
+	  };
+
+	  box.duration = function(x) {
+	    if (!arguments.length) return duration;
+	    duration = x;
+	    return box;
+	  };
+
+	  box.domain = function(x) {
+	    if (!arguments.length) return domain;
+	    domain = x == null ? x : d3.functor(x);
+	    return box;
+	  };
+
+	  box.value = function(x) {
+	    if (!arguments.length) return value;
+	    value = x;
+	    return box;
+	  };
+
+	  box.whiskers = function(x) {
+	    if (!arguments.length) return whiskers;
+	    whiskers = x;
+	    return box;
+	  };
+
+	  box.quartiles = function(x) {
+	    if (!arguments.length) return quartiles;
+	    quartiles = x;
+	    return box;
+	  };
+
+	  return box;
+	};
+
+	function boxWhiskers(d) {
+	  return [0, d.length - 1];
+	}
+
+	function boxQuartiles(d) {
+	  return [
+	    d3.quantile(d, .25),
+	    d3.quantile(d, .5),
+	    d3.quantile(d, .75)
+	  ];
+	}
+
+
+
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict'
+
+	var d3 = __webpack_require__(21);
+
+	var rangeSlider = {
+	    createChart: function(container, props, state){
+		var svg = d3.select(container).append("svg").attr("class", "slider rangeSlider");
+		var gAxis = svg.append("g").attr("class", "x axis");
+		var slider = svg.append('g').attr("class", "brush");
+	    },
+
+	    cleanChart: function(container, props, state) {},
+
+	    update: function(container, nextProps, nextState) {
+
+		var domain = nextProps.domain || {min:0, max:1};
+		var extent = nextProps.extent || [domain.min, domain.max];
+
+		var onStart = nextProps.onStart || null;
+		var onMove = nextProps.onMove || null;
+		var onEnd = nextProps.onEnd || null;
+
+		var margin = {top: 5, left: 10, bottom: 20, right: 20};
+		var width = nextProps.width;
+		var height = nextProps.height;
+
+		var slider_width = width - margin.left - margin.right;
+		var slider_height = height - margin.top - margin.bottom;
+
+		var x = d3.scale.linear()
+		    .domain([domain.min, domain.max])
+		    .range([0, slider_width])
+		    .nice();
+
+		var brush = d3.svg.brush()
+		    .x(x)
+		    .extent(extent)
+		    .on("brushstart", brushstart)
+		    .on("brush", brushmove)
+		    .on("brushend", brushend);
+
+		var axis =  d3.svg.axis()
+		    .scale(x)
+		    .ticks(5)
+		    .orient("bottom");
+
+		var svg = d3.select(container).select("svg.slider")
+		    .style("width", width + "px")
+		    .style("height", height + "px");
+
+		var gAxis = svg.select("g.axis")
+		    .attr("transform", "translate(" + margin.left + "," + (slider_height + margin.top)  + ")")
+		    .call(axis);
+
+		var slider = svg.select('g.brush')
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		    .call(brush);
+
+		slider.selectAll("rect")
+		    .attr("height", slider_height);
+		slider.selectAll(".resize rect")
+		    .style("visibility", "visible");
+		slider.selectAll(".background")
+		    .style("visibility", "visible");
+
+		function brushstart() {
+		    //svg.classed("selecting", true);
+		    if (onStart) onStart(brush.extent());
+		}
+
+		function brushmove() {
+		    // ############# CONTINUE HERE 
+		    if (onMove) onMove(brush.extent());
+		}
+
+		function brushend() {
+		    if (onEnd) onEnd(brush.extent());
+		    //svg.classed("selecting", !d3.event.target.empty());
+		}
+	    }
+	};
+
+	module.exports = rangeSlider;
+
+
+/***/ },
+/* 40 */,
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 22 */
+/* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var React = __webpack_require__(1);
+	var GridItem = __webpack_require__(108);
+	var utils = __webpack_require__(109);
+	var PureDeepRenderMixin = __webpack_require__(110);
+	var WidthListeningMixin = __webpack_require__(111);
+
+	/**
+	 * A reactive, fluid grid layout with draggable, resizable components.
+	 */
+	var ReactGridLayout = React.createClass({
+	  displayName: 'ReactGridLayout',
+
+	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
+
+	  propTypes: {
+	    //
+	    // Basic props
+	    //
+
+	    // If true, the container height swells and contracts to fit contents
+	    autoSize: React.PropTypes.bool,
+	    // # of cols.
+	    cols: React.PropTypes.number,
+
+	    // A selector that will not be draggable.
+	    draggableCancel: React.PropTypes.string,
+	    // A selector for the draggable handler
+	    draggableHandle: React.PropTypes.string,
+
+	    // layout is an array of object with the format:
+	    // {x: Number, y: Number, w: Number, h: Number}
+	    layout: function layout(props, propName, componentName) {
+	      var layout = props.layout;
+	      // I hope you're setting the _grid property on the grid items
+	      if (layout === undefined) {
+	        return;
+	      }utils.validateLayout(layout, 'layout');
+	    },
+
+	    layouts: function layouts(props, propName, componentName) {
+	      if (props.layouts) {
+	        throw new Error('ReactGridLayout does not use `layouts`: Use ReactGridLayout.Responsive.');
+	      }
+	    },
+
+	    // margin between items [x, y] in px
+	    margin: React.PropTypes.array,
+	    // Rows have a static height, but you can change this based on breakpoints if you like
+	    rowHeight: React.PropTypes.number,
+
+	    //
+	    // Flags
+	    //
+	    isDraggable: React.PropTypes.bool,
+	    isResizable: React.PropTypes.bool,
+	    // Use CSS transforms instead of top/left
+	    useCSSTransforms: React.PropTypes.bool,
+
+	    //
+	    // Callbacks
+	    //
+
+	    // Callback so you can save the layout.
+	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
+	    onLayoutChange: React.PropTypes.func,
+
+	    // Calls when drag starts. Callback is of the signature (layout, oldItem, newItem, placeholder, e).
+	    // All callbacks below have the same signature. 'start' and 'stop' callbacks omit the 'placeholder'.
+	    onDragStart: React.PropTypes.func,
+	    // Calls on each drag movement.
+	    onDrag: React.PropTypes.func,
+	    // Calls when drag is complete.
+	    onDragStop: React.PropTypes.func,
+	    //Calls when resize starts.
+	    onResizeStart: React.PropTypes.func,
+	    // Calls when resize movement happens.
+	    onResize: React.PropTypes.func,
+	    // Calls when resize is complete.
+	    onResizeStop: React.PropTypes.func,
+
+	    //
+	    // Other validations
+	    //
+
+	    // Children must not have duplicate keys.
+	    children: function children(props, propName, componentName) {
+	      React.PropTypes.node.apply(this, arguments);
+	      var children = props[propName];
+
+	      // Check children keys for duplicates. Throw if found.
+	      var keys = {};
+	      React.Children.forEach(children, function (child, i, list) {
+	        if (keys[child.key]) {
+	          throw new Error('Duplicate child key found! This will cause problems in ReactGridLayout.');
+	        }
+	        keys[child.key] = true;
+	      });
+	    }
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      autoSize: true,
+	      cols: 12,
+	      rowHeight: 150,
+	      layout: [],
+	      margin: [10, 10],
+	      isDraggable: true,
+	      isResizable: true,
+	      useCSSTransforms: true,
+	      onLayoutChange: function onLayoutChange() {},
+	      onDragStart: function onDragStart() {},
+	      onDrag: function onDrag() {},
+	      onDragStop: function onDragStop() {},
+	      onResizeStart: function onResizeStart() {},
+	      onResize: function onResize() {},
+	      onResizeStop: function onResizeStop() {}
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      activeDrag: null,
+	      isMounted: false,
+	      layout: utils.synchronizeLayoutWithChildren(this.props.layout, this.props.children, this.props.cols),
+	      width: this.props.initialWidth
+	    };
+	  },
+
+	  componentDidMount: function componentDidMount() {
+	    // Call back with layout on mount. This should be done after correcting the layout width
+	    // to ensure we don't rerender with the wrong width.
+	    this.props.onLayoutChange(this.state.layout);
+	    this.setState({ isMounted: true });
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    // This allows you to set the width manually if you like.
+	    // Use manual width changes in combination with `listenToWindowResize: false`
+	    if (nextProps.width !== this.props.width) this.onWidthChange(nextProps.width);
+
+	    // If children change, regenerate the layout.
+	    if (nextProps.children.length !== this.props.children.length) {
+	      this.setState({
+	        layout: utils.synchronizeLayoutWithChildren(this.state.layout, nextProps.children, nextProps.cols)
+	      });
+	    }
+
+	    // Allow parent to set layout directly.
+	    if (nextProps.layout && JSON.stringify(nextProps.layout) !== JSON.stringify(this.state.layout)) {
+	      this.setState({
+	        layout: utils.synchronizeLayoutWithChildren(nextProps.layout, nextProps.children, nextProps.cols)
+	      });
+	    }
+	  },
+
+	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+	    // Call back so we can store the layout
+	    // Do it only when a resize/drag is not active, otherwise there are way too many callbacks
+	    if (this.state.layout !== prevState.layout && !this.state.activeDrag) {
+	      this.props.onLayoutChange(this.state.layout, this.state.layouts);
+	    }
+	  },
+
+	  /**
+	   * Calculates a pixel value for the container.
+	   * @return {String} Container height in pixels.
+	   */
+	  containerHeight: function containerHeight() {
+	    if (!this.props.autoSize) {
+	      return;
+	    }return utils.bottom(this.state.layout) * this.props.rowHeight + this.props.margin[1] + 'px';
+	  },
+
+	  /**
+	   * When the width changes, save it to state. This helps with left/width calculations.
+	   */
+	  onWidthChange: function onWidthChange(width) {
+	    this.setState({ width: width });
+	  },
+
+	  /**
+	   * When dragging starts
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDragStart: function onDragStart(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+
+	    // No need to clone, `l` hasn't changed.
+	    this.props.onDragStart(layout, l, l, null, e);
+	  },
+	  /**
+	   * Each drag movement create a new dragelement and move the element to the dragged location
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDrag: function onDrag(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    // Clone layout item so we can pass it to the callback.
+	    var oldL = utils.clone(l);
+
+	    // Create placeholder (display only)
+	    var placeholder = {
+	      w: l.w, h: l.h, x: l.x, y: l.y, placeholder: true, i: i
+	    };
+
+	    // Move the element to the dragged location.
+	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
+
+	    this.props.onDrag(layout, oldL, l, placeholder, e);
+
+	    this.setState({
+	      layout: utils.compact(layout),
+	      activeDrag: placeholder
+	    });
+	  },
+
+	  /**
+	   * When dragging stops, figure out which position the element is closest to and update its x and y.
+	   * @param  {Number} i Index of the child.
+	   * @param {Number} i Index of the child
+	   * @param {Number} x X position of the move
+	   * @param {Number} y Y position of the move
+	   * @param {Event} e The mousedown event
+	   * @param {Element} element The current dragging DOM element
+	   * @param {Object} position Drag information
+	   */
+	  onDragStop: function onDragStop(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var position = _ref.position;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    // Move the element here
+	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
+
+	    this.props.onDragStop(layout, oldL, l, null, e);
+
+	    // Set state
+	    this.setState({ layout: utils.compact(layout), activeDrag: null });
+	  },
+
+	  onResizeStart: function onResizeStart(i, w, h, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+
+	    // No need to clone, item hasn't changed
+	    this.props.onResizeStart(layout, l, l, null, e);
+	  },
+
+	  onResize: function onResize(i, w, h, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    // Set new width and height.
+	    l.w = w;
+	    l.h = h;
+
+	    // Create placeholder element (display only)
+	    var placeholder = {
+	      w: w, h: h, x: l.x, y: l.y, placeholder: true, i: i
+	    };
+
+	    this.props.onResize(layout, oldL, l, placeholder, e);
+
+	    // Re-compact the layout and set the drag placeholder.
+	    this.setState({ layout: utils.compact(layout), activeDrag: placeholder });
+	  },
+
+	  onResizeStop: function onResizeStop(i, x, y, _ref) {
+	    var e = _ref.e;
+	    var element = _ref.element;
+	    var size = _ref.size;
+
+	    var layout = this.state.layout;
+	    var l = utils.getLayoutItem(layout, i);
+	    var oldL = utils.clone(l);
+
+	    this.props.onResizeStop(layout, oldL, l, null, e);
+
+	    this.setState({ activeDrag: null, layout: utils.compact(layout) });
+	  },
+
+	  /**
+	   * Create a placeholder object.
+	   * @return {Element} Placeholder div.
+	   */
+	  placeholder: function placeholder() {
+	    if (!this.state.activeDrag) {
+	      return '';
+	    } // {...this.state.activeDrag} is pretty slow, actually
+	    return React.createElement(
+	      GridItem,
+	      {
+	        w: this.state.activeDrag.w,
+	        h: this.state.activeDrag.h,
+	        x: this.state.activeDrag.x,
+	        y: this.state.activeDrag.y,
+	        i: this.state.activeDrag.i,
+	        isPlaceholder: true,
+	        className: 'react-grid-placeholder',
+	        containerWidth: this.state.width,
+	        cols: this.props.cols,
+	        margin: this.props.margin,
+	        rowHeight: this.props.rowHeight,
+	        isDraggable: false,
+	        isResizable: false,
+	        useCSSTransforms: this.props.useCSSTransforms
+	      },
+	      React.createElement('div', null)
+	    );
+	  },
+
+	  /**
+	   * Given a grid item, set its style attributes & surround in a <Draggable>.
+	   * @param  {Element} child React element.
+	   * @param  {Number}  i     Index of element.
+	   * @return {Element}       Element wrapped in draggable and properly placed.
+	   */
+	  processGridItem: function processGridItem(child) {
+	    var i = child.key;
+	    var l = utils.getLayoutItem(this.state.layout, i);
+
+	    // watchStart property tells Draggable to react to changes in the start param
+	    // Must be turned off on the item we're dragging as the changes in `activeDrag` cause rerenders
+	    var drag = this.state.activeDrag;
+	    var moveOnStartChange = drag && drag.i === i ? false : true;
+
+	    // Parse 'static'. Any properties defined directly on the grid item will take precedence.
+	    var draggable, resizable;
+	    if (l['static'] || this.props.isDraggable === false) draggable = false;
+	    if (l['static'] || this.props.isResizable === false) resizable = false;
+
+	    return React.createElement(
+	      GridItem,
+	      _extends({
+	        containerWidth: this.state.width,
+	        cols: this.props.cols,
+	        margin: this.props.margin,
+	        rowHeight: this.props.rowHeight,
+	        moveOnStartChange: moveOnStartChange,
+	        cancel: this.props.draggableCancel,
+	        handle: this.props.draggableHandle,
+	        onDragStop: this.onDragStop,
+	        onDragStart: this.onDragStart,
+	        onDrag: this.onDrag,
+	        onResizeStart: this.onResizeStart,
+	        onResize: this.onResize,
+	        onResizeStop: this.onResizeStop,
+	        isDraggable: draggable,
+	        isResizable: resizable,
+	        useCSSTransforms: this.props.useCSSTransforms && this.state.isMounted,
+	        usePercentages: !this.state.isMounted
+	      }, l),
+	      child
+	    );
+	  },
+
+	  render: function render() {
+	    // Calculate classname
+	    var _props = this.props;
+	    var className = _props.className;
+
+	    var props = _objectWithoutProperties(_props, ['className']);
+
+	    className = 'react-grid-layout ' + (className || '');
+
+	    return React.createElement(
+	      'div',
+	      _extends({}, props, { className: className, style: { height: this.containerHeight() } }),
+	      React.Children.map(this.props.children, this.processGridItem),
+	      this.placeholder()
+	    );
+	  }
+	});
+
+	module.exports = ReactGridLayout;
+
+/***/ },
+/* 43 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var React = __webpack_require__(1);
+	var utils = __webpack_require__(109);
+	var responsiveUtils = __webpack_require__(112);
+	var PureDeepRenderMixin = __webpack_require__(110);
+	var WidthListeningMixin = __webpack_require__(111);
+	var ReactGridLayout = __webpack_require__(42);
+
+	/**
+	 * A wrapper around ReactGridLayout to support responsive breakpoints.
+	 */
+	var ResponsiveReactGridLayout = React.createClass({
+	  displayName: 'ResponsiveReactGridLayout',
+
+	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
+
+	  propTypes: {
+	    //
+	    // Basic props
+	    //
+
+	    // Optional, but if you are managing width yourself you may want to set the breakpoint
+	    // yourself as well.
+	    breakpoint: React.PropTypes.string,
+
+	    // {name: pxVal}, e.g. {lg: 1200, md: 996, sm: 768, xs: 480}
+	    breakpoints: React.PropTypes.object,
+
+	    // # of cols. This is a breakpoint -> cols map
+	    cols: React.PropTypes.object,
+
+	    // layouts is an object mapping breakpoints to layouts.
+	    // e.g. {lg: Layout, md: Layout, ...}
+	    layouts: function layouts(props, propName, componentName) {
+	      React.PropTypes.object.isRequired.apply(this, arguments);
+
+	      var layouts = props.layouts;
+	      Object.keys(layouts).map(function (k) {
+	        utils.validateLayout(layouts[k], 'layouts.' + k);
+	      });
+	    },
+
+	    //
+	    // Callbacks
+	    //
+
+	    // Calls back with breakpoint and new # cols
+	    onBreakpointChange: React.PropTypes.func,
+
+	    // Callback so you can save the layout.
+	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
+	    onLayoutChange: React.PropTypes.func
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
+	      cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+	      layouts: {},
+	      onBreakpointChange: function onBreakpointChange() {},
+	      onLayoutChange: function onLayoutChange() {}
+	    };
+	  },
+
+	  getInitialState: function getInitialState() {
+	    var breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, this.props.initialWidth);
+	    var cols = responsiveUtils.getColsFromBreakpoint(breakpoint, this.props.cols);
+
+	    // Get the initial layout. This can tricky; we try to generate one however possible if one doesn't exist
+	    // for this layout.
+	    var initialLayout = responsiveUtils.findOrGenerateResponsiveLayout(this.props.layouts, this.props.breakpoints, breakpoint, breakpoint, cols);
+
+	    return {
+	      layout: initialLayout,
+	      // storage for layouts obsoleted by breakpoints
+	      layouts: this.props.layouts || {},
+	      breakpoint: breakpoint,
+	      cols: cols,
+	      width: this.props.initialWidth
+	    };
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    // This allows you to set the width manually if you like.
+	    // Use manual width changes in combination with `listenToWindowResize: false`
+	    if (nextProps.width) this.onWidthChange(nextProps.width);
+
+	    // Allow parent to set breakpoint directly.
+	    if (nextProps.breakpoint !== this.props.breakpoint) {
+	      this.onWidthChange(this.state.width);
+	    }
+
+	    // Allow parent to set layouts directly.
+	    if (nextProps.layouts && nextProps.layouts !== this.state.layouts) {
+	      // Since we're setting an entirely new layout object, we must generate a new responsive layout
+	      // if one does not exist.
+	      var newLayout = responsiveUtils.findOrGenerateResponsiveLayout(nextProps.layouts, nextProps.breakpoints, this.state.breakpoint, this.state.breakpoint, this.state.cols);
+
+	      this.setState({
+	        layouts: nextProps.layouts,
+	        layout: newLayout
+	      });
+	    }
+	  },
+
+	  /**
+	   * Bubble this up, add `layouts` object.
+	   * @param  {Array} layout Layout from inner Grid.
+	   */
+	  onLayoutChange: function onLayoutChange(layout) {
+	    this.state.layouts[this.state.breakpoint] = layout;
+	    this.setState({ layout: layout, layouts: this.state.layouts });
+	    this.props.onLayoutChange(layout, this.state.layouts);
+	  },
+
+	  /**
+	   * When the width changes work through breakpoints and reset state with the new width & breakpoint.
+	   * Width changes are necessary to figure out the widget widths.
+	   */
+	  onWidthChange: function onWidthChange(width) {
+	    // Set new breakpoint
+	    var newState = { width: width };
+	    newState.breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, newState.width);
+	    newState.cols = responsiveUtils.getColsFromBreakpoint(newState.breakpoint, this.props.cols);
+
+	    // Breakpoint change
+	    if (newState.cols !== this.state.cols) {
+
+	      // Store the current layout
+	      newState.layouts = this.state.layouts;
+	      newState.layouts[this.state.breakpoint] = JSON.parse(JSON.stringify(this.state.layout));
+
+	      // Find or generate a new one.
+	      newState.layout = responsiveUtils.findOrGenerateResponsiveLayout(newState.layouts, this.props.breakpoints, newState.breakpoint, this.state.breakpoint, newState.cols);
+
+	      // This adds missing items.
+	      newState.layout = utils.synchronizeLayoutWithChildren(newState.layout, this.props.children, newState.cols);
+
+	      // Store this new layout as well.
+	      newState.layouts[newState.breakpoint] = newState.layout;
+
+	      this.props.onBreakpointChange(newState.breakpoint, newState.cols);
+	    }
+
+	    this.setState(newState);
+	  },
+
+	  render: function render() {
+	    // Don't pass responsive props to RGL.
+	    /*jshint unused:false*/
+	    var _props = this.props;
+	    var layouts = _props.layouts;
+	    var onBreakpointChange = _props.onBreakpointChange;
+	    var breakpoints = _props.breakpoints;
+
+	    var props = _objectWithoutProperties(_props, ['layouts', 'onBreakpointChange', 'breakpoints']);
+
+	    return React.createElement(
+	      ReactGridLayout,
+	      _extends({}, props, {
+	        layout: this.state.layout,
+	        cols: this.state.cols,
+	        listenToWindowResize: false,
+	        onLayoutChange: this.onLayoutChange,
+	        width: this.state.width }),
+	      this.props.children
+	    );
+	  }
+	});
+
+	module.exports = ResponsiveReactGridLayout;
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	function ToObject(val) {
+		if (val == null) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+
+		return Object(val);
+	}
+
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var keys;
+		var to = ToObject(target);
+
+		for (var s = 1; s < arguments.length; s++) {
+			from = arguments[s];
+			keys = Object.keys(Object(from));
+
+			for (var i = 0; i < keys.length; i++) {
+				to[keys[i]] = from[keys[i]];
+			}
+		}
+
+		return to;
+	};
+
+
+/***/ },
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2529,7 +5121,7 @@
 
 		} else if (!capturedSetTimeout) { // vert.x
 			var vertxRequire = require;
-			var vertx = __webpack_require__(27);
+			var vertx = __webpack_require__(107);
 			setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 			clearTimer = vertx.cancelTimer;
 			asap = vertx.runOnLoop || vertx.runOnContext;
@@ -2570,12 +5162,12 @@
 			};
 		}
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
-/* 23 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2612,11 +5204,11 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 24 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -2674,11 +5266,11 @@
 		}
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
 
 /***/ },
-/* 25 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -3607,12 +6199,12 @@
 			return Promise;
 		};
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
+	}(__webpack_require__(41)));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
-/* 26 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -3694,2745 +6286,19 @@
 		return Scheduler;
 
 	}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-	}(__webpack_require__(21)));
-
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* (ignored) */
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    draining = true;
-	    var currentQueue;
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        var i = -1;
-	        while (++i < len) {
-	            currentQueue[i]();
-	        }
-	        len = queue.length;
-	    }
-	    draining = false;
-	}
-	process.nextTick = function (fun) {
-	    queue.push(fun);
-	    if (!draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var ChartContainerMixin = __webpack_require__(44);
-	var LifecycleMixin = __webpack_require__(45);
-
-	module.exports = function(chart, displayName){
-	    return React.createClass({displayName: displayName, mixins : [ChartContainerMixin, LifecycleMixin, chart]});
-	};
-
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	Object.assign = Object.assign || __webpack_require__(49);
-	var FixedDataTable = __webpack_require__(52);
-	var _ = __webpack_require__(2);
-
-	var Table = FixedDataTable.Table;
-	var Column = FixedDataTable.Column;
-
-
-	module.exports = React.createClass({displayName: "exports",
-	    getInitialState: function() {
-		 
-		var initialColumnWith = (this.props.columnNames.length) ?
-					Math.round(this.props.width / this.props.columnNames.length)
-		                        : 0;
-		var columnWidths = {};
-		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
-		return {
-		    "columnWidths": columnWidths
-		};
-	    },
-	    getDefaultProps: function(){
-		return {
-		    rows: [],
-		    columnNames: []
-		}
-	    },
-	    _rowGetter: function(i) {return this.props.rows[i];},
-	    _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
-		this.state.columnWidths[dataKey] = newColumnWidth;
-	//	isColumnResizing = false;
-	    },
-	    render: function(){
-		var columnNames = this.props.columnNames;
-		var initialColumnWith = (this.props.columnNames.length) ?
-					Math.round(this.props.width / this.props.columnNames.length)
-		                        : 0;
-		var columnWidths = {};
-		_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
-
-		if (this.props.rows.length == 0) return (React.createElement("div", null));
-
-		return (
-		    React.createElement(Table, {
-			    rowHeight: 50, 
-			    rowGetter: this._rowGetter, 
-			    rowsCount: this.props.rows.length, 
-			    width: this.props.width, 
-			    height: this.props.height, 
-			    headerHeight: 50, 
-			    onColumnResizeEndCallback: this._onColumnResizeEndCallback}, 
-
-		      
-			  this.props.columnNames.map(function(name){
-			      return (
-				  React.createElement(Column, {
-				  label: name, 
-				  width: columnWidths[name], 			  
-				  dataKey: name, 
-				  isResizable: false}
-				  )
-			      );
-			  })
-		       
-		    )
-		);
-	    }
-	});
-
-
-
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var _ = __webpack_require__(2);
-
-	var LifecycleMixin = __webpack_require__(45);
-
-	module.exports = React.createClass({displayName: "exports",
-	    mixins: [LifecycleMixin],
-
-	    getDefaultProps: function() {
-		return {
-		    includedRegions: ["SUB", "DG", "CA3", "CA1"]
-		};
-	    },
-
-	    componentDidMount: function() {
-		var container = this.refs.container.getDOMNode();
-
-		container.addEventListener("load", function(){
-		    var svg = d3.select(container.contentDocument);
-
-		    this.update(svg, this.props, this.state);
-		}.bind(this));
-	    },
-
-	    shouldComponentUpdate: function(nextProps, nextState) {
-		var container = this.refs.container.getDOMNode();
-		container.setAttribute("width", nextProps.width - 10);
-		container.setAttribute("height", nextProps.height - 10);
-
-		var svg = d3.select(container.contentDocument);
-
-		this.update(svg, nextProps, nextState);
-		// render is not called again so the container is there until
-		// the end.
-		return false;
-	    },
-
-	    update: function(svg, props, state) {
-		var self = this;
-
-		var region = svg.selectAll("g.region")
-		    .datum(function() { return this.id; })
-		    .style("cursor", function(){return (props.onClickRegion) ? "pointer" : null})
-		    .on("click", function(d){if (props.onClickRegion) {props.onClickRegion(d);};});
-
-		region.selectAll("path")
-		    .datum(function() { return this.parentNode.id; })
-		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "rgb(49, 130, 189)" : "#EEE";});
-
-		region.selectAll("text")
-		    .datum(function() { return this.parentNode.id; })
-		    .style("fill", function(d){return (_.include(props.includedRegions, d)) ? "white" : "#333";});
-		
-		props.includedRegions.forEach(function(region){
-		    svg.select("#"+region).select("text").style("fill", "white");
-		});
-
-	    },
-
-	    render: function(){
-		return (
-	            React.createElement("div", null, 
-		      React.createElement("object", {ref: "container", id: "svgobject", 
-			      type: "image/svg+xml", 
-			      width: this.props.width, 
-			      height: this.props.height, 
-			      data: "assets/hipo_foto.svg"}
-		      )
-	            )
-		);
-	    }
-	});
-
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var _ = __webpack_require__(2);
-
-	var LifecycleMixin = __webpack_require__(45);
-	var BS = __webpack_require__(43);
-	var Input = BS.Input;
-
-
-	module.exports = React.createClass({displayName: "exports",
-	    mixins: [LifecycleMixin],
-
-	    getDefaultProps: function() {
-		return {
-		    categories: []  // {name: "cat1", included: false}
-		};
-	    },
-
-	    render: function() {
-		var onClickedCategory = this.props.onClickedCategory;
-
-		return (
-		    React.createElement("form", {className: "form-inline"}, 
-		      
-			  this.props.categories.map(function(category, i){
-			      return (React.createElement(Input, {style:  {"margin-left": 20}, type: "checkbox", ref: "cat" + i, key: "cat" + category.name, 
-				  label: category.name, checked: category.included, 
-					      onChange: onClickedCategory.bind(this, category.name)})
-			      );
-			  })
-		       
-	            )
-		)
-	    }
-
-	});
-
-
-/***/ },
-/* 33 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var _ = __webpack_require__(2);
-
-	var reactify = __webpack_require__(29);
-	var LifecycleMixin = __webpack_require__(45);
-	var BS = __webpack_require__(43);
-
-	var RangeSlider = reactify(__webpack_require__(46), "RangeSlider");
-
-	module.exports = React.createClass({displayName: "exports",
-	    mixins: [LifecycleMixin],
-
-	    getDefaultProps: function() {
-		return {
-		    domain: {min: 0, max: 1},
-		    extent: [0,1],
-		    height: 45
-		};
-	    },
-
-	    render: function() {
-
-		var onChange = _.throttle(this.props.onChange, 100);
-		var domain = this.props.domain;
-		var extent =  this.props.extent;
-
-		return (
-	            React.createElement(RangeSlider, {domain: domain, 
-			    extent: extent, 
-			    onMove: onChange, 
-			    width: this.props.width, 
-			    height: this.props.height}
-		    )
-		)
-	    }
-	});
-
-
-/***/ },
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var BarChart = __webpack_require__(48).BarChart;
-
-	var Context = __webpack_require__(4);
-
-	// Data is like: [{value:25, label:"P1"},{value:45, label:"P2"}]
-	module.exports = React.createClass({displayName: "exports",
-	    getInitialState: function() {
-		return {
-		    "data": []
-		};
-	    },
-	    componentDidMount: function() {
-		var rpc = Context.instance().rpc;
-		var self = this;
-		var pipeline = [
-		    {$match : {"tint": "NISSL"}},
-		    {$group : {_id: "$patient", value: {$sum: "$cells/volume (mm3)"} } },
-		    {$project : { label: "$_id", value:1 , _id: 0}},
-		    {$sort : { value: -1 } }
-		];
-		rpc.call('TableSrv.aggregate', [this.props.table, pipeline])
-		    .then(function(view) {
-			return rpc.call("TableSrv.get_data", [view, "rows"])
-		    })
-		    .then(function(rows){
-			self.setState({"data": rows});
-		    })
-		    .catch(function(e){console.error(e);});
-	    },
-	    render: function(){
-		return (
-		    React.createElement(BarChart, {
-			    data: this.state.data, 
-			    width: 600, 
-			    height: 200, 
-			    margins: {top: 20, right: 30, bottom: 30, left: 60}, 
-			    fill: '#3182bd', 
-			    title: "Cells/Vol - NISSL"}
-		    )	
-		);
-	    }
-	});
-
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var _ = __webpack_require__(2);
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	    render: function() {
-		var title = this.props.title;
-
-		/* var child = React.cloneElement(
-		   React.Children.only(this.props.children), 
-		   {width: this.props.width, height: this.props.height}); */
-		var contentSize = {width: this.props.size.width + 15, height: this.props.size.height + 15};
-
-		return (
-		    React.createElement("div", {className: "card", key: this.props.key}, 
-		      React.createElement("div", {className: "card-header"}, 
-			React.createElement("div", {className: "card-move btn btn-xs btn-default card-anchor glyphicon glyphicon-move", "aria-hidden": "true"}), 
-
-			React.createElement("span", {className: "h4 card-anchor"}, title), 
-
-			React.createElement("button", {className: "card-close btn btn-xs btn-default glyphicon glyphicon-remove", "aria-hidden": "true", onClick: this.props.onClose})
-
-		      ), 
-		      React.createElement("div", {className: "card-content", style: contentSize}, 
-			this.props.children		
-		      )
-		    )
-		);
-	    }
-	});
-
-
-/***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var _ = __webpack_require__(2);
-
-	/**
-	 *  Bootstrap requires
-	 */
-	var BS = __webpack_require__(43);
-	var Button = BS.Button;
-	var Modal = BS.Modal;
-	var TabbedArea = BS.TabbedArea;
-	var TabPane = BS.TabPane;
-	var Input = BS.Input;
-	var Col = BS.Col;
-
-	var CardCreationMenu = React.createClass({displayName: "CardCreationMenu",
-	    getInitialState: function() {
-		return {
-		    activeTab: this.props.tabs[0].kind
-		};
-	    },
-
-	    handleCreateCard: function() {
-
-		var config = this.refs[this.state.activeTab].getConfig();
-		var card = {kind:this.state.activeTab, title: config.table, config: config};
-
-		switch (this.state.activeTab) {
-		    // Nothing special for: ["table", "pcp", "regions"]
-		    case "scatter":
-			card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
-			break;
-		    case "columnFilter":
-			card.title = _.capitalize(config.column) + " - " + config.table;
-			card.kind = (config.attribute_type === "QUANTITATIVE") ? "rangeFilter" : "categoricalFilter";
-			break;
-		    case "box":
-			card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
-			break;
-		}
-
-		this.props.onRequestHide();
-		this.props.onCreateCard(card);
-	    },
-
-	    handleSelectTab: function(activeTab) {
-		this.setState({activeTab: activeTab});
-	    },
-
-	    render: function(){ 
-		var tabs = this.props.tabs
-
-		return (
-		    React.createElement(Modal, React.__spread({},  this.props, {bsSize: "large", title: "Add new card", animation: true}), 
-		      React.createElement("div", {className: "modal-body"}, 
-			
-			React.createElement(TabbedArea, {activeKey: this.state.activeTab, onSelect: this.handleSelectTab}, 
-			  
-			      tabs.map(function(tab) {
-				  var tabNode = null;
-				  switch (tab.kind) {
-				      case "table":
-				      case "pcp":
-					  tabNode = React.createElement(DataTableMenu, {ref: tab.kind, options: tab.options});
-					  break;
-				      case "scatter":
-					  tabNode = React.createElement(ScatterMenu, {ref: tab.kind, options: tab.options});
-					  break;
-				      case "regions":
-					  tabNode = React.createElement(RegionsMenu, {ref: tab.kind, options: tab.options});
-					  break;
-				      case "columnFilter":
-					  tabNode = React.createElement(ColumnFilterMenu, {ref: tab.kind, options: tab.options});
-					  break;
-				      case "box":
-					  tabNode = React.createElement(BoxMenu, {ref: tab.kind, options: tab.options});
-					  break;
-				  }
-				  return (
-				      React.createElement(TabPane, {eventKey: tab.kind, tab: tab.title}, 
-					tabNode
-				      )			  
-				  );
-			      })
-			  
-			)
-			
-		      ), 
-		      React.createElement("div", {className: "modal-footer"}, 
-			React.createElement(Button, {onClick: this.props.onRequestHide}, "Close"), 
-			React.createElement(Button, {onClick: this.handleCreateCard, bsStyle: "primary"}, "Create Card")
-		      )
-		    )
-		);
-	    }
-	});
-
-	module.exports = CardCreationMenu;
-
-	/**
-	 * Shows a table selection only when props.tables has more than one item
-	 */
-	var TableMenuItem = React.createClass({displayName: "TableMenuItem",
-	    render: function() {
-		if (this.props.tables.length > 1) {
-		    return (
-			React.createElement(Input, {type: "select", label: "Data Table", ref: "table", valueLink: this.props.tableLink}, 
-		        
-			    this.props.tables.map(function(table, i){
-				return (React.createElement("option", {key: "table" + i, value: table}, " ", table, " "));
-			    })
-			 
-	              )
-		    )
-		}
-		else {
-		    return (React.createElement("div", null));
-		}
-	    }
-	});
-
-	var RadioColumnsMenuItem = React.createClass({displayName: "RadioColumnsMenuItem",
-	    render: function() {
-		
-		return (
-			  React.createElement("form", null, 
-			    React.createElement("div", null, 
-			      React.createElement("label", null, " ", this.props.label, " ")
-			    ), 
-			    React.createElement("div", {className: "radio"}, 
-			      
-				  this.props.columns.map(function(column, i){
-				      return (
-					  React.createElement("label", {className: "radio"}, 
-					  React.createElement("input", {type: "radio", name: "columns", ref: "col" + i, key: "col" + column.name, 
-					  defaultChecked: column.included}), 
-					  column.name
-					  )
-				      );
-				  })
-			       
-			    )
-			  )
-
-		)}    
-	});
-
-
-	var DummyMenu = React.createClass({displayName: "DummyMenu",
-	    getConfig: function() { return {};},
-	    render: function() { return (React.createElement("span", null));}
-	});
-
-	var RegionsMenu = React.createClass({displayName: "RegionsMenu",
-	    getConfig: function() { return {};},
-	    render: function() { return ( 
-		React.createElement("div", {style: {"text-align": "center"}}, 
-		  React.createElement("img", {height: "200px", style: {margin: "20px auto 0 auto"}, src: "assets/hipo_foto.svg"})
-		)
-	    );}
-	});
-
-
-	var DataTableMenu = React.createClass({displayName: "DataTableMenu",
-
-	    // options: { 
-	    //     tables:["morpho", "clinic"],
-	    //     columns:[
-	    // 	     {name: "col1", included: true}, 
-	    // 	     {name: "col2", included: false}
-	    //     ]
-	    // }
-	    mixins: [React.addons.LinkedStateMixin],
-	    getInitialState: function() {
-		return {
-		    table: this.props.options.tables[0],
-		    columns: this.props.options.columns
-		};
-	    },
-
-	    getConfig: function() {
-		var self = this;
-	//	var columns = this.props.options.columns[ this.state.table ].map(
-	//	    function(column, i){return {name: column.name, included: self.refs["col"+i].getChecked()};})
-		var columns = this.state.columns[this.state.table];
-		return {
-		    table: this.state.table,
-		    columns: columns
-		};
-	    },
-
-	    handleCheck: function(table, column_i, checked) {
-		var state = _.set(this.state, ["columns", table, column_i, "included"], checked);
-		console.log(state);
-		this.setState(state);
-	    },
-
-	    handleMultiCheck: function(table, checked) {
-		var columns = this.state.columns[table];
-		columns = _.map(columns, function(column) {column.included = checked; return column;});
-		var state = _.set(this.state, ["columns", table], columns);
-		this.setState(state);
-	    },
-
-	    render: function() {
-		var options = this.props.options;
-		var columns = this.state.columns[this.state.table];
-		var handleCheck = this.handleCheck.bind(this, this.state.table);
-		var handleMultiCheck = this.handleMultiCheck.bind(this, this.state.table);
-		return (
-	            React.createElement("div", null, 
-	              React.createElement("div", {className: "row"}, 
-			React.createElement("div", {className: "col-sm-12"}, 
-			  React.createElement("form", {style:  {position: "relative"} }, 
-			    React.createElement(TableMenuItem, {tableLink: this.linkState('table'), tables: options.tables}, " "), 
-			    React.createElement("label", null, " Columns: "), 
-			    React.createElement(BS.ButtonGroup, {style:  {position: "absolute", right: "0px"} }, 
-	                      React.createElement(Button, {onClick: function(){handleMultiCheck(true)}}, " Select All "), 
-	                      React.createElement(Button, {onClick: function(){handleMultiCheck(false)}}, " Unselect All ")
-			    ), 
-			    
-				columns.map(function(column, i){
-				    return (React.createElement(Input, {type: "checkbox", ref: "col" + i, key: "col" + column.name, 
-					label: column.name, onChange: function(ev) {handleCheck(i, ev.target.checked)}, checked: column.included}));
-				})
-			     
-			  )
-			)
-		      )
-		    )
-		);
-
-	    }
-	});
-
-
-
-	var ScatterMenu = React.createClass({displayName: "ScatterMenu",
-
-	    // options: { 
-	    //     tables:["morpho", "clinic"],
-	    //     attributes:[
-	    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
-	    //     ]
-	    // }
-	    mixins: [React.addons.LinkedStateMixin],
-	    getInitialState: function() {
-		var table = this.props.table || this.props.options.tables[0];
-		return {
-		    table: table,
-		    xColumn: this.props.xColumn || this.props.options.columns[table][0].name,
-		    yColumn: this.props.yColumn || this.props.options.columns[table][0].name,
-		};
-	    },
-
-	    getConfig: function() {
-		return {
-		    table: this.state.table,
-		    xColumn: this.state.xColumn,
-		    yColumn: this.state.yColumn,
-		};
-	    },
-
-	    handleTableChange: function(table) {
-		this.setState({
-		    table: table,
-		    xColumn: this.props.options.columns[table][0].name,
-		    yColumn: this.props.options.columns[table][0].name,
-		});
-	    },
-
-	    render: function() {
-		var options = this.props.options;
-		var columns = options.columns[this.state.table];
-		var tableLink = {
-		    value: this.state.table,
-		    requestChange: this.handleTableChange
-		};
-
-		return (
-	            React.createElement("div", null, 
-	              React.createElement("form", null, 
-	 		React.createElement(TableMenuItem, {tableLink: tableLink, tables: options.tables})
-		      ), 
-
-		      React.createElement(Input, {type: "select", label: "X Coordinate", ref: "x", valueLink: this.linkState('xColumn')}, 
-		      
-			  columns.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
-		       
-		      ), 
-
-		      React.createElement(Input, {type: "select", label: "Y Coordinate", ref: "y", valueLink: this.linkState('yColumn')}, 
-		      
-			  columns.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
-		       
-		      )
-
-	            )
-		);
-
-	    }
-	});
-
-
-	var ColumnFilterMenu = React.createClass({displayName: "ColumnFilterMenu",
-
-	    mixins: [React.addons.LinkedStateMixin],
-	    getInitialState: function() {
-		var table = this.props.table || this.props.options.tables[0];
-		return {
-		    table: table,
-		    column: this.props.column || this.props.options.columns[table][0].name,
-		};
-	    },
-
-	    getConfig: function() {
-		var attribute_type = _.find(this.props.options.columns[this.state.table], {name: this.state.column}).attribute_type;
-		return {
-		    table: this.state.table,
-		    column: this.state.column,
-		    attribute_type: attribute_type
-		};
-	    },
-
-	    handleTableChange: function(table) {
-		this.setState({
-		    table: table,
-		    column: this.props.options.columns[table][0].name,
-		});
-	    },
-
-	    render: function() {
-		var options = this.props.options;
-		var columns = options.columns[this.state.table];
-		var tableLink = {
-		    value: this.state.table,
-		    requestChange: this.handleTableChange
-		};
-
-		return (
-	            React.createElement("div", null, 
-	              React.createElement("form", null, 
-	 		React.createElement(TableMenuItem, {tableLink: tableLink, tables: options.tables})
-		      ), 
-
-		      React.createElement(Input, {type: "select", label: "Column", ref: "col", valueLink: this.linkState('column')}, 
-		      
-			  columns.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
-		       
-		      )
-
-	            )
-		);
-
-	    }
-	});
-
-
-	var BoxMenu = React.createClass({displayName: "BoxMenu",
-
-	    // options: { 
-	    //     tables:["morpho", "clinic"],
-	    //     attributes:[
-	    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
-	    //     ]
-	    // }
-	    mixins: [React.addons.LinkedStateMixin],
-	    getInitialState: function() {
-		var table = this.props.table || this.props.options.tables[0];
-		return {
-		    table: table,
-		    attr: this.props.attr || this.props.options.quantitativeColumns[table][0].name,
-		    facetAttr: this.props.facetAttr || this.props.options.categoricalColumns[table][0].name,
-		};
-	    },
-
-	    getConfig: function() {
-		return {
-		    table: this.state.table,
-		    attr: this.state.attr,
-		    facetAttr: this.state.facetAttr,
-		};
-	    },
-
-	    handleTableChange: function(table) {
-		this.setState({
-		    table: table,
-		    attr: this.props.options.quantitativeColumns[table][0].name,
-		    facetAttr: this.props.options.categoricalColumns[table][0].name,
-		});
-	    },
-
-	    render: function() {
-		var options = this.props.options;
-		var attrs = options.quantitativeColumns[this.state.table];
-		var facetAttrs = options.categoricalColumns[this.state.table];
-		var tableLink = {
-		    value: this.state.table,
-		    requestChange: this.handleTableChange
-		};
-
-		return (
-	            React.createElement("div", null, 
-	              React.createElement("form", null, 
-	 		React.createElement(TableMenuItem, {tableLink: tableLink, tables: options.tables})
-		      ), 
-
-		      React.createElement(Input, {type: "select", label: "Column", ref: "attr", valueLink: this.linkState('attr')}, 
-		      
-			  attrs.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
-		       
-		      ), 
-
-		      React.createElement(Input, {type: "select", label: "Split By", ref: "facetAttr", valueLink: this.linkState('facetAttr')}, 
-		      
-			  facetAttrs.map(function(column, i){ return (React.createElement("option", {key: column.name, value: column.name}, " ", column.name, " ")); })
-		       
-		      )
-
-	            )
-		);
-
-	    }
-	});
-
-
-
-
-/***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-	var _ = __webpack_require__(2);
-
-	var BS = __webpack_require__(43);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	    getDefaultProps: function() {
-		return {
-		    tables: {},
-		    label: "Export",
-		    header: "Export to Excel",
-		    bsStyle: "default"
-		};
-	    },
-
-	    render: function() {
-		var handleClick = this.props.onSelection;
-		var header = this.props.header;
-		return (
-	            React.createElement(BS.DropdownButton, {className: this.props.className, style: this.props.style, bsStyle: this.props.bsStyle, title: this.props.label}, 
-		      React.createElement(BS.MenuItem, {header: true}, " ", header, " "), 
-		      
-		      
-			  _.values(this.props.tables).map(function(table, i) {
-			      return(
-	                          React.createElement(BS.MenuItem, {eventKey: i, onSelect:  handleClick.bind(this, table) }, 
-				  table.name
-				  )
-			      )
-			  })
-		       
-	            )
-		)
-	    }
-
-	});
-
-
-/***/ },
-/* 38 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var d3 = __webpack_require__(41);
-	var _ = __webpack_require__(2);
-
-	module.exports = {
-	    createChart: function(container, props, state) {
-		var margin = this.props.margin;
-		var width = this.props.width - margin.left - margin.right;
-		var height = this.props.height - margin.top - margin.bottom;
-
-		var svg = d3.select(container).append("svg")
-		    .attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom)
-		    .attr("class", "pcp")
-		  .append("g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		svg.append("g").attr("class", "nanAxis");
-		svg.append("g").attr("class", "foreground");
-
-	    },
-
-	    cleanChart: function(container, props, state){
-		// unsubscribe things 
-	    },
-
-	    update: function(container, props, state) {
-		if ( !(props.attributes.length && props.data.length)) {
-		    d3.select(container).html('');
-		    this.createChart(container, props, state);
-		    return null
-		};
-		var self = this;
-		var nanMargin = 50;
-		var margin = props.margin;
-		var width = props.width - margin.left - margin.right;
-		var height = props.height - margin.top - margin.bottom - nanMargin;
-		var nanY = height + (nanMargin / 2);
-
-		var axis = d3.svg.axis().orient("left");
-		var scales = this._scales(width, height, props.data, props.attributes);
-		var path = this._path(props.attributes, scales, nanY);
-		var dragState = {};
-
-
-		var realSvg = d3.select(container).select("svg");
-		realSvg.attr("width", props.width)
-		    .attr("height", props.height);
-
-		var svg = d3.select(container).select("svg > g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		// Add foreground lines.
-		var foreground = svg.select("g.foreground");
-		var foregroundLines = foreground.selectAll("path")
-		  .data(props.data, function(d){return d.measure_id;});
-		foregroundLines.enter().append("path");
-		foregroundLines.attr("d", path)
-		    .attr("class", function(d) {return d.patient;})
-		    .attr("title", function(d) {return d.measure_id;});
-		foregroundLines.exit().remove();
-
-		var brushes = this._brushes(scales, props.attributes, props.onBrush, foreground);
-
-		// Add a group element for each trait.
-		var coordinates = svg.selectAll(".coordinate")
-			.data(_.pluck(props.attributes, "name"), function(d){return d;});
-		coordinates.enter().append("g").attr("class", "coordinate")
-			.call(function(g) {
-			    // Add an axis and title.
-			    g.append("g")
-				.attr("class", "axis")
-			      .append("text")
-				.attr("text-anchor", "middle")
-				.attr("class", "dimension") ;})
-
-			.call(function(g) {
-			    // Add a brush for each axis.
-			    g.append("g")
-				.attr("class", "brush"); });
-		coordinates
-			.attr("transform", function(d) { return "translate(" + scales.x(d) + ")"; })
-			.call(d3.behavior.drag()
-			      .origin(function(d) { return {x: scales.x(d)}; })
-			      .on("dragstart", this._dragstart(props.attributes, dragState))
-			      .on("drag", this._drag(scales, dragState, props.attributes, foregroundLines, path, coordinates))
-			      .on("dragend", this._dragend(scales, props.attributes, width, path, svg))
-			     );
-		coordinates.selectAll("g.axis")
-		    .each(function(d) { d3.select(this).call(axis.scale(scales.y[d])); });
-		coordinates.selectAll("g.brush")
-			.each(function(d) { if (!_.isUndefined(props.onBrush)) {d3.select(this).call(brushes[d]);}; })
-		    .selectAll("rect")
-			.attr("x", -8)
-			.attr("width", 16);
-		this._humanizeCoordinateLabels(coordinates.selectAll("text.dimension"), props.attributes);
-		coordinates.exit().remove();
-
-
-		// Nan Axis
-		var x1 = scales.x.range()[0];
-		var x2 = _.last(scales.x.range());
-		var nanAxis = svg.selectAll("g.nanAxis").selectAll("g.axis").data(["nan"]);
-		nanAxis.enter()
-		    .append("g")
-		    .attr("class", "axis")
-		    .each(function(){
-			d3.select(this).append("line");
-			d3.select(this).append("text")
-			    .text("NaN")
-			    .attr("text-anchor", "right");
-		    });
-		nanAxis.attr("transform", "translate("+ 0 +", "+ nanY  +")");
-		nanAxis.selectAll("line").attr({x1:x1, y1:0, x2:x2, y2:0});
-		nanAxis.selectAll("text").attr("x", x1 - 40);
-
-		return null;
-	    },
-
-	    _dragstart: function(attributes, dragState) {
-		return function dragstart(d) {
-		    dragState.i = _.pluck(attributes, "name").indexOf(d);
-		};
-	    },
-
-	    _drag: function(scales, dragState, attributes, foregroundLines, path, g){
-		var x = scales.x;
-		
-		return function drag(d) {
-		    x.range()[dragState.i] = d3.event.x;
-		    attributes.sort(function(a, b) { return x(a.name) - x(b.name); });
-		    g.attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-		    foregroundLines.attr("d", path);
-		};
-	    },
-
-	    _dragend: function(scales, attributes, width, path, svg) {
-		var x = scales.x;
-		var self = this;
-		return function dragend(d) {
-		    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-		    var t = d3.transition().duration(500);
-		    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-		    t.selectAll(".foreground path").attr("d", path);
-
-		    // TODO: Sort Coordinates after the animation
-		    _.delay(function(){self.props.onAttributeSort(attributes)}, 500);
-		};
-	    },
-
-	    _scales: function(width, height, data, attributes) {
-		var self = this;
-
-		var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-		var y = {};
-
-		function sortRegions (rows) {
-		    return rows.sort(function(a,b){
-			var order = ["DG", "CA3", "CA1", "SUB"];
-			return d3.ascending(order.indexOf(a), order.indexOf(b)); 
-		    })
-		}
-
-		attributes.forEach(function(d) {
-		    var name = d.name;
-		    if (d.attribute_type === 'QUANTITATIVE') {
-			y[name] = d3.scale.linear()
-			    .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
-					      , function(p) { return p[name]; }))
-			    .range([height, 0]);
-		    }
-		    else if (d.attribute_type === 'CATEGORICAL') {
-			var domain = d3.set(_.pluck(data, name)).values();
-			domain = (d.name == "Region") ? sortRegions(domain) : domain;
-			y[name] = d3.scale.ordinal()
-			    .domain(domain)
-			    .rangePoints([height, 0]);
-		    }
-		});
-
-		return {x: x, y: y};
-	    },
-
-
-	    _brushes: function(scales, attributes, onBrush, foreground) {
-		if (_.isUndefined(onBrush)) return {};
-		var brushes = {};
-		var brush = this._brush(scales, brushes, foreground, onBrush);
-		var brushstart = function() {d3.event.sourceEvent.stopPropagation();};
-		attributes.forEach(function(d) {
-			var name = d.name;
-			if (d.attribute_type === "QUANTITATIVE") {
-			    brushes[name] = d3.svg.brush()
-				.y(scales.y[name])
-				.on("brushstart", brushstart)
-				.on("brush", brush);
-			}
-			else {//TODO: Add CATEGORICAL support
-			    brushes[name] = function(){};
-			    brushes[name].empty = function(){return true;};
-			}
-		});
-		return brushes;
-	    },
-
-	    _brush: function(scales, brushes, foreground, onBrush){
-		var triggerChangeThrottle = _.throttle(onBrush, 30);
-		// Handles a brush event, toggling the display of foreground lines.
-		return function () {
-		    var actives = _.keys(brushes).filter( function(dim) { return !brushes[dim].empty(); });
-		    var extents = _.zipObject(actives, actives.map(function(dim) { return brushes[dim].extent(); }));
-
-		    foreground.selectAll("path")
-			.attr('display', function(d) {
-			    var isInside = actives.every(function(dim) {
-				    //TODO: CATEGORICAL: console.log(extents[dim][0], "<=", d[dim], "&&",  d[dim], "<=" , extents[dim][1]);
-				    return extents[dim][0] <= d[dim] && d[dim] <= extents[dim][1];
-				});
-			    return isInside ? null : 'none';
-			});
-		    triggerChangeThrottle(extents);
-		};
-	    },
-
-	    // Cousure. Returns the path for a given data point.
-	    _path : function (attributes, scales, nanY) {
-		var line = d3.svg.line();
-	//		.defined(function(d){return !isNaN(d[1]);});  // Breaks the line
-		return function (d) {
-		    return line(_.pluck(attributes, "name")
-				.map(function(a) { 
-				    var y = scales.y[a](d[a])
-				    return [scales.x(a), !isNaN(y) ? y : nanY ]; }));
-		};
-	    },
-
-	    _humanizeCoordinateLabels: function(textSelection, attributes) {
-		textSelection.text(function(d){return _.capitalize(String(d));});
-		textSelection.transition().attr("y", function(d,i){return (_.findIndex(attributes, {name:d}) %2)? -9 : -27;});
-	    }
-
-	};
-
-
-/***/ },
-/* 39 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var d3 = __webpack_require__(41);
-	var _ = __webpack_require__(2);
-	__webpack_require__(47);
-
-
-	module.exports = {
-	    createChart: function(container, props, state){
-		var margin = this.props.margin;
-		var width = this.props.width - margin.left - margin.right;
-		var height = this.props.height - margin.top - margin.bottom;
-
-		var svg = d3.select(container).append("svg")
-		    .attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom)
-		    .attr("class", "boxChart")
-		  .append("g")
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		var gXAxis = svg.append("g")
-		    .attr("class", "x axis");
-
-		var gYAxis = svg.append("g")
-		    .attr("class", "y axis");
-
-		var gBoxes = svg.append("g")
-		    .attr("class", "boxes");
-
-	    },
-
-	    cleanChart: function(container, props, state){
-		// unsubscribe things 
-	    },
-
-	    update: function(container, props, state) {
-		if ( !(props.distributions.length)) {
-		    d3.select(container).html('');
-		    this.createChart(container, props, state);
-		    return null
-		};
-		console.log("Update BOX"); 
-		var self = this;
-		var margin = props.margin;
-		var width = props.width - margin.left - margin.right;
-		var height = props.height - margin.top - margin.bottom;
-
-		var boxWidth = 20;
-		var boxMargin = 25;
-		var boxGroupMargin = 20;
-
-		var color = d3.scale.category10();
-
-		var nDistributions = props.distributions.length;
-		var distributions = _.flatten(_.forEach(props.distributions, function(dist, i){
-		    return _.map(dist, function(v){return v.subset = i;});}));
-		var factedData = _.groupBy(distributions, 'facetAttr');
-		var nBoxGroups = d3.max(_.map(props.distributions, 'length'));
-		
-		var boxGroupWidth = nDistributions * (boxWidth + 2 * boxMargin);
-
-		// -----------------------------
-		//     Update the axes
-		// -----------------------------
-
-		var x = d3.scale.ordinal()
-		    .domain(_.keys(factedData))
-		    .rangePoints([0,width], 1);
-
-		var y = d3.scale.linear()
-		    .domain(self.getDomain(distributions))
-		    .rangeRound([height, 0])
-		    .nice();
-
-		var boxPlot = d3.box()
-		    .height(height)
-		    .width(boxWidth)
-		    .whiskers(iqr(1.5))
-		    .domain(y.domain())
-		    .tickFormat(function(){return "";}); // No labels
-
-		var xGroup = d3.scale.linear()
-		    .rangeRound([0, width])
-		    .domain([0, nBoxGroups]);
-
-		var xAxis =  d3.svg.axis()
-		    .scale(x)
-		    .orient("bottom");
-
-		var yAxis =  d3.svg.axis()
-		    .scale(y)
-		    .ticks(5)
-		    .orient("left");
-		
-		// -----------------------------
-		//     Update the layers
-		// -----------------------------
-
-		var realSvg = d3.select(container).select("svg");
-		realSvg.attr("width", width + margin.left + margin.right)
-		    .attr("height", height + margin.top + margin.bottom);
-
-		var svg = d3.select(container).select("svg > g")
-		    .attr("transform", "translate(" + (margin.left) + "," + margin.top + ")");
-
-		var gXAxis = svg.select("g.x")
-		    .attr("transform", "translate(0," + height + ")")
-		    .transition().call(xAxis);
-
-		var gYAxis = svg.select("g.y")
-		    .transition().call(yAxis);
-
-		var gBoxes = svg.select("g.boxes");
-
-		// -----------------------------
-		//     Update the boxPlots
-		// -----------------------------
-
-		var boxGroup = gBoxes.selectAll('g.boxGroup')
-		    .data(_.values(factedData));
-		boxGroup.enter().append('g')
-		    .classed('boxGroup', true);
-
-		var box = boxGroup.selectAll('g.box')
-		    .data(function(d) { return d; });
-
-		box.enter().append('g')
-		    .classed('box', true);
-
-		boxGroup.attr("transform", function(d,i) {return "translate(" + x(d[0].facetAttr) + ",0)";});
-
-		box.attr("transform", function(d,i) {
-		    var offset = - (boxWidth/2); //boxMargin + ((boxGroupWidth/2) * d.subset);
-		    return "translate(" + offset + ",0)";})
-		    .datum(function(d){return d.list;})
-		    .call(boxPlot);
-		
-		box.exit().remove();
-		boxGroup.exit().remove();
-
-		return null;
-	    },
-
-	    getDomain : function(distributions) {
-		var minmax = function(acc, v){
-		    acc.min = Math.min(acc.min, v.min);
-		    acc.max = Math.max(acc.max, v.max);
-		    return acc;
-		};
-		var domain =  _.reduce(_.flatten(distributions), minmax, {'min':Infinity, 'max':-Infinity});	    
-		return [domain.min, domain.max];
-	    }
-
-	};
-
-	// Returns a function to compute the interquartile range.
-	function iqr(k) {
-	    return function(d, i) {
-		var q1 = d.quartiles[0],
-	        q3 = d.quartiles[2],
-	        iqr = (q3 - q1) * k,
-	        i = -1,
-	        j = d.length;
-		while (d[++i] < q1 - iqr);
-		while (d[--j] > q3 + iqr);
-		return [i, j];
-	    };
-	}
-
-
-/***/ },
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(50);
-	module.exports.Responsive = __webpack_require__(51);
-
-
-/***/ },
-/* 41 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = d3;
-
-/***/ },
-/* 42 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.ScatterChart = __webpack_require__(107);
-
-
-/***/ },
-/* 43 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-	var _Accordion = __webpack_require__(53);
-
-	var _Accordion2 = _interopRequireDefault(_Accordion);
-
-	var _Affix = __webpack_require__(54);
-
-	var _Affix2 = _interopRequireDefault(_Affix);
-
-	var _AffixMixin = __webpack_require__(55);
-
-	var _AffixMixin2 = _interopRequireDefault(_AffixMixin);
-
-	var _Alert = __webpack_require__(56);
-
-	var _Alert2 = _interopRequireDefault(_Alert);
-
-	var _BootstrapMixin = __webpack_require__(57);
-
-	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
-
-	var _Badge = __webpack_require__(58);
-
-	var _Badge2 = _interopRequireDefault(_Badge);
-
-	var _Button = __webpack_require__(59);
-
-	var _Button2 = _interopRequireDefault(_Button);
-
-	var _ButtonGroup = __webpack_require__(60);
-
-	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
-
-	var _ButtonInput = __webpack_require__(61);
-
-	var _ButtonInput2 = _interopRequireDefault(_ButtonInput);
-
-	var _ButtonToolbar = __webpack_require__(62);
-
-	var _ButtonToolbar2 = _interopRequireDefault(_ButtonToolbar);
-
-	var _CollapsableNav = __webpack_require__(63);
-
-	var _CollapsableNav2 = _interopRequireDefault(_CollapsableNav);
-
-	var _CollapsibleNav = __webpack_require__(64);
-
-	var _CollapsibleNav2 = _interopRequireDefault(_CollapsibleNav);
-
-	var _Carousel = __webpack_require__(65);
-
-	var _Carousel2 = _interopRequireDefault(_Carousel);
-
-	var _CarouselItem = __webpack_require__(66);
-
-	var _CarouselItem2 = _interopRequireDefault(_CarouselItem);
-
-	var _Col = __webpack_require__(67);
-
-	var _Col2 = _interopRequireDefault(_Col);
-
-	var _CollapsableMixin = __webpack_require__(68);
-
-	var _CollapsableMixin2 = _interopRequireDefault(_CollapsableMixin);
-
-	var _CollapsibleMixin = __webpack_require__(69);
-
-	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
-
-	var _DropdownButton = __webpack_require__(70);
-
-	var _DropdownButton2 = _interopRequireDefault(_DropdownButton);
-
-	var _DropdownMenu = __webpack_require__(71);
-
-	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
-
-	var _DropdownStateMixin = __webpack_require__(72);
-
-	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
-
-	var _FadeMixin = __webpack_require__(73);
-
-	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
-
-	var _Glyphicon = __webpack_require__(74);
-
-	var _Glyphicon2 = _interopRequireDefault(_Glyphicon);
-
-	var _Grid = __webpack_require__(75);
-
-	var _Grid2 = _interopRequireDefault(_Grid);
-
-	var _Input = __webpack_require__(76);
-
-	var _Input2 = _interopRequireDefault(_Input);
-
-	var _Interpolate = __webpack_require__(77);
-
-	var _Interpolate2 = _interopRequireDefault(_Interpolate);
-
-	var _Jumbotron = __webpack_require__(78);
-
-	var _Jumbotron2 = _interopRequireDefault(_Jumbotron);
-
-	var _Label = __webpack_require__(79);
-
-	var _Label2 = _interopRequireDefault(_Label);
-
-	var _ListGroup = __webpack_require__(80);
-
-	var _ListGroup2 = _interopRequireDefault(_ListGroup);
-
-	var _ListGroupItem = __webpack_require__(81);
-
-	var _ListGroupItem2 = _interopRequireDefault(_ListGroupItem);
-
-	var _MenuItem = __webpack_require__(82);
-
-	var _MenuItem2 = _interopRequireDefault(_MenuItem);
-
-	var _Modal = __webpack_require__(83);
-
-	var _Modal2 = _interopRequireDefault(_Modal);
-
-	var _Nav = __webpack_require__(84);
-
-	var _Nav2 = _interopRequireDefault(_Nav);
-
-	var _Navbar = __webpack_require__(85);
-
-	var _Navbar2 = _interopRequireDefault(_Navbar);
-
-	var _NavItem = __webpack_require__(86);
-
-	var _NavItem2 = _interopRequireDefault(_NavItem);
-
-	var _ModalTrigger = __webpack_require__(87);
-
-	var _ModalTrigger2 = _interopRequireDefault(_ModalTrigger);
-
-	var _OverlayTrigger = __webpack_require__(88);
-
-	var _OverlayTrigger2 = _interopRequireDefault(_OverlayTrigger);
-
-	var _OverlayMixin = __webpack_require__(89);
-
-	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
-
-	var _PageHeader = __webpack_require__(90);
-
-	var _PageHeader2 = _interopRequireDefault(_PageHeader);
-
-	var _Panel = __webpack_require__(91);
-
-	var _Panel2 = _interopRequireDefault(_Panel);
-
-	var _PanelGroup = __webpack_require__(92);
-
-	var _PanelGroup2 = _interopRequireDefault(_PanelGroup);
-
-	var _PageItem = __webpack_require__(93);
-
-	var _PageItem2 = _interopRequireDefault(_PageItem);
-
-	var _Pager = __webpack_require__(94);
-
-	var _Pager2 = _interopRequireDefault(_Pager);
-
-	var _Popover = __webpack_require__(95);
-
-	var _Popover2 = _interopRequireDefault(_Popover);
-
-	var _ProgressBar = __webpack_require__(96);
-
-	var _ProgressBar2 = _interopRequireDefault(_ProgressBar);
-
-	var _Row = __webpack_require__(97);
-
-	var _Row2 = _interopRequireDefault(_Row);
-
-	var _SplitButton = __webpack_require__(98);
-
-	var _SplitButton2 = _interopRequireDefault(_SplitButton);
-
-	var _SubNav = __webpack_require__(99);
-
-	var _SubNav2 = _interopRequireDefault(_SubNav);
-
-	var _TabbedArea = __webpack_require__(100);
-
-	var _TabbedArea2 = _interopRequireDefault(_TabbedArea);
-
-	var _Table = __webpack_require__(101);
-
-	var _Table2 = _interopRequireDefault(_Table);
-
-	var _TabPane = __webpack_require__(102);
-
-	var _TabPane2 = _interopRequireDefault(_TabPane);
-
-	var _Thumbnail = __webpack_require__(103);
-
-	var _Thumbnail2 = _interopRequireDefault(_Thumbnail);
-
-	var _Tooltip = __webpack_require__(104);
-
-	var _Tooltip2 = _interopRequireDefault(_Tooltip);
-
-	var _Well = __webpack_require__(105);
-
-	var _Well2 = _interopRequireDefault(_Well);
-
-	var _styleMaps = __webpack_require__(106);
-
-	var _styleMaps2 = _interopRequireDefault(_styleMaps);
-
-	exports['default'] = {
-	  Accordion: _Accordion2['default'],
-	  Affix: _Affix2['default'],
-	  AffixMixin: _AffixMixin2['default'],
-	  Alert: _Alert2['default'],
-	  BootstrapMixin: _BootstrapMixin2['default'],
-	  Badge: _Badge2['default'],
-	  Button: _Button2['default'],
-	  ButtonGroup: _ButtonGroup2['default'],
-	  ButtonInput: _ButtonInput2['default'],
-	  ButtonToolbar: _ButtonToolbar2['default'],
-	  CollapsableNav: _CollapsableNav2['default'],
-	  CollapsibleNav: _CollapsibleNav2['default'],
-	  Carousel: _Carousel2['default'],
-	  CarouselItem: _CarouselItem2['default'],
-	  Col: _Col2['default'],
-	  CollapsableMixin: _CollapsableMixin2['default'],
-	  CollapsibleMixin: _CollapsibleMixin2['default'],
-	  DropdownButton: _DropdownButton2['default'],
-	  DropdownMenu: _DropdownMenu2['default'],
-	  DropdownStateMixin: _DropdownStateMixin2['default'],
-	  FadeMixin: _FadeMixin2['default'],
-	  Glyphicon: _Glyphicon2['default'],
-	  Grid: _Grid2['default'],
-	  Input: _Input2['default'],
-	  Interpolate: _Interpolate2['default'],
-	  Jumbotron: _Jumbotron2['default'],
-	  Label: _Label2['default'],
-	  ListGroup: _ListGroup2['default'],
-	  ListGroupItem: _ListGroupItem2['default'],
-	  MenuItem: _MenuItem2['default'],
-	  Modal: _Modal2['default'],
-	  Nav: _Nav2['default'],
-	  Navbar: _Navbar2['default'],
-	  NavItem: _NavItem2['default'],
-	  ModalTrigger: _ModalTrigger2['default'],
-	  OverlayTrigger: _OverlayTrigger2['default'],
-	  OverlayMixin: _OverlayMixin2['default'],
-	  PageHeader: _PageHeader2['default'],
-	  Panel: _Panel2['default'],
-	  PanelGroup: _PanelGroup2['default'],
-	  PageItem: _PageItem2['default'],
-	  Pager: _Pager2['default'],
-	  Popover: _Popover2['default'],
-	  ProgressBar: _ProgressBar2['default'],
-	  Row: _Row2['default'],
-	  SplitButton: _SplitButton2['default'],
-	  SubNav: _SubNav2['default'],
-	  TabbedArea: _TabbedArea2['default'],
-	  Table: _Table2['default'],
-	  TabPane: _TabPane2['default'],
-	  Thumbnail: _Thumbnail2['default'],
-	  Tooltip: _Tooltip2['default'],
-	  Well: _Well2['default'],
-	  styleMaps: _styleMaps2['default']
-	};
-	module.exports = exports['default'];
-
-/***/ },
-/* 44 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-
-	module.exports = {
-	    getDefaultProps: function() {
-		var margin = {top: 20, right: 10, bottom: 20, left: 10};
-		return {
-		    margin: margin
-		};
-	    },
-
-	    componentDidMount: function() {
-		var container = this.refs.container.getDOMNode();
-		this.createChart(container, this.props, this.state);
-		this.update(container, this.props, this.state);
-	    },
-
-	    componentWillUnmount: function() {
-		var container = this.refs.container.getDOMNode();
-		this.cleanChart(container, this.props, this.state);
-	    },
-
-	    shouldComponentUpdate: function(nextProps, nextState) {
-		var container = this.refs.container.getDOMNode();
-		this.update(container, nextProps, nextState);
-		// render is not called again so the container is there until
-		// the end.
-		return false;
-	    },
-
-	    render: function(){
-		return (
-	            React.createElement("div", {ref: "container"})
-		);
-	    }
-	};
-
-
-/***/ },
-/* 45 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var React = __webpack_require__(1);
-
-	module.exports = {
-
-	    componentDidMount: function() {
-		this.props.onMount && this.props.onMount();
-	    },
-
-	    componentWillUnmount: function() {
-		this.props.onUnmount && this.props.onUnmount();
-	    },
-
-	};
-
-
-/***/ },
-/* 46 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict'
-
-	var d3 = __webpack_require__(41);
-
-	var rangeSlider = {
-	    createChart: function(container, props, state){
-		var svg = d3.select(container).append("svg").attr("class", "slider rangeSlider");
-		var gAxis = svg.append("g").attr("class", "x axis");
-		var slider = svg.append('g').attr("class", "brush");
-	    },
-
-	    cleanChart: function(container, props, state) {},
-
-	    update: function(container, nextProps, nextState) {
-
-		var domain = nextProps.domain || {min:0, max:1};
-		var extent = nextProps.extent || [domain.min, domain.max];
-
-		var onStart = nextProps.onStart || null;
-		var onMove = nextProps.onMove || null;
-		var onEnd = nextProps.onEnd || null;
-
-		var margin = {top: 5, left: 10, bottom: 20, right: 20};
-		var width = nextProps.width;
-		var height = nextProps.height;
-
-		var slider_width = width - margin.left - margin.right;
-		var slider_height = height - margin.top - margin.bottom;
-
-		var x = d3.scale.linear()
-		    .domain([domain.min, domain.max])
-		    .range([0, slider_width])
-		    .nice();
-
-		var brush = d3.svg.brush()
-		    .x(x)
-		    .extent(extent)
-		    .on("brushstart", brushstart)
-		    .on("brush", brushmove)
-		    .on("brushend", brushend);
-
-		var axis =  d3.svg.axis()
-		    .scale(x)
-		    .ticks(5)
-		    .orient("bottom");
-
-		var svg = d3.select(container).select("svg.slider")
-		    .style("width", width + "px")
-		    .style("height", height + "px");
-
-		var gAxis = svg.select("g.axis")
-		    .attr("transform", "translate(" + margin.left + "," + (slider_height + margin.top)  + ")")
-		    .call(axis);
-
-		var slider = svg.select('g.brush')
-		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-		    .call(brush);
-
-		slider.selectAll("rect")
-		    .attr("height", slider_height);
-		slider.selectAll(".resize rect")
-		    .style("visibility", "visible");
-		slider.selectAll(".background")
-		    .style("visibility", "visible");
-
-		function brushstart() {
-		    //svg.classed("selecting", true);
-		    if (onStart) onStart(brush.extent());
-		}
-
-		function brushmove() {
-		    // ############# CONTINUE HERE 
-		    if (onMove) onMove(brush.extent());
-		}
-
-		function brushend() {
-		    if (onEnd) onEnd(brush.extent());
-		    //svg.classed("selecting", !d3.event.target.empty());
-		}
-	    }
-	};
-
-	module.exports = rangeSlider;
-
-
-/***/ },
-/* 47 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var d3 = __webpack_require__(41);
-
-	// Source: http://bl.ocks.org/mbostock/4061502
-	// Inspired by http://informationandvisualization.de/blog/box-plot
-	d3.box = function() {
-	  var width = 1,
-	      height = 1,
-	      duration = 0,
-	      domain = null,
-	      value = Number,
-	      whiskers = boxWhiskers,
-	      quartiles = boxQuartiles,
-	      tickFormat = null;
-
-	  // For each small multiple…
-	  function box(g) {
-	    g.each(function(d, i) {
-	      d = d.map(value).sort(d3.ascending);
-	      var g = d3.select(this),
-	          n = d.length,
-	          min = d[0],
-	          max = d[n - 1];
-
-	      // Compute quartiles. Must return exactly 3 elements.
-	      var quartileData = d.quartiles = quartiles(d);
-
-	      // Compute whiskers. Must return exactly 2 elements, or null.
-	      var whiskerIndices = whiskers && whiskers.call(this, d, i),
-	          whiskerData = whiskerIndices && whiskerIndices.map(function(i) { return d[i]; });
-
-	      // Compute outliers. If no whiskers are specified, all data are "outliers".
-	      // We compute the outliers as indices, so that we can join across transitions!
-	      var outlierIndices = whiskerIndices
-	          ? d3.range(0, whiskerIndices[0]).concat(d3.range(whiskerIndices[1] + 1, n))
-	          : d3.range(n);
-
-	      // Compute the new x-scale.
-	      var x1 = d3.scale.linear()
-	          .domain(domain && domain.call(this, d, i) || [min, max])
-	          .range([height, 0]);
-
-	      // Retrieve the old x-scale, if this is an update.
-	      var x0 = this.__chart__ || d3.scale.linear()
-	          .domain([0, Infinity])
-	          .range(x1.range());
-
-	      // Stash the new scale.
-	      this.__chart__ = x1;
-
-	      // Note: the box, median, and box tick elements are fixed in number,
-	      // so we only have to handle enter and update. In contrast, the outliers
-	      // and other elements are variable, so we need to exit them! Variable
-	      // elements also fade in and out.
-
-	      // Update center line: the vertical line spanning the whiskers.
-	      var center = g.selectAll("line.center")
-	          .data(whiskerData ? [whiskerData] : []);
-
-	      center.enter().insert("line", "rect")
-	          .attr("class", "center")
-	          .attr("x1", width / 2)
-	          .attr("y1", function(d) { return x0(d[0]); })
-	          .attr("x2", width / 2)
-	          .attr("y2", function(d) { return x0(d[1]); })
-	          .style("opacity", 1e-6)
-	        .transition()
-	          .duration(duration)
-	          .style("opacity", 1)
-	          .attr("y1", function(d) { return x1(d[0]); })
-	          .attr("y2", function(d) { return x1(d[1]); });
-
-	      center.transition()
-	          .duration(duration)
-	          .style("opacity", 1)
-	          .attr("y1", function(d) { return x1(d[0]); })
-	          .attr("y2", function(d) { return x1(d[1]); });
-
-	      center.exit().transition()
-	          .duration(duration)
-	          .style("opacity", 1e-6)
-	          .attr("y1", function(d) { return x1(d[0]); })
-	          .attr("y2", function(d) { return x1(d[1]); })
-	          .remove();
-
-	      // Update innerquartile box.
-	      var box = g.selectAll("rect.box")
-	          .data([quartileData]);
-
-	      box.enter().append("rect")
-	          .attr("class", "box")
-	          .attr("x", 0)
-	          .attr("y", function(d) { return x0(d[2]); })
-	          .attr("width", width)
-	          .attr("height", function(d) { return x0(d[0]) - x0(d[2]); })
-	        .transition()
-	          .duration(duration)
-	          .attr("y", function(d) { return x1(d[2]); })
-	          .attr("height", function(d) { return x1(d[0]) - x1(d[2]); });
-
-	      box.transition()
-	          .duration(duration)
-	          .attr("y", function(d) { return x1(d[2]); })
-	          .attr("height", function(d) { return x1(d[0]) - x1(d[2]); });
-
-	      // Update median line.
-	      var medianLine = g.selectAll("line.median")
-	          .data([quartileData[1]]);
-
-	      medianLine.enter().append("line")
-	          .attr("class", "median")
-	          .attr("x1", 0)
-	          .attr("y1", x0)
-	          .attr("x2", width)
-	          .attr("y2", x0)
-	        .transition()
-	          .duration(duration)
-	          .attr("y1", x1)
-	          .attr("y2", x1);
-
-	      medianLine.transition()
-	          .duration(duration)
-	          .attr("y1", x1)
-	          .attr("y2", x1);
-
-	      // Update whiskers.
-	      var whisker = g.selectAll("line.whisker")
-	          .data(whiskerData || []);
-
-	      whisker.enter().insert("line", "circle, text")
-	          .attr("class", "whisker")
-	          .attr("x1", 0)
-	          .attr("y1", x0)
-	          .attr("x2", width)
-	          .attr("y2", x0)
-	          .style("opacity", 1e-6)
-	        .transition()
-	          .duration(duration)
-	          .attr("y1", x1)
-	          .attr("y2", x1)
-	          .style("opacity", 1);
-
-	      whisker.transition()
-	          .duration(duration)
-	          .attr("y1", x1)
-	          .attr("y2", x1)
-	          .style("opacity", 1);
-
-	      whisker.exit().transition()
-	          .duration(duration)
-	          .attr("y1", x1)
-	          .attr("y2", x1)
-	          .style("opacity", 1e-6)
-	          .remove();
-
-	      // Update outliers.
-	      var outlier = g.selectAll("circle.outlier")
-	          .data(outlierIndices, Number);
-
-	      outlier.enter().insert("circle", "text")
-	          .attr("class", "outlier")
-	          .attr("r", 5)
-	          .attr("cx", width / 2)
-	          .attr("cy", function(i) { return x0(d[i]); })
-	          .style("opacity", 1e-6)
-	        .transition()
-	          .duration(duration)
-	          .attr("cy", function(i) { return x1(d[i]); })
-	          .style("opacity", 1);
-
-	      outlier.transition()
-	          .duration(duration)
-	          .attr("cy", function(i) { return x1(d[i]); })
-	          .style("opacity", 1);
-
-	      outlier.exit().transition()
-	          .duration(duration)
-	          .attr("cy", function(i) { return x1(d[i]); })
-	          .style("opacity", 1e-6)
-	          .remove();
-
-	      // Compute the tick format.
-	      var format = tickFormat || x1.tickFormat(8);
-
-	      // Update box ticks.
-	      var boxTick = g.selectAll("text.box")
-	          .data(quartileData);
-
-	      boxTick.enter().append("text")
-	          .attr("class", "box")
-	          .attr("dy", ".3em")
-	          .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
-	          .attr("x", function(d, i) { return i & 1 ? width : 0 })
-	          .attr("y", x0)
-	          .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
-	          .text(format)
-	        .transition()
-	          .duration(duration)
-	          .attr("y", x1);
-
-	      boxTick.transition()
-	          .duration(duration)
-	          .text(format)
-	          .attr("y", x1);
-
-	      // Update whisker ticks. These are handled separately from the box
-	      // ticks because they may or may not exist, and we want don't want
-	      // to join box ticks pre-transition with whisker ticks post-.
-	      var whiskerTick = g.selectAll("text.whisker")
-	          .data(whiskerData || []);
-
-	      whiskerTick.enter().append("text")
-	          .attr("class", "whisker")
-	          .attr("dy", ".3em")
-	          .attr("dx", 6)
-	          .attr("x", width)
-	          .attr("y", x0)
-	          .text(format)
-	          .style("opacity", 1e-6)
-	        .transition()
-	          .duration(duration)
-	          .attr("y", x1)
-	          .style("opacity", 1);
-
-	      whiskerTick.transition()
-	          .duration(duration)
-	          .text(format)
-	          .attr("y", x1)
-	          .style("opacity", 1);
-
-	      whiskerTick.exit().transition()
-	          .duration(duration)
-	          .attr("y", x1)
-	          .style("opacity", 1e-6)
-	          .remove();
-	    });
-	    d3.timer.flush();
-	  }
-
-	  box.width = function(x) {
-	    if (!arguments.length) return width;
-	    width = x;
-	    return box;
-	  };
-
-	  box.height = function(x) {
-	    if (!arguments.length) return height;
-	    height = x;
-	    return box;
-	  };
-
-	  box.tickFormat = function(x) {
-	    if (!arguments.length) return tickFormat;
-	    tickFormat = x;
-	    return box;
-	  };
-
-	  box.duration = function(x) {
-	    if (!arguments.length) return duration;
-	    duration = x;
-	    return box;
-	  };
-
-	  box.domain = function(x) {
-	    if (!arguments.length) return domain;
-	    domain = x == null ? x : d3.functor(x);
-	    return box;
-	  };
-
-	  box.value = function(x) {
-	    if (!arguments.length) return value;
-	    value = x;
-	    return box;
-	  };
-
-	  box.whiskers = function(x) {
-	    if (!arguments.length) return whiskers;
-	    whiskers = x;
-	    return box;
-	  };
-
-	  box.quartiles = function(x) {
-	    if (!arguments.length) return quartiles;
-	    quartiles = x;
-	    return box;
-	  };
-
-	  return box;
-	};
-
-	function boxWhiskers(d) {
-	  return [0, d.length - 1];
-	}
-
-	function boxQuartiles(d) {
-	  return [
-	    d3.quantile(d, .25),
-	    d3.quantile(d, .5),
-	    d3.quantile(d, .75)
-	  ];
-	}
-
-
-
-
-/***/ },
-/* 48 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.BarChart = __webpack_require__(108);
-
-
-/***/ },
-/* 49 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	function ToObject(val) {
-		if (val == null) {
-			throw new TypeError('Object.assign cannot be called with null or undefined');
-		}
-
-		return Object(val);
-	}
-
-	module.exports = Object.assign || function (target, source) {
-		var from;
-		var keys;
-		var to = ToObject(target);
-
-		for (var s = 1; s < arguments.length; s++) {
-			from = arguments[s];
-			keys = Object.keys(Object(from));
-
-			for (var i = 0; i < keys.length; i++) {
-				to[keys[i]] = from[keys[i]];
-			}
-		}
-
-		return to;
-	};
+	}(__webpack_require__(41)));
 
 
 /***/ },
 /* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	module.exports = __webpack_require__(116);
 
-	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var React = __webpack_require__(1);
-	var GridItem = __webpack_require__(109);
-	var utils = __webpack_require__(110);
-	var PureDeepRenderMixin = __webpack_require__(111);
-	var WidthListeningMixin = __webpack_require__(112);
-
-	/**
-	 * A reactive, fluid grid layout with draggable, resizable components.
-	 */
-	var ReactGridLayout = React.createClass({
-	  displayName: 'ReactGridLayout',
-
-	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
-
-	  propTypes: {
-	    //
-	    // Basic props
-	    //
-
-	    // If true, the container height swells and contracts to fit contents
-	    autoSize: React.PropTypes.bool,
-	    // # of cols.
-	    cols: React.PropTypes.number,
-
-	    // A selector that will not be draggable.
-	    draggableCancel: React.PropTypes.string,
-	    // A selector for the draggable handler
-	    draggableHandle: React.PropTypes.string,
-
-	    // layout is an array of object with the format:
-	    // {x: Number, y: Number, w: Number, h: Number}
-	    layout: function layout(props, propName, componentName) {
-	      var layout = props.layout;
-	      // I hope you're setting the _grid property on the grid items
-	      if (layout === undefined) {
-	        return;
-	      }utils.validateLayout(layout, 'layout');
-	    },
-
-	    layouts: function layouts(props, propName, componentName) {
-	      if (props.layouts) {
-	        throw new Error('ReactGridLayout does not use `layouts`: Use ReactGridLayout.Responsive.');
-	      }
-	    },
-
-	    // margin between items [x, y] in px
-	    margin: React.PropTypes.array,
-	    // Rows have a static height, but you can change this based on breakpoints if you like
-	    rowHeight: React.PropTypes.number,
-
-	    //
-	    // Flags
-	    //
-	    isDraggable: React.PropTypes.bool,
-	    isResizable: React.PropTypes.bool,
-	    // Use CSS transforms instead of top/left
-	    useCSSTransforms: React.PropTypes.bool,
-
-	    //
-	    // Callbacks
-	    //
-
-	    // Callback so you can save the layout.
-	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
-	    onLayoutChange: React.PropTypes.func,
-
-	    // Calls when drag starts. Callback is of the signature (layout, oldItem, newItem, placeholder, e).
-	    // All callbacks below have the same signature. 'start' and 'stop' callbacks omit the 'placeholder'.
-	    onDragStart: React.PropTypes.func,
-	    // Calls on each drag movement.
-	    onDrag: React.PropTypes.func,
-	    // Calls when drag is complete.
-	    onDragStop: React.PropTypes.func,
-	    //Calls when resize starts.
-	    onResizeStart: React.PropTypes.func,
-	    // Calls when resize movement happens.
-	    onResize: React.PropTypes.func,
-	    // Calls when resize is complete.
-	    onResizeStop: React.PropTypes.func,
-
-	    //
-	    // Other validations
-	    //
-
-	    // Children must not have duplicate keys.
-	    children: function children(props, propName, componentName) {
-	      React.PropTypes.node.apply(this, arguments);
-	      var children = props[propName];
-
-	      // Check children keys for duplicates. Throw if found.
-	      var keys = {};
-	      React.Children.forEach(children, function (child, i, list) {
-	        if (keys[child.key]) {
-	          throw new Error('Duplicate child key found! This will cause problems in ReactGridLayout.');
-	        }
-	        keys[child.key] = true;
-	      });
-	    }
-	  },
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      autoSize: true,
-	      cols: 12,
-	      rowHeight: 150,
-	      layout: [],
-	      margin: [10, 10],
-	      isDraggable: true,
-	      isResizable: true,
-	      useCSSTransforms: true,
-	      onLayoutChange: function onLayoutChange() {},
-	      onDragStart: function onDragStart() {},
-	      onDrag: function onDrag() {},
-	      onDragStop: function onDragStop() {},
-	      onResizeStart: function onResizeStart() {},
-	      onResize: function onResize() {},
-	      onResizeStop: function onResizeStop() {}
-	    };
-	  },
-
-	  getInitialState: function getInitialState() {
-	    return {
-	      activeDrag: null,
-	      isMounted: false,
-	      layout: utils.synchronizeLayoutWithChildren(this.props.layout, this.props.children, this.props.cols),
-	      width: this.props.initialWidth
-	    };
-	  },
-
-	  componentDidMount: function componentDidMount() {
-	    // Call back with layout on mount. This should be done after correcting the layout width
-	    // to ensure we don't rerender with the wrong width.
-	    this.props.onLayoutChange(this.state.layout);
-	    this.setState({ isMounted: true });
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // This allows you to set the width manually if you like.
-	    // Use manual width changes in combination with `listenToWindowResize: false`
-	    if (nextProps.width !== this.props.width) this.onWidthChange(nextProps.width);
-
-	    // If children change, regenerate the layout.
-	    if (nextProps.children.length !== this.props.children.length) {
-	      this.setState({
-	        layout: utils.synchronizeLayoutWithChildren(this.state.layout, nextProps.children, nextProps.cols)
-	      });
-	    }
-
-	    // Allow parent to set layout directly.
-	    if (nextProps.layout && JSON.stringify(nextProps.layout) !== JSON.stringify(this.state.layout)) {
-	      this.setState({
-	        layout: utils.synchronizeLayoutWithChildren(nextProps.layout, nextProps.children, nextProps.cols)
-	      });
-	    }
-	  },
-
-	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
-	    // Call back so we can store the layout
-	    // Do it only when a resize/drag is not active, otherwise there are way too many callbacks
-	    if (this.state.layout !== prevState.layout && !this.state.activeDrag) {
-	      this.props.onLayoutChange(this.state.layout, this.state.layouts);
-	    }
-	  },
-
-	  /**
-	   * Calculates a pixel value for the container.
-	   * @return {String} Container height in pixels.
-	   */
-	  containerHeight: function containerHeight() {
-	    if (!this.props.autoSize) {
-	      return;
-	    }return utils.bottom(this.state.layout) * this.props.rowHeight + this.props.margin[1] + 'px';
-	  },
-
-	  /**
-	   * When the width changes, save it to state. This helps with left/width calculations.
-	   */
-	  onWidthChange: function onWidthChange(width) {
-	    this.setState({ width: width });
-	  },
-
-	  /**
-	   * When dragging starts
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDragStart: function onDragStart(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-
-	    // No need to clone, `l` hasn't changed.
-	    this.props.onDragStart(layout, l, l, null, e);
-	  },
-	  /**
-	   * Each drag movement create a new dragelement and move the element to the dragged location
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDrag: function onDrag(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    // Clone layout item so we can pass it to the callback.
-	    var oldL = utils.clone(l);
-
-	    // Create placeholder (display only)
-	    var placeholder = {
-	      w: l.w, h: l.h, x: l.x, y: l.y, placeholder: true, i: i
-	    };
-
-	    // Move the element to the dragged location.
-	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
-
-	    this.props.onDrag(layout, oldL, l, placeholder, e);
-
-	    this.setState({
-	      layout: utils.compact(layout),
-	      activeDrag: placeholder
-	    });
-	  },
-
-	  /**
-	   * When dragging stops, figure out which position the element is closest to and update its x and y.
-	   * @param  {Number} i Index of the child.
-	   * @param {Number} i Index of the child
-	   * @param {Number} x X position of the move
-	   * @param {Number} y Y position of the move
-	   * @param {Event} e The mousedown event
-	   * @param {Element} element The current dragging DOM element
-	   * @param {Object} position Drag information
-	   */
-	  onDragStop: function onDragStop(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var position = _ref.position;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    // Move the element here
-	    layout = utils.moveElement(layout, l, x, y, true /* isUserAction */);
-
-	    this.props.onDragStop(layout, oldL, l, null, e);
-
-	    // Set state
-	    this.setState({ layout: utils.compact(layout), activeDrag: null });
-	  },
-
-	  onResizeStart: function onResizeStart(i, w, h, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-
-	    // No need to clone, item hasn't changed
-	    this.props.onResizeStart(layout, l, l, null, e);
-	  },
-
-	  onResize: function onResize(i, w, h, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    // Set new width and height.
-	    l.w = w;
-	    l.h = h;
-
-	    // Create placeholder element (display only)
-	    var placeholder = {
-	      w: w, h: h, x: l.x, y: l.y, placeholder: true, i: i
-	    };
-
-	    this.props.onResize(layout, oldL, l, placeholder, e);
-
-	    // Re-compact the layout and set the drag placeholder.
-	    this.setState({ layout: utils.compact(layout), activeDrag: placeholder });
-	  },
-
-	  onResizeStop: function onResizeStop(i, x, y, _ref) {
-	    var e = _ref.e;
-	    var element = _ref.element;
-	    var size = _ref.size;
-
-	    var layout = this.state.layout;
-	    var l = utils.getLayoutItem(layout, i);
-	    var oldL = utils.clone(l);
-
-	    this.props.onResizeStop(layout, oldL, l, null, e);
-
-	    this.setState({ activeDrag: null, layout: utils.compact(layout) });
-	  },
-
-	  /**
-	   * Create a placeholder object.
-	   * @return {Element} Placeholder div.
-	   */
-	  placeholder: function placeholder() {
-	    if (!this.state.activeDrag) {
-	      return '';
-	    } // {...this.state.activeDrag} is pretty slow, actually
-	    return React.createElement(
-	      GridItem,
-	      {
-	        w: this.state.activeDrag.w,
-	        h: this.state.activeDrag.h,
-	        x: this.state.activeDrag.x,
-	        y: this.state.activeDrag.y,
-	        i: this.state.activeDrag.i,
-	        isPlaceholder: true,
-	        className: 'react-grid-placeholder',
-	        containerWidth: this.state.width,
-	        cols: this.props.cols,
-	        margin: this.props.margin,
-	        rowHeight: this.props.rowHeight,
-	        isDraggable: false,
-	        isResizable: false,
-	        useCSSTransforms: this.props.useCSSTransforms
-	      },
-	      React.createElement('div', null)
-	    );
-	  },
-
-	  /**
-	   * Given a grid item, set its style attributes & surround in a <Draggable>.
-	   * @param  {Element} child React element.
-	   * @param  {Number}  i     Index of element.
-	   * @return {Element}       Element wrapped in draggable and properly placed.
-	   */
-	  processGridItem: function processGridItem(child) {
-	    var i = child.key;
-	    var l = utils.getLayoutItem(this.state.layout, i);
-
-	    // watchStart property tells Draggable to react to changes in the start param
-	    // Must be turned off on the item we're dragging as the changes in `activeDrag` cause rerenders
-	    var drag = this.state.activeDrag;
-	    var moveOnStartChange = drag && drag.i === i ? false : true;
-
-	    // Parse 'static'. Any properties defined directly on the grid item will take precedence.
-	    var draggable, resizable;
-	    if (l['static'] || this.props.isDraggable === false) draggable = false;
-	    if (l['static'] || this.props.isResizable === false) resizable = false;
-
-	    return React.createElement(
-	      GridItem,
-	      _extends({
-	        containerWidth: this.state.width,
-	        cols: this.props.cols,
-	        margin: this.props.margin,
-	        rowHeight: this.props.rowHeight,
-	        moveOnStartChange: moveOnStartChange,
-	        cancel: this.props.draggableCancel,
-	        handle: this.props.draggableHandle,
-	        onDragStop: this.onDragStop,
-	        onDragStart: this.onDragStart,
-	        onDrag: this.onDrag,
-	        onResizeStart: this.onResizeStart,
-	        onResize: this.onResize,
-	        onResizeStop: this.onResizeStop,
-	        isDraggable: draggable,
-	        isResizable: resizable,
-	        useCSSTransforms: this.props.useCSSTransforms && this.state.isMounted,
-	        usePercentages: !this.state.isMounted
-	      }, l),
-	      child
-	    );
-	  },
-
-	  render: function render() {
-	    // Calculate classname
-	    var _props = this.props;
-	    var className = _props.className;
-
-	    var props = _objectWithoutProperties(_props, ['className']);
-
-	    className = 'react-grid-layout ' + (className || '');
-
-	    return React.createElement(
-	      'div',
-	      _extends({}, props, { className: className, style: { height: this.containerHeight() } }),
-	      React.Children.map(this.props.children, this.processGridItem),
-	      this.placeholder()
-	    );
-	  }
-	});
-
-	module.exports = ReactGridLayout;
 
 /***/ },
-/* 51 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _objectWithoutProperties = function (obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; };
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var React = __webpack_require__(1);
-	var utils = __webpack_require__(110);
-	var responsiveUtils = __webpack_require__(113);
-	var PureDeepRenderMixin = __webpack_require__(111);
-	var WidthListeningMixin = __webpack_require__(112);
-	var ReactGridLayout = __webpack_require__(50);
-
-	/**
-	 * A wrapper around ReactGridLayout to support responsive breakpoints.
-	 */
-	var ResponsiveReactGridLayout = React.createClass({
-	  displayName: 'ResponsiveReactGridLayout',
-
-	  mixins: [PureDeepRenderMixin, WidthListeningMixin],
-
-	  propTypes: {
-	    //
-	    // Basic props
-	    //
-
-	    // Optional, but if you are managing width yourself you may want to set the breakpoint
-	    // yourself as well.
-	    breakpoint: React.PropTypes.string,
-
-	    // {name: pxVal}, e.g. {lg: 1200, md: 996, sm: 768, xs: 480}
-	    breakpoints: React.PropTypes.object,
-
-	    // # of cols. This is a breakpoint -> cols map
-	    cols: React.PropTypes.object,
-
-	    // layouts is an object mapping breakpoints to layouts.
-	    // e.g. {lg: Layout, md: Layout, ...}
-	    layouts: function layouts(props, propName, componentName) {
-	      React.PropTypes.object.isRequired.apply(this, arguments);
-
-	      var layouts = props.layouts;
-	      Object.keys(layouts).map(function (k) {
-	        utils.validateLayout(layouts[k], 'layouts.' + k);
-	      });
-	    },
-
-	    //
-	    // Callbacks
-	    //
-
-	    // Calls back with breakpoint and new # cols
-	    onBreakpointChange: React.PropTypes.func,
-
-	    // Callback so you can save the layout.
-	    // Calls back with (currentLayout, allLayouts). allLayouts are keyed by breakpoint.
-	    onLayoutChange: React.PropTypes.func
-	  },
-
-	  getDefaultProps: function getDefaultProps() {
-	    return {
-	      breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-	      cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
-	      layouts: {},
-	      onBreakpointChange: function onBreakpointChange() {},
-	      onLayoutChange: function onLayoutChange() {}
-	    };
-	  },
-
-	  getInitialState: function getInitialState() {
-	    var breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, this.props.initialWidth);
-	    var cols = responsiveUtils.getColsFromBreakpoint(breakpoint, this.props.cols);
-
-	    // Get the initial layout. This can tricky; we try to generate one however possible if one doesn't exist
-	    // for this layout.
-	    var initialLayout = responsiveUtils.findOrGenerateResponsiveLayout(this.props.layouts, this.props.breakpoints, breakpoint, breakpoint, cols);
-
-	    return {
-	      layout: initialLayout,
-	      // storage for layouts obsoleted by breakpoints
-	      layouts: this.props.layouts || {},
-	      breakpoint: breakpoint,
-	      cols: cols,
-	      width: this.props.initialWidth
-	    };
-	  },
-
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    // This allows you to set the width manually if you like.
-	    // Use manual width changes in combination with `listenToWindowResize: false`
-	    if (nextProps.width) this.onWidthChange(nextProps.width);
-
-	    // Allow parent to set breakpoint directly.
-	    if (nextProps.breakpoint !== this.props.breakpoint) {
-	      this.onWidthChange(this.state.width);
-	    }
-
-	    // Allow parent to set layouts directly.
-	    if (nextProps.layouts && nextProps.layouts !== this.state.layouts) {
-	      // Since we're setting an entirely new layout object, we must generate a new responsive layout
-	      // if one does not exist.
-	      var newLayout = responsiveUtils.findOrGenerateResponsiveLayout(nextProps.layouts, nextProps.breakpoints, this.state.breakpoint, this.state.breakpoint, this.state.cols);
-
-	      this.setState({
-	        layouts: nextProps.layouts,
-	        layout: newLayout
-	      });
-	    }
-	  },
-
-	  /**
-	   * Bubble this up, add `layouts` object.
-	   * @param  {Array} layout Layout from inner Grid.
-	   */
-	  onLayoutChange: function onLayoutChange(layout) {
-	    this.state.layouts[this.state.breakpoint] = layout;
-	    this.setState({ layout: layout, layouts: this.state.layouts });
-	    this.props.onLayoutChange(layout, this.state.layouts);
-	  },
-
-	  /**
-	   * When the width changes work through breakpoints and reset state with the new width & breakpoint.
-	   * Width changes are necessary to figure out the widget widths.
-	   */
-	  onWidthChange: function onWidthChange(width) {
-	    // Set new breakpoint
-	    var newState = { width: width };
-	    newState.breakpoint = this.props.breakpoint || responsiveUtils.getBreakpointFromWidth(this.props.breakpoints, newState.width);
-	    newState.cols = responsiveUtils.getColsFromBreakpoint(newState.breakpoint, this.props.cols);
-
-	    // Breakpoint change
-	    if (newState.cols !== this.state.cols) {
-
-	      // Store the current layout
-	      newState.layouts = this.state.layouts;
-	      newState.layouts[this.state.breakpoint] = JSON.parse(JSON.stringify(this.state.layout));
-
-	      // Find or generate a new one.
-	      newState.layout = responsiveUtils.findOrGenerateResponsiveLayout(newState.layouts, this.props.breakpoints, newState.breakpoint, this.state.breakpoint, newState.cols);
-
-	      // This adds missing items.
-	      newState.layout = utils.synchronizeLayoutWithChildren(newState.layout, this.props.children, newState.cols);
-
-	      // Store this new layout as well.
-	      newState.layouts[newState.breakpoint] = newState.layout;
-
-	      this.props.onBreakpointChange(newState.breakpoint, newState.cols);
-	    }
-
-	    this.setState(newState);
-	  },
-
-	  render: function render() {
-	    // Don't pass responsive props to RGL.
-	    /*jshint unused:false*/
-	    var _props = this.props;
-	    var layouts = _props.layouts;
-	    var onBreakpointChange = _props.onBreakpointChange;
-	    var breakpoints = _props.breakpoints;
-
-	    var props = _objectWithoutProperties(_props, ['layouts', 'onBreakpointChange', 'breakpoints']);
-
-	    return React.createElement(
-	      ReactGridLayout,
-	      _extends({}, props, {
-	        layout: this.state.layout,
-	        cols: this.state.cols,
-	        listenToWindowResize: false,
-	        onLayoutChange: this.onLayoutChange,
-	        width: this.state.width }),
-	      this.props.children
-	    );
-	  }
-	});
-
-	module.exports = ResponsiveReactGridLayout;
-
-/***/ },
+/* 51 */,
 /* 52 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(114);
-
-
-/***/ },
-/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6449,7 +6315,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _PanelGroup = __webpack_require__(92);
+	var _PanelGroup = __webpack_require__(91);
 
 	var _PanelGroup2 = _interopRequireDefault(_PanelGroup);
 
@@ -6469,7 +6335,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 54 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6486,15 +6352,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _AffixMixin = __webpack_require__(55);
+	var _AffixMixin = __webpack_require__(54);
 
 	var _AffixMixin2 = _interopRequireDefault(_AffixMixin);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -6524,7 +6390,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 55 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6539,11 +6405,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsEventListener = __webpack_require__(116);
+	var _utilsEventListener = __webpack_require__(115);
 
 	var _utilsEventListener2 = _interopRequireDefault(_utilsEventListener);
 
@@ -6675,7 +6541,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 56 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6692,11 +6558,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -6758,7 +6624,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 57 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6769,7 +6635,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _styleMaps = __webpack_require__(106);
+	var _styleMaps = __webpack_require__(105);
 
 	var _styleMaps2 = _interopRequireDefault(_styleMaps);
 
@@ -6816,7 +6682,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 58 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6837,7 +6703,7 @@
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -6870,7 +6736,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 59 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6887,11 +6753,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -6981,7 +6847,7 @@
 	// eslint-disable-line object-shorthand
 
 /***/ },
-/* 60 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6998,11 +6864,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -7041,7 +6907,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 61 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7066,7 +6932,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Button = __webpack_require__(59);
+	var _Button = __webpack_require__(58);
 
 	var _Button2 = _interopRequireDefault(_Button);
 
@@ -7151,7 +7017,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 62 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7168,11 +7034,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -7204,7 +7070,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 63 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7227,7 +7093,7 @@
 
 	var _utilsObjectAssign2 = _interopRequireDefault(_utilsObjectAssign);
 
-	var _CollapsibleNav = __webpack_require__(64);
+	var _CollapsibleNav = __webpack_require__(63);
 
 	var specCollapsableNav = (0, _utilsObjectAssign2['default'])({}, _CollapsibleNav.specCollapsibleNav, {
 	  componentDidMount: function componentDidMount() {
@@ -7241,7 +7107,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 64 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7256,19 +7122,19 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _CollapsibleMixin = __webpack_require__(69);
+	var _CollapsibleMixin = __webpack_require__(68);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -7389,7 +7255,7 @@
 	exports['default'] = CollapsibleNav;
 
 /***/ },
-/* 65 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7406,11 +7272,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -7687,7 +7553,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 66 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7704,7 +7570,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -7804,7 +7670,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 67 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7821,11 +7687,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _styleMaps = __webpack_require__(106);
+	var _styleMaps = __webpack_require__(105);
 
 	var _styleMaps2 = _interopRequireDefault(_styleMaps);
 
@@ -7902,7 +7768,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 68 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7921,7 +7787,7 @@
 
 	var _utilsDeprecationWarning2 = _interopRequireDefault(_utilsDeprecationWarning);
 
-	var _CollapsibleMixin = __webpack_require__(69);
+	var _CollapsibleMixin = __webpack_require__(68);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
@@ -7952,7 +7818,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 69 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8145,7 +8011,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 70 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8162,7 +8028,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -8170,23 +8036,23 @@
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _DropdownStateMixin = __webpack_require__(72);
+	var _DropdownStateMixin = __webpack_require__(71);
 
 	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
 
-	var _Button = __webpack_require__(59);
+	var _Button = __webpack_require__(58);
 
 	var _Button2 = _interopRequireDefault(_Button);
 
-	var _ButtonGroup = __webpack_require__(60);
+	var _ButtonGroup = __webpack_require__(59);
 
 	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
 
-	var _DropdownMenu = __webpack_require__(71);
+	var _DropdownMenu = __webpack_require__(70);
 
 	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
 
@@ -8303,7 +8169,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 71 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8320,7 +8186,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -8370,7 +8236,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 72 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8385,11 +8251,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsEventListener = __webpack_require__(116);
+	var _utilsEventListener = __webpack_require__(115);
 
 	var _utilsEventListener2 = _interopRequireDefault(_utilsEventListener);
 
@@ -8473,7 +8339,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 73 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8488,7 +8354,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -8565,7 +8431,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 74 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8582,15 +8448,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _styleMaps = __webpack_require__(106);
+	var _styleMaps = __webpack_require__(105);
 
 	var _styleMaps2 = _interopRequireDefault(_styleMaps);
 
@@ -8626,7 +8492,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 75 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8643,7 +8509,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -8678,7 +8544,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 76 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8705,7 +8571,7 @@
 
 	var _InputBase3 = _interopRequireDefault(_InputBase2);
 
-	var _ButtonInput = __webpack_require__(61);
+	var _ButtonInput = __webpack_require__(60);
 
 	var _ButtonInput2 = _interopRequireDefault(_ButtonInput);
 
@@ -8745,7 +8611,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 77 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// https://www.npmjs.org/package/react-interpolate-component
@@ -8847,7 +8713,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 78 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8864,7 +8730,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -8884,7 +8750,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 79 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8901,11 +8767,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -8936,7 +8802,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 80 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -8959,7 +8825,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -9053,7 +8919,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 81 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9070,11 +8936,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -9172,7 +9038,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 82 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9189,7 +9055,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -9256,7 +9122,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 83 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9273,23 +9139,23 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _FadeMixin = __webpack_require__(73);
+	var _FadeMixin = __webpack_require__(72);
 
 	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
-	var _utilsEventListener = __webpack_require__(116);
+	var _utilsEventListener = __webpack_require__(115);
 
 	var _utilsEventListener2 = _interopRequireDefault(_utilsEventListener);
 
@@ -9453,7 +9319,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 84 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9470,19 +9336,19 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _CollapsibleMixin = __webpack_require__(69);
+	var _CollapsibleMixin = __webpack_require__(68);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -9604,7 +9470,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 85 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9621,11 +9487,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -9778,7 +9644,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 86 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9797,11 +9663,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -9880,7 +9746,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 87 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9895,7 +9761,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _OverlayMixin = __webpack_require__(89);
+	var _OverlayMixin = __webpack_require__(88);
 
 	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
 
@@ -9984,7 +9850,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 88 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9999,11 +9865,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _OverlayMixin = __webpack_require__(89);
+	var _OverlayMixin = __webpack_require__(88);
 
 	var _OverlayMixin2 = _interopRequireDefault(_OverlayMixin);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -10320,7 +10186,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 89 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10339,7 +10205,7 @@
 
 	var _utilsCustomPropTypes2 = _interopRequireDefault(_utilsCustomPropTypes);
 
-	var _utilsDomUtils = __webpack_require__(115);
+	var _utilsDomUtils = __webpack_require__(114);
 
 	var _utilsDomUtils2 = _interopRequireDefault(_utilsDomUtils);
 
@@ -10409,7 +10275,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 90 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10426,7 +10292,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -10450,7 +10316,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 91 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10467,15 +10333,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _CollapsibleMixin = __webpack_require__(69);
+	var _CollapsibleMixin = __webpack_require__(68);
 
 	var _CollapsibleMixin2 = _interopRequireDefault(_CollapsibleMixin);
 
@@ -10692,7 +10558,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 92 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* eslint react/prop-types: [1, {ignore: ["children", "className", "bsStyle"]}]*/
@@ -10711,11 +10577,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -10804,7 +10670,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 93 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10821,7 +10687,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -10884,7 +10750,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 94 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10901,7 +10767,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -10941,7 +10807,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 95 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -10960,15 +10826,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _FadeMixin = __webpack_require__(73);
+	var _FadeMixin = __webpack_require__(72);
 
 	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
 
@@ -11039,7 +10905,7 @@
 	// in class will be added by the FadeMixin when the animation property is true
 
 /***/ },
-/* 96 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11056,15 +10922,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Interpolate = __webpack_require__(77);
+	var _Interpolate = __webpack_require__(76);
 
 	var _Interpolate2 = _interopRequireDefault(_Interpolate);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -11194,7 +11060,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 97 */
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11211,7 +11077,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -11243,7 +11109,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 98 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* eslint react/prop-types: [1, {ignore: ["children", "className", "bsSize"]}]*/
@@ -11262,27 +11128,27 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _DropdownStateMixin = __webpack_require__(72);
+	var _DropdownStateMixin = __webpack_require__(71);
 
 	var _DropdownStateMixin2 = _interopRequireDefault(_DropdownStateMixin);
 
-	var _Button = __webpack_require__(59);
+	var _Button = __webpack_require__(58);
 
 	var _Button2 = _interopRequireDefault(_Button);
 
-	var _ButtonGroup = __webpack_require__(60);
+	var _ButtonGroup = __webpack_require__(59);
 
 	var _ButtonGroup2 = _interopRequireDefault(_ButtonGroup);
 
-	var _DropdownMenu = __webpack_require__(71);
+	var _DropdownMenu = __webpack_require__(70);
 
 	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
 
@@ -11398,7 +11264,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 99 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11415,7 +11281,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -11427,7 +11293,7 @@
 
 	var _utilsCreateChainedFunction2 = _interopRequireDefault(_utilsCreateChainedFunction);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -11563,7 +11429,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 100 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11580,7 +11446,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -11588,11 +11454,11 @@
 
 	var _utilsValidComponentChildren2 = _interopRequireDefault(_utilsValidComponentChildren);
 
-	var _Nav = __webpack_require__(84);
+	var _Nav = __webpack_require__(83);
 
 	var _Nav2 = _interopRequireDefault(_Nav);
 
-	var _NavItem = __webpack_require__(86);
+	var _NavItem = __webpack_require__(85);
 
 	var _NavItem2 = _interopRequireDefault(_NavItem);
 
@@ -11733,7 +11599,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 101 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11750,7 +11616,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -11791,7 +11657,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 102 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11808,7 +11674,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -11902,7 +11768,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 103 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11919,11 +11785,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -11974,7 +11840,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 104 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -11993,15 +11859,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
-	var _FadeMixin = __webpack_require__(73);
+	var _FadeMixin = __webpack_require__(72);
 
 	var _FadeMixin2 = _interopRequireDefault(_FadeMixin);
 
@@ -12061,7 +11927,7 @@
 	// in class will be added by the FadeMixin when the animation property is true
 
 /***/ },
-/* 105 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12078,11 +11944,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _BootstrapMixin = __webpack_require__(57);
+	var _BootstrapMixin = __webpack_require__(56);
 
 	var _BootstrapMixin2 = _interopRequireDefault(_BootstrapMixin);
 
@@ -12112,7 +11978,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 106 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -12170,276 +12036,23 @@
 	module.exports = exports['default'];
 
 /***/ },
+/* 106 */,
 /* 107 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var common = __webpack_require__(128);
-	var Chart = common.Chart;
-	var XAxis = common.XAxis;
-	var YAxis = common.YAxis;
-	var Voronoi = common.Voronoi;
-	var utils = __webpack_require__(129);
-	var immstruct = __webpack_require__(133);
-	var DataSeries = __webpack_require__(127);
-	var CartesianChartPropsMixin = __webpack_require__(130).CartesianChartPropsMixin;
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  mixins: [ CartesianChartPropsMixin ],
-
-	  propTypes: {
-	    margins: React.PropTypes.object,
-	    pointRadius: React.PropTypes.number,
-	    hoverAnimation: React.PropTypes.bool
-	 },
-
-	  getDefaultProps:function() {
-	    return {
-	      pointRadius: 3,
-	      margins: {top: 10, right: 20, bottom: 50, left: 45},
-	      hoverAnimation: true
-	    };
-	  },
-
-	  _calculateScales: utils.calculateScales,
-
-	  render:function() {
-
-	    var structure = immstruct('scatterChart', { voronoi: {}});
-
-	    var props = this.props;
-
-	    if (this.props.data && this.props.data.length < 1) {
-	      return React.createElement("g", null);
-	    }
-
-	    // Calculate inner chart dimensions
-	    var innerWidth, innerHeight;
-
-	    innerWidth = props.width - props.margins.left - props.margins.right;
-	    innerHeight = props.height - props.margins.top - props.margins.bottom;
-
-	    if (props.legend) {
-	      innerWidth = innerWidth - props.legendOffset;
-	    }
-
-	    if (!Array.isArray(props.data)) {
-	      props.data = [props.data];
-	    }
-
-	    // // Set margins if label is set
-	    // if (props.xAxisLabel) {
-	    //   var orient = props.xOrient;
-	    //   props.margins[orient] = props.margins[orient] + 10;
-	    // }
-	    //
-	    // // Set margins if label is set
-	    // if (props.yAxisLabel) {
-	    //   var orient = props.yOrient;
-	    //   props.margins[orient] = props.margins[orient] + 10;
-	    // }
-
-
-	    // Returns an object of flattened allValues, xValues, and yValues
-	    var flattenedData = utils.flattenData(props.data, props.xAccessor, props.yAccessor);
-
-	    var allValues = flattenedData.allValues,
-	        xValues = flattenedData.xValues,
-	        yValues = flattenedData.yValues;
-
-	    var scales = this._calculateScales(innerWidth, innerHeight, xValues, yValues);
-
-	    var trans = "translate(" + (props.yAxisOffset < 0 ? props.margins.left + Math.abs(props.yAxisOffset) : props.margins.left) + "," + props.margins.top + ")";
-
-	    var dataSeriesArray = props.data.map( function(series, idx)  {
-	      return (
-	          React.createElement(DataSeries, {
-	            structure: structure, 
-	            xScale: scales.xScale, 
-	            yScale: scales.yScale, 
-	            seriesName: series.name, 
-	            data: series.values, 
-	            width: innerWidth, 
-	            height: innerHeight, 
-	            fill: props.colors(idx), 
-	            pointRadius: props.pointRadius, 
-	            key: series.name, 
-	            hoverAnimation: props.hoverAnimation, 
-	            xAccessor: props.xAccessor, 
-	            yAccessor: props.yAccessor}
-	          )
-	      );
-	    });
-
-	    return (
-	      React.createElement(Chart, {
-	        viewBox: props.viewBox, 
-	        legend: props.legend, 
-	        data: props.data, 
-	        margins: props.margins, 
-	        colors: props.colors, 
-	        width: props.width, 
-	        height: props.height, 
-	        title: props.title}, 
-	        React.createElement("g", {transform: trans, className: "rd3-scatterchart"}, 
-	          React.createElement(Voronoi, {
-	            structure: structure, 
-	            data: allValues, 
-	            yScale: scales.yScale, 
-	            xScale: scales.xScale, 
-	            width: innerWidth, 
-	            height: innerHeight}
-	          ), 
-	          dataSeriesArray, 
-	          React.createElement(XAxis, {
-	            xAxisClassName: "rd3-scatterchart-xaxis", 
-	            strokeWidth: "1", 
-	            xAxisTickInterval: props.xAxisTickInterval, 
-	            xAxisOffset: props.xAxisOffset, 
-	            xScale: scales.xScale, 
-	            xAxisLabel: props.xAxisLabel, 
-	            xAxisLabelOffset: props.xAxisLabelOffset, 
-	            xOrient: props.xOrient, 
-	            data: props.data, 
-	            margins: props.margins, 
-	            width: innerWidth, 
-	            height: innerHeight, 
-	            stroke: props.axesColor}
-	          ), 
-	          React.createElement(YAxis, {
-	            yAxisClassName: "rd3-scatterchart-yaxis", 
-	            yScale: scales.yScale, 
-	            yAxisTickCount: props.yAxisTickCount, 
-	            yAxisOffset: props.yAxisOffset, 
-	            yAxisLabel: props.yAxisLabel, 
-	            yAxisLabelOffset: props.yAxisLabelOffset, 
-	            yOrient: props.yOrient, 
-	            margins: props.margins, 
-	            width: innerWidth, 
-	            height: innerHeight, 
-	            stroke: props.axesColor}
-	          )
-	        )
-	      )
-	    );
-	  }
-
-	});
-
+	/* (ignored) */
 
 /***/ },
 /* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var DataSeries = __webpack_require__(131);
-	var common = __webpack_require__(128);
-	var Chart = common.Chart;
-	var XAxis = common.XAxis;
-	var YAxis = common.YAxis;
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    data: React.PropTypes.array,
-	    yAxisTickCount: React.PropTypes.number,
-	    width: React.PropTypes.number,
-	    margins: React.PropTypes.object,
-	    height: React.PropTypes.number,
-	    fill: React.PropTypes.string,
-	    title: React.PropTypes.string
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      data: [],
-	      yAxisTickCount: 4,
-	      width: 500,
-	      height: 200,
-	      margins: {top: 20, right: 30, bottom: 30, left: 30},
-	      fill: "#3182bd",
-	      title: ''
-	    };
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-
-	    var values = props.data.map( function(item)  {return item.value;} );
-
-	    var labels = props.data.map( function(item)  {return item.label;} );
-
-	    var margins = props.margins;
-
-	    var sideMargins = margins.left + margins.right;
-	    var topBottomMargins = margins.top + margins.bottom;
-
-	    var yScale = d3.scale.linear()
-	      .domain([d3.min([d3.min(values), 0]), d3.max(values)])
-	      .range([props.height - topBottomMargins, 0]);
-
-	    var xScale = d3.scale.ordinal()
-	        .domain(labels)
-	        .rangeRoundBands([0, props.width - sideMargins], 0.1);
-
-	    var trans = ("translate(" +  margins.left + "," +  margins.top + ")");
-
-	    return (
-	      React.createElement(Chart, {width: props.width, height: props.height, title: props.title}, 
-	        React.createElement("g", {transform: trans, className: "rd3-barchart"}, 
-	          React.createElement(DataSeries, {
-	            values: values, 
-	            yScale: yScale, 
-	            xScale: yScale, 
-	            margins: margins, 
-	            data: props.data, 
-	            width: props.width - sideMargins, 
-	            height: props.height - topBottomMargins, 
-	            fill: props.fill}
-	          ), 
-	          React.createElement(YAxis, {
-	            yAxisClassName: "rd3-barchart-yaxis", 
-	            yScale: yScale, 
-	            margins: margins, 
-	            yAxisTickCount: props.yAxisTickCount, 
-	            width: props.width - sideMargins, 
-	            height: props.height - topBottomMargins}
-	          ), 
-	          React.createElement(XAxis, {
-	            xAxisClassName: "rd3-barchart-xaxis", 
-	            xScale: xScale, 
-	            data: props.data, 
-	            margins: margins, 
-	            width: props.width - sideMargins, 
-	            height: props.height - topBottomMargins}
-	          )
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 109 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
 	var React = __webpack_require__(1);
 	var cloneWithProps = __webpack_require__(149);
-	var utils = __webpack_require__(110);
-	var Draggable = __webpack_require__(142);
+	var utils = __webpack_require__(109);
+	var Draggable = __webpack_require__(144);
 	var Resizable = __webpack_require__(143).Resizable;
-	var PureDeepRenderMixin = __webpack_require__(111);
+	var PureDeepRenderMixin = __webpack_require__(110);
 
 	/**
 	 * An individual item within a ReactGridLayout.
@@ -12777,12 +12390,12 @@
 	module.exports = GridItem;
 
 /***/ },
-/* 110 */
+/* 109 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var assign = __webpack_require__(144);
+	var assign = __webpack_require__(145);
 
 	var utils = module.exports = {
 
@@ -13160,11 +12773,11 @@
 	};
 
 /***/ },
-/* 111 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var deepEqual = __webpack_require__(145);
+	var deepEqual = __webpack_require__(142);
 
 	// Like PureRenderMixin, but with deep comparisons.
 	var PureDeepRenderMixin = {
@@ -13176,7 +12789,7 @@
 	module.exports = PureDeepRenderMixin;
 
 /***/ },
-/* 112 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13229,12 +12842,12 @@
 	module.exports = WidthListeningMixin;
 
 /***/ },
-/* 113 */
+/* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(110);
+	var utils = __webpack_require__(109);
 
 	var responsiveUtils = module.exports = {
 
@@ -13315,52 +12928,8 @@
 	};
 
 /***/ },
+/* 113 */,
 /* 114 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule FixedDataTableRoot
-	 */
-
-	"use strict";
-
-	if (process.env.NODE_ENV !== 'production') {
-	  var ExecutionEnvironment = __webpack_require__(134);
-	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
-
-	    if (!Object.assign) {
-	      console.error(
-	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
-	      );
-	    }
-	  }
-	}
-
-	var FixedDataTable = __webpack_require__(135);
-	var FixedDataTableColumn = __webpack_require__(136);
-	var FixedDataTableColumnGroup = __webpack_require__(137);
-
-	var FixedDataTableRoot = {
-	  Column: FixedDataTableColumn,
-	  ColumnGroup: FixedDataTableColumnGroup,
-	  Table: FixedDataTable,
-	};
-
-	FixedDataTableRoot.version = '0.1.2';
-
-	module.exports = FixedDataTableRoot;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
-
-/***/ },
-/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -13496,7 +13065,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 116 */
+/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -13559,6 +13128,51 @@
 
 	exports['default'] = EventListener;
 	module.exports = exports['default'];
+
+/***/ },
+/* 116 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule FixedDataTableRoot
+	 */
+
+	"use strict";
+
+	if (process.env.NODE_ENV !== 'production') {
+	  var ExecutionEnvironment = __webpack_require__(135);
+	  if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
+
+	    if (!Object.assign) {
+	      console.error(
+	        'FixedDataTable expected an ES6 compatible `Object.assign` polyfill.'
+	      );
+	    }
+	  }
+	}
+
+	var FixedDataTable = __webpack_require__(136);
+	var FixedDataTableColumn = __webpack_require__(137);
+	var FixedDataTableColumnGroup = __webpack_require__(138);
+
+	var FixedDataTableRoot = {
+	  Column: FixedDataTableColumn,
+	  ColumnGroup: FixedDataTableColumnGroup,
+	  Table: FixedDataTable,
+	};
+
+	FixedDataTableRoot.version = '0.1.2';
+
+	module.exports = FixedDataTableRoot;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 117 */
@@ -13774,7 +13388,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -13858,7 +13472,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(132);
+	var _classnames = __webpack_require__(133);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -14133,7 +13747,7 @@
 	}
 
 	module.exports = exports['default'];
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 122 */
@@ -14494,314 +14108,76 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 127 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var Circle = __webpack_require__(138);
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    data: React.PropTypes.array,
-	    fill: React.PropTypes.string,
-	    xAccessor: React.PropTypes.func,
-	    yAccessor: React.PropTypes.func
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      data: [],
-	      fill: '#fff',
-	      xAccessor: function(d)  {return d.x;},
-	      yAccessor: function(d)  {return d.y;}
-	    };
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-
-	    var circles = props.data.map(function(point, i)  {
-
-	      var xAccessor = props.xAccessor,
-	          yAccessor = props.yAccessor,
-	          cx, cy;
-	      if (Object.prototype.toString.call(xAccessor(point)) === '[object Date]') {
-	        cx = props.xScale(xAccessor(point).getTime());
-	      } else {
-	        cx = props.xScale(xAccessor(point));
-	      }
-	      if (Object.prototype.toString.call(yAccessor(point)) === '[object Date]') {
-	        cy = props.yScale(yAccessor(point).getTime());
-	      } else {
-	        cy = props.yScale(yAccessor(point));
-	      }
-
-	      var id = props.seriesName + '-' + i;
-
-	      // Create an immstruct reference for the circle id
-	      // and set it to 'inactive'
-	      props.structure.cursor('voronoi').set(id, 'inactive');
-
-	      // Having set the Voronoi circle id cursor to 'inactive'
-	      // We now pass on the Voronoi circle id reference to the 
-	      // circle component, where it will be observed and dereferenced
-	      var voronoiRef = props.structure.reference(['voronoi', id]);
-
-	      return (React.createElement(Circle, {
-	        voronoiRef: voronoiRef, 
-	        cx: cx, 
-	        cy: cy, 
-	        r: props.pointRadius, 
-	        fill: props.fill, 
-	        key: props.seriesName + i, 
-	        id: id}
-	      ));
-	    }, this);
-
-	    return (
-	      React.createElement("g", null, 
-	        circles
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 128 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.XAxis = __webpack_require__(147).XAxis;
-	exports.YAxis = __webpack_require__(147).YAxis;
-	exports.Chart = __webpack_require__(148).Chart;
-	exports.LegendChart = __webpack_require__(148).LegendChart;
-	exports.Legend = __webpack_require__(139);
-	exports.Voronoi = __webpack_require__(140);
-
-
-/***/ },
-/* 129 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var d3 = __webpack_require__(41);
-
-
-	exports.calculateScales = function(chartWidth, chartHeight, xValues, yValues)  {
-
-	  var xScale, yScale;
-
-	  if (xValues.length > 0 && Object.prototype.toString.call(xValues[0]) === '[object Date]') {
-	    xScale = d3.time.scale()
-	      .range([0, chartWidth]);
-	  } else {
-	    xScale = d3.scale.linear()
-	      .range([0, chartWidth]);
-	  }
-	  xScale.domain(d3.extent(xValues));
-
-	  if (yValues.length > 0 && Object.prototype.toString.call(yValues[0]) === '[object Date]') {
-	    yScale = d3.time.scale()
-	      .range([chartHeight, 0]);
-	  } else {
-	    yScale = d3.scale.linear()
-	      .range([chartHeight, 0]);
-	  }
-
-	  yScale.domain(d3.extent(yValues));
-
-	  return {
-	    xScale: xScale,
-	    yScale: yScale
-	  };
-
-	};
-
-	// debounce from Underscore.js
-	// MIT License: https://raw.githubusercontent.com/jashkenas/underscore/master/LICENSE
-	// Copyright (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative
-	// Reporters & Editors
-	exports.debounce = function(func, wait, immediate) {
-	  var timeout;
-	  return function() {
-	    var context = this, args = arguments;
-	    var later = function() {
-	      timeout = null;
-	      if (!immediate) {
-	        func.apply(context, args);
-	      }
-	    };
-	    var callNow = immediate && !timeout;
-	    clearTimeout(timeout);
-	    timeout = setTimeout(later, wait);
-	    if (callNow) func.apply(context, args);
-	  };
-	};
-
-	exports.flattenData = function(data, xAccessor, yAccessor)  {
-
-	  var allValues = [];
-	  var xValues = [];
-	  var yValues = [];
-	  var coincidentCoordinateCheck = {};
-
-	  data.forEach( function(series)  {
-	    series.values.forEach( function(item, idx)  {
-
-	      var x = xAccessor(item);
-
-	      // Check for NaN since d3's Voronoi cannot handle NaN values
-	      // Go ahead and Proceed to next iteration since we don't want NaN
-	      // in allValues or in xValues or yValues
-	      if (isNaN(x)) {
-	        return;
-	      }
-	      xValues.push(x);
-
-	      var y = yAccessor(item);
-	      // when yAccessor returns an object (as in the case of candlestick)
-	      // iterate over the keys and push all the values to yValues array
-	      var yNode;
-	      if (typeof y === 'object' && Object.keys(y).length > 0) {
-	        Object.keys(y).forEach(function (key) {
-	          // Check for NaN since d3's Voronoi cannot handle NaN values
-	          // Go ahead and Proceed to next iteration since we don't want NaN
-	          // in allValues or in xValues or yValues
-	          if (isNaN(y[key])) {
-	            return;
-	          }
-	          yValues.push(y[key]);
-	          // if multiple y points are to be plotted for a single x
-	          // as in the case of candlestick, default to y value of 0
-	          yNode = 0;
-	        });
-	      } else {
-	        // Check for NaN since d3's Voronoi cannot handle NaN values
-	        // Go ahead and Proceed to next iteration since we don't want NaN
-	        // in allValues or in xValues or yValues
-	        if (isNaN(y)) {
-	          return;
-	        }
-	        yValues.push(y);
-	        yNode = y;
-	      }
-
-	      var xyCoords = ( x + "-" +  yNode);
-	      if (xyCoords in coincidentCoordinateCheck) {
-	        // Proceed to next iteration if the x y pair already exists
-	        // d3's Voronoi cannot handle NaN values or coincident coords
-	        // But we push them into xValues and yValues above because
-	        // we still may handle them there (labels, etc.)
-	        return;
-	      }
-	      coincidentCoordinateCheck[xyCoords] = '';
-	      var pointItem = {
-	        coord: {
-	          x: x,
-	          y: yNode,
-	        },
-	        id: ( series.name + "-" +  idx)
-	      };
-	      allValues.push(pointItem);
-	    });
-	  });
-
-	  return {
-	    allValues: allValues,
-	    xValues: xValues,
-	    yValues: yValues
-	  };
-	};
-
-
-	exports.shade = function(hex, percent)  {
-
-	  var R, G, B, red, green, blue, number;
-	  var min = Math.min, round = Math.round;
-	  if(hex.length !== 7) { return hex; }
-	  number = parseInt(hex.slice(1), 16);
-	  R = number >> 16;
-	  G = number >> 8 & 0xFF;
-	  B = number & 0xFF;
-	  red = min( 255, round( ( 1 + percent ) * R )).toString(16);
-	  green = min( 255, round( ( 1 + percent ) * G )).toString(16);
-	  blue = min( 255, round( ( 1 + percent ) * B )).toString(16);
-	  return ("#" +  red +  green +  blue);
-
-	};
-
-
-/***/ },
-/* 130 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.CartesianChartPropsMixin = __webpack_require__(141);
-
-
-/***/ },
+/* 127 */,
+/* 128 */,
+/* 129 */,
+/* 130 */,
 /* 131 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	// shim for using process in browser
 
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var Bar = __webpack_require__(146);
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
 
-	module.exports = React.createClass({displayName: "exports",
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    draining = true;
+	    var currentQueue;
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        var i = -1;
+	        while (++i < len) {
+	            currentQueue[i]();
+	        }
+	        len = queue.length;
+	    }
+	    draining = false;
+	}
+	process.nextTick = function (fun) {
+	    queue.push(fun);
+	    if (!draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
 
-	  propTypes: {
-	    fill: React.PropTypes.string,
-	    title: React.PropTypes.string,
-	    padding: React.PropTypes.number,
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    offset: React.PropTypes.number
-	  },
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
 
-	  getDefaultProps:function() {
-	    return {
-	      padding: 0.1,
-	      data: []
-	    };
-	  },
+	function noop() {}
 
-	  render:function() {
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
 
-	    var props = this.props;
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
 
-	    var xScale = d3.scale.ordinal()
-	      .domain(d3.range(props.values.length))
-	      .rangeRoundBands([0, props.width], props.padding);
-
-	    var bars = props.values.map(function(point, i) {
-	      return (
-	        React.createElement(Bar, {
-	          height: props.yScale(0) - props.yScale(point), 
-	          width: xScale.rangeBand(), 
-	          offset: xScale(i), 
-	          availableHeight: props.height, 
-	          fill: props.fill, key: i}
-	        )
-	      );
-	    });
-
-	    return (
-	      React.createElement("g", null, bars)
-	    );
-	  }
-	});
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
 
 
 /***/ },
-/* 132 */
+/* 132 */,
+/* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -14854,86 +14230,8 @@
 
 
 /***/ },
-/* 133 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Structure = __webpack_require__(150);
-
-	function Immstruct () {
-	  if (!(this instanceof Immstruct)) {
-	    return new Immstruct();
-	  }
-
-	  this.instances = {};
-	}
-
-	Immstruct.prototype.get = function (key, data) {
-	  return getInstance(this, {
-	    key: key,
-	    data: data
-	  });
-	};
-
-	Immstruct.prototype.clear = function () {
-	  this.instances = {};
-	};
-
-	Immstruct.prototype.remove = function (key) {
-	  return delete this.instances[key];
-	};
-
-	Immstruct.prototype.withHistory = function (key, data) {
-	  return getInstance(this, {
-	    key: key,
-	    data: data,
-	    history: true
-	  });
-	};
-
-	var inst = new Immstruct();
-
-	module.exports = function (key, data) {
-	  return getInstance(inst, {
-	    key: key,
-	    data: data
-	  });
-	};
-
-	module.exports.withHistory = function (key, data) {
-	  return getInstance(inst, {
-	    key: key,
-	    data: data,
-	    history: true
-	  });
-	};
-
-	module.exports.Structure = Structure;
-	module.exports.Immstruct = Immstruct;
-	module.exports.clear = inst.clear.bind(inst);
-	module.exports.remove = inst.remove.bind(inst);
-	Object.defineProperty(module.exports, 'instances', {
-	  get: function() { return inst.instances; },
-	  enumerable: true,
-	  configurable: true
-	});
-
-	function getInstance (obj, options) {
-	  if (typeof options.key === 'object') {
-	    options.data = options.key;
-	    options.key = void 0;
-	  }
-
-	  if (options.key && obj.instances[options.key]) {
-	    return obj.instances[options.key];
-	  }
-
-	  var newInstance = new Structure(options);
-	  obj.instances[newInstance.key] = newInstance;
-	  return newInstance;
-	}
-
-/***/ },
-/* 134 */
+/* 134 */,
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -14982,7 +14280,7 @@
 
 
 /***/ },
-/* 135 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -14999,9 +14297,9 @@
 
 	/* jslint bitwise: true */
 
-	var FixedDataTableHelper = __webpack_require__(152);
-	var Locale = __webpack_require__(153);
-	var React = __webpack_require__(151);
+	var FixedDataTableHelper = __webpack_require__(151);
+	var Locale = __webpack_require__(152);
+	var React = __webpack_require__(153);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(154);
 	var ReactWheelHandler = __webpack_require__(155);
 	var Scrollbar = __webpack_require__(156);
@@ -16014,7 +15312,7 @@
 
 
 /***/ },
-/* 136 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -16029,7 +15327,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(151);
+	var React = __webpack_require__(153);
 
 	var PropTypes = React.PropTypes;
 
@@ -16169,10 +15467,10 @@
 
 	module.exports = FixedDataTableColumn;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
-/* 137 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -16187,7 +15485,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(151);
+	var React = __webpack_require__(153);
 
 	var PropTypes = React.PropTypes;
 
@@ -16249,353 +15547,18 @@
 
 	module.exports = FixedDataTableColumnGroup;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
-/* 138 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var utils = __webpack_require__(129);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    id: React.PropTypes.string,
-	    cx: React.PropTypes.number,
-	    cy: React.PropTypes.number,
-	    r: React.PropTypes.number,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.number,
-	    strokeOpacity: React.PropTypes.number,
-	    hoverAnimation: React.PropTypes.bool
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      fill: '#1f77b4',
-	      className: 'rd3-scatterchart-circle'
-	    };
-	  },
-
-	  getInitialState:function() {
-	    // state for animation usage
-	    return {
-	      circleRadius: this.props.r,
-	      circleFill: this.props.fill
-	    };
-	  },
-
-	  componentDidMount:function() {
-	    var props = this.props;
-	    // The circle reference is observed when both it is set to
-	    // active, and to inactive, so we have to check which one
-	    var unobserve = props.voronoiRef.observe(function()  {
-	      var circleStatus = props.voronoiRef.cursor().deref();
-	      if (circleStatus === 'active') {
-	        this._animateCircle(props.id);
-	      } else if (circleStatus === 'inactive') {
-	        this._restoreCircle(props.id);
-	      }
-	    }.bind(this));
-	  },
-
-	  componentWillUnmount:function() {
-	    this.props.voronoiRef.destroy();
-	  },
-
-	  render:function() {
-	    return (
-	      React.createElement("circle", {
-	        fill: this.state.circleFill, 
-	        cx: this.props.cx, 
-	        cy: this.props.cy, 
-	        r: this.state.circleRadius, 
-	        id: this.props.id, 
-	        className: this.props.className}
-	      )
-	    );
-	  },
-
-	  _animateCircle:function(id) {
-	    this.setState({ 
-	      circleRadius: this.state.circleRadius * ( 5 / 4 ),
-	      circleFill: utils.shade(this.props.fill, -0.2)
-	    });
-	  },
-
-	  _restoreCircle:function(id) {
-	    this.setState({ 
-	      circleRadius: this.props.r,
-	      circleFill: this.props.fill
-	    });
-	  }
-
-	});
-
-
-/***/ },
-/* 139 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    margins: React.PropTypes.object,
-	    text: React.PropTypes.string,
-	    colors: React.PropTypes.func
-	  },
-
-	  getDefaultProps: function() {
-	    return {
-	      text: "#000",
-	      colors: d3.scale.category20c()
-	    };
-	  },
-
-	  render: function() {
-
-	    var props = this.props;
-
-	    var textStyle = {
-	      'color': 'black',
-	      'fontSize': '50%',
-	      'verticalAlign': 'top'
-	    };
-
-	    var legendItems = [];
-
-	    props.data.forEach( function(series, idx)  {
-
-	      var itemStyle = {
-	        'color': props.colors(idx),
-	        'lineHeight': '60%',
-	        'fontSize': '200%'
-	      };
-
-	      legendItems.push(
-	            React.createElement("li", {style: itemStyle, key: idx}, 
-	              React.createElement("span", {style: textStyle}, series.name)
-	            )
-	          );
-
-	    });
-
-	    // In preparation for legend positioning
-	    var legendFloat = 'right';
-
-	    var topMargin = props.margins.top;
-
-	    var legendBlockStyle = {
-	      'wordWrap': 'break-word',
-	      'width': props.sideOffset,
-	      'paddingLeft': '0',
-	      'marginBottom': '0',
-	      'marginTop': topMargin,
-	      'float': legendFloat
-	    };
-
-	    return React.createElement("ul", {style: legendBlockStyle}, legendItems);
-	  }
-
-	});
-
-
-
-/***/ },
-/* 140 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-
-	var Polygon = React.createClass({displayName: "Polygon",
-
-	  _animateCircle: function() {
-	    this.props.structure.cursor('voronoi').cursor(this.props.id).update(function(){return 'active';});
-	    // this.props.pubsub.emit('animate', this.props.id);
-	  },
-
-	  _restoreCircle: function() {
-	    this.props.structure.cursor('voronoi').cursor(this.props.id).update(function(){return 'inactive';});
-	    // this.props.pubsub.emit('restore', this.props.id);
-	  },
-
-	  _drawPath: function(d) {
-	    if(d === undefined) {
-	      return; 
-	    }  
-	    return 'M' + d.join(',') + 'Z';
-	  },
-
-	  render: function() {
-	    return React.createElement("path", {
-	      onMouseOver: this._animateCircle, 
-	      onMouseOut: this._restoreCircle, 
-	      fill: "white", 
-	      opacity: "0", 
-	      d: this._drawPath(this.props.vnode)});
-	  }
-
-	});
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  render: function() {
-	    var xScale = this.props.xScale;
-	    var yScale = this.props.yScale;
-
-	    var voronoi = d3.geom.voronoi()
-	      .x(function(d){ return xScale(d.coord.x); })
-	      .y(function(d){ return yScale(d.coord.y); })
-	      .clipExtent([[0, 0], [ this.props.width , this.props.height]]);
-
-	    var regions = voronoi(this.props.data).map(function(vnode, idx) {
-	      return React.createElement(Polygon, {structure: this.props.structure, key: idx, id: vnode.point.id, vnode: vnode});
-	    }.bind(this));
-
-	    return (
-	      React.createElement("g", null, 
-	        regions
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 141 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-
-	module.exports =  {
-
-	  propTypes: {
-	    axesColor: React.PropTypes.string,
-	    colors: React.PropTypes.func,
-	    data: React.PropTypes.oneOfType([
-	      React.PropTypes.array,
-	      React.PropTypes.object
-	    ]).isRequired,
-	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
-	    yOrient: React.PropTypes.oneOf(['left', 'right']),
-	    yAxisTickCount: React.PropTypes.number,
-	    yAxisLabel: React.PropTypes.string,
-	    yAxisLabelOffset: React.PropTypes.number,
-	    xAxisTickInterval: React.PropTypes.object,
-	    xAxisLabel: React.PropTypes.string,
-	    xAxisLabelOffset: React.PropTypes.number,
-	    legend: React.PropTypes.bool,
-	    legendOffset: React.PropTypes.number,
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    xAccessor: React.PropTypes.func,
-	    yAccessor: React.PropTypes.func,
-	    title: React.PropTypes.string,
-	    viewBox: React.PropTypes.string
-	  },
-
-	  getDefaultProps: function() {
-	    return {
-	      data: [],
-	      xOrient: 'bottom',
-	      xAxisLabel: '',
-	      xAxisLabelOffset: 38,
-	      yOrient: 'left',
-	      yAxisLabel: '',
-	      yAxisLabelOffset: 35,
-	      legend: false,
-	      legendOffset: 120,
-	      width: 400,
-	      height: 200,
-	      axesColor: '#000',
-	      title: '',
-	      colors: d3.scale.category20c(),
-	      xAccessor: function(d)  {return d.x;},
-	      yAccessor: function(d)  {return d.y;}
-	    };
-	  }
-
-	};
-
-
-/***/ },
+/* 139 */,
+/* 140 */,
+/* 141 */,
 /* 142 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(169);
-
-
-/***/ },
-/* 143 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function() {
-	  throw new Error("Don't instantiate Resizable directly! Use require('react-resizable').Resizable");
-	};
-
-	module.exports.Resizable = __webpack_require__(170);
-	module.exports.ResizableBox = __webpack_require__(171);
-
-
-/***/ },
-/* 144 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	function ToObject(val) {
-		if (val == null) {
-			throw new TypeError('Object.assign cannot be called with null or undefined');
-		}
-
-		return Object(val);
-	}
-
-	module.exports = Object.assign || function (target, source) {
-		var from;
-		var keys;
-		var to = ToObject(target);
-
-		for (var s = 1; s < arguments.length; s++) {
-			from = arguments[s];
-			keys = Object.keys(Object(from));
-
-			for (var i = 0; i < keys.length; i++) {
-				to[keys[i]] = from[keys[i]];
-			}
-		}
-
-		return to;
-	};
-
-
-/***/ },
-/* 145 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var pSlice = Array.prototype.slice;
-	var objectKeys = __webpack_require__(172);
-	var isArguments = __webpack_require__(173);
+	var objectKeys = __webpack_require__(169);
+	var isArguments = __webpack_require__(170);
 
 	var deepEqual = module.exports = function (actual, expected, opts) {
 	  if (!opts) opts = {};
@@ -16690,63 +15653,60 @@
 
 
 /***/ },
-/* 146 */
+/* 143 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function() {
+	  throw new Error("Don't instantiate Resizable directly! Use require('react-resizable').Resizable");
+	};
+
+	module.exports.Resizable = __webpack_require__(171);
+	module.exports.ResizableBox = __webpack_require__(172);
+
+
+/***/ },
+/* 144 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(173);
+
+
+/***/ },
+/* 145 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var React = __webpack_require__(1);
+	function ToObject(val) {
+		if (val == null) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
 
-	module.exports = React.createClass({displayName: "exports",
+		return Object(val);
+	}
 
-	  propTypes: {
-	    fill: React.PropTypes.string,
-	    width: React.PropTypes.number,
-	    height: React.PropTypes.number,
-	    offset: React.PropTypes.number
-	  },
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var keys;
+		var to = ToObject(target);
 
-	  getDefaultProps:function() {
-	    return {
-	      offset: 0
-	    };
-	  },
+		for (var s = 1; s < arguments.length; s++) {
+			from = arguments[s];
+			keys = Object.keys(Object(from));
 
-	  render:function() {
-	    return (
-	      React.createElement("rect", {
-	        fill: this.props.fill, 
-	        width: this.props.width, 
-	        height: this.props.height, 
-	        x: this.props.offset, 
-	        y: this.props.availableHeight  - this.props.height, 
-	        className: "rd3-barchart-bar"}
-	      )
-	    );
-	  }
-	});
+			for (var i = 0; i < keys.length; i++) {
+				to[keys[i]] = from[keys[i]];
+			}
+		}
+
+		return to;
+	};
 
 
 /***/ },
-/* 147 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.XAxis = __webpack_require__(177);
-	exports.YAxis = __webpack_require__(178);
-
-
-/***/ },
-/* 148 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	exports.BasicChart = __webpack_require__(174);
-	exports.Chart = __webpack_require__(175);
-	exports.LegendChart = __webpack_require__(176);
-
-
-/***/ },
+/* 146 */,
+/* 147 */,
+/* 148 */,
 /* 149 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -16806,364 +15766,11 @@
 
 	module.exports = cloneWithProps;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
-/* 150 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Immutable = __webpack_require__(207);
-	var Cursor = __webpack_require__(201);
-	var EventEmitter = __webpack_require__(202).EventEmitter;
-	var inherits = __webpack_require__(208);
-	var utils = __webpack_require__(183);
-
-	/************************************
-	 *
-	 * ## Public API.
-	 *   Constructor({ history: bool, key: string, data: structure|object })
-	 *   .cursor(path)
-	 *   .reference(path)
-	 *   .forceHasSwapped(newData, oldData, keyPath)
-	 *   .undo(steps)
-	 *   .redo(steps)
-	 *   .undoUntil(structure)
-	 *
-	 ************************************/
-	function Structure (options) {
-	  var self = this;
-
-	  options = options || {};
-	  if (!(this instanceof Structure)) {
-	    return new Structure(options);
-	  }
-
-	  this.key = options.key || utils.generateRandomKey();
-
-	  this.current = options.data;
-	  if (!isImmutableStructure(this.current) || !this.current) {
-	    this.current = Immutable.fromJS(this.current || {});
-	  }
-
-	  if (!!options.history) {
-	    this.history = Immutable.List.of(this.current);
-	    this._currentRevision = 0;
-	  }
-
-	  this._pathListeners = [];
-	  this.on('swap', function (newData, oldData, keyPath) {
-	    listListenerMatching(self._pathListeners, pathString(keyPath)).forEach(function (fns) {
-	      fns.forEach(function (fn) {
-	        if (typeof fn !== 'function') return;
-	        fn(newData, oldData, keyPath);
-	      });
-	    });
-	  });
-
-	  EventEmitter.call(this, arguments);
-	}
-	inherits(Structure, EventEmitter);
-	module.exports = Structure;
-
-	Structure.prototype.cursor = function (path) {
-	  var self = this;
-	  path = path || [];
-
-	  if (!this.current) {
-	    throw new Error('No structure loaded.');
-	  }
-
-	  var changeListener = function (newRoot, oldRoot, path) {
-	    if(self.current === oldRoot) {
-	      return self.current = newRoot;
-	    }
-	    // Othewise an out-of-sync change occured. We ignore `oldRoot`, and focus on
-	    // changes at path `path`, and sync this to `self.current`.
-
-	    if(!hasIn(newRoot, path)) {
-	      return self.current = self.current.removeIn(path);
-	    }
-
-	    // Update an existing path or add a new path within the current map.
-	    return self.current = self.current.setIn(path, newRoot.getIn(path));
-	  };
-
-	  changeListener = handleHistory(this, changeListener);
-	  changeListener = handleSwap(this, changeListener);
-	  changeListener = handlePersisting(this, changeListener);
-	  return Cursor.from(self.current, path, changeListener);
-	};
-
-	Structure.prototype.reference = function (path) {
-	  if (isCursor(path) && path._keyPath) {
-	    path = path._keyPath;
-	  }
-	  var self = this, pathId = pathString(path);
-	  var listenerNs = self._pathListeners[pathId];
-	  var cursor = this.cursor(path);
-
-	  var changeListener = function (newRoot, oldRoot, changedPath) { cursor = self.cursor(path); };
-	  var referenceListeners = [changeListener];
-	  this._pathListeners[pathId] = !listenerNs ? referenceListeners : listenerNs.concat(changeListener);
-
-	  return {
-	    observe: function (eventName, newFn) {
-	      if (typeof eventName === 'function') {
-	        newFn = eventName;
-	        eventName = void 0;
-	      }
-	      if (this._dead || typeof newFn !== 'function') return;
-	      if (eventName && eventName !== 'swap') {
-	        newFn = onlyOnEvent(eventName, newFn);
-	      }
-
-	      self._pathListeners[pathId] = self._pathListeners[pathId].concat(newFn);
-	      referenceListeners = referenceListeners.concat(newFn);
-
-	      return function unobserve () {
-	        var fnIndex = self._pathListeners[pathId].indexOf(newFn);
-	        var localListenerIndex = referenceListeners.indexOf(newFn);
-
-	        if (referenceListeners[localListenerIndex] === newFn) {
-	          referenceListeners.splice(localListenerIndex, 1);
-	        }
-
-	        if (!self._pathListeners[pathId]) return;
-	        if (self._pathListeners[pathId][fnIndex] !== newFn) return;
-	        self._pathListeners[pathId].splice(fnIndex, 1);
-	      };
-	    },
-	    cursor: function (subPath) {
-	      if (subPath) return cursor.cursor(subPath);
-	      return cursor;
-	    },
-	    unobserveAll: function () {
-	      removeAllListenersBut(self, pathId, referenceListeners, changeListener);
-	      referenceListeners = [changeListener];
-	    },
-	    destroy: function () {
-	      removeAllListenersBut(self, pathId, referenceListeners);
-	      referenceListeners = void 0;
-	      cursor = void 0;
-
-	      this._dead = true;
-	      this.observe = void 0;
-	      this.unobserveAll = void 0;
-	      this.cursor = void 0;
-	      this.destroy = void 0;
-	    }
-	  };
-	};
-
-	Structure.prototype.forceHasSwapped = function (newData, oldData, keyPath) {
-	  this.emit('swap', newData || this.current, oldData, keyPath);
-	  possiblyEmitAnimationFrameEvent(this, newData || this.current, oldData, keyPath)
-	};
-
-	Structure.prototype.undo = function(back) {
-	  this._currentRevision -= back || 1;
-	  if (this._currentRevision < 0) {
-	    this._currentRevision = 0;
-	  }
-
-	  this.current = this.history.get(this._currentRevision);
-	  return this.current;
-	};
-
-	Structure.prototype.redo = function(head) {
-	  this._currentRevision += head || 1;
-	  if (this._currentRevision > this.history.count() - 1) {
-	    this._currentRevision = this.history.count() - 1;
-	  }
-
-	  this.current = this.history.get(this._currentRevision);
-	  return this.current;
-	};
-
-	Structure.prototype.undoUntil = function(structure) {
-	  this._currentRevision = this.history.indexOf(structure);
-	  this.current = structure;
-
-	  return structure;
-	};
-
-
-	/************************************
-	 * Private decorators.
-	 ***********************************/
-
-	// Update history if history is active
-	function handleHistory (emitter, fn) {
-	  return function (newData, oldData, path) {
-	    var newStructure = fn.apply(fn, arguments);
-	    if (!emitter.history || (newData === oldData)) return newStructure;
-
-	    emitter.history = emitter.history
-	      .take(++emitter._currentRevision)
-	      .push(emitter.current);
-
-	    return newStructure;
-	  };
-	}
-
-	// Update history if history is active
-	var possiblyEmitAnimationFrameEvent = (function () {
-	  var queuedChange = false;
-	  if (typeof requestAnimationFrame !== 'function') {
-	    return function () {};
-	  }
-
-	  return function requestAnimationFrameEmitter (emitter, newStructure, oldData) {
-	    if (queuedChange) return;
-	    queuedChange = true;
-
-	    requestAnimationFrame(function () {
-	      queuedChange = false;
-	      emitter.emit('next-animation-frame', newStructure, oldData);
-	    });
-	  };
-	}());
-
-	// Emit swap event on values are swapped
-	function handleSwap (emitter, fn) {
-	  return function (newData, oldData, keyPath) {
-	    var newStructure = fn.apply(fn, arguments);
-	    if(newData === oldData) return newStructure;
-
-	    emitter.emit('swap', newStructure, oldData, keyPath);
-	    possiblyEmitAnimationFrameEvent(emitter, newStructure, oldData, keyPath);
-
-	    return newStructure;
-	  };
-	}
-
-	// Map changes to update events (delete/change/add).
-	function handlePersisting (emitter, fn) {
-	  return function (newData, oldData, path) {
-	    var newStructure = fn.apply(fn, arguments);
-	    if(newData === oldData) return newStructure;
-	    var info = analyze(newData, oldData, path);
-
-	    if (info.eventName) {
-	      emitter.emit.apply(emitter, [info.eventName].concat(info.arguments));
-	    }
-	    return newStructure;
-	  };
-	}
-
-	/************************************
-	 * Private helpers.
-	 ***********************************/
-
-	function removeAllListenersBut(self, pathId, listeners, except) {
-	  if (!listeners) return;
-	  listeners.forEach(function (fn) {
-	    if (except && fn === except) return;
-	    var index = self._pathListeners[pathId].indexOf(fn);
-	    self._pathListeners[pathId].splice(index, 1);
-	  });
-	}
-
-	function analyze (newData, oldData, path) {
-	  var oldObject = oldData && oldData.getIn(path);
-	  var newObject = newData && newData.getIn(path);
-
-	  var inOld = oldData && hasIn(oldData, path);
-	  var inNew = newData && hasIn(newData, path);
-
-	  var arguments, eventName;
-
-	  if (inOld && !inNew) {
-	    eventName = 'delete';
-	    arguments = [path, oldObject];
-	  } else if (inOld && inNew) {
-	    eventName = 'change';
-	    arguments = [path, newObject, oldObject];
-	  } else if (!inOld && inNew) {
-	    eventName = 'add';
-	    arguments = [path, newObject];
-	  }
-
-	  return {
-	    eventName: eventName,
-	    arguments: arguments
-	  };
-	}
-
-
-	// Check if path exists.
-	var NOT_SET = {};
-	function hasIn(cursor, path) {
-	  if(cursor.hasIn) return cursor.hasIn(path);
-	  return cursor.getIn(path, NOT_SET) !== NOT_SET;
-	}
-
-	function pathString(path) {
-	  var topLevel = 'global';
-	  if (!path || !path.length) return topLevel;
-	  return [topLevel].concat(path).join('|');
-	}
-
-	function listListenerMatching (listeners, basePath) {
-	  var newListeners = [];
-	  for (var key in listeners) {
-	    if (!listeners.hasOwnProperty(key)) return;
-	    if (basePath.indexOf(key) !== 0) continue;
-	    newListeners.push(listeners[key]);
-	  }
-
-	  return newListeners;
-	}
-
-	function onlyOnEvent(eventName, fn) {
-	  return function (newData, oldData, keyPath) {
-	    var info = analyze(newData, oldData, keyPath);
-	    if (info.eventName !== eventName) return;
-	    return fn(newData, oldData, keyPath);
-	  };
-	}
-
-	function isCursor (potential) {
-	  return potential && typeof potential.deref === 'function';
-	}
-
-	// Check if passed structure is existing immutable structure.
-	// From https://github.com/facebook/immutable-js/wiki/Upgrading-to-Immutable-v3#additional-changes
-	function isImmutableStructure (data) {
-	  return immutableSafeCheck('Iterable', 'isIterable', data) ||
-	          immutableSafeCheck('Seq', 'isSeq', data) ||
-	          immutableSafeCheck('Map', 'isMap', data) ||
-	          immutableSafeCheck('OrderedMap', 'isOrderedMap', data) ||
-	          immutableSafeCheck('List', 'isList', data) ||
-	          immutableSafeCheck('Stack', 'isStack', data) ||
-	          immutableSafeCheck('Set', 'isSet', data);
-	}
-
-	function immutableSafeCheck (ns, method, data) {
-	  return Immutable[ns] && Immutable[ns][method] && Immutable[ns][method](data);
-	}
-
-
-/***/ },
+/* 150 */,
 /* 151 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule React
-	 */
-
-	module.exports = __webpack_require__(1);
-
-
-/***/ },
-/* 152 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -17180,10 +15787,10 @@
 
 	"use strict";
 
-	var Locale = __webpack_require__(153);
-	var React = __webpack_require__(151);
-	var FixedDataTableColumnGroup = __webpack_require__(137);
-	var FixedDataTableColumn = __webpack_require__(136);
+	var Locale = __webpack_require__(152);
+	var React = __webpack_require__(153);
+	var FixedDataTableColumnGroup = __webpack_require__(138);
+	var FixedDataTableColumn = __webpack_require__(137);
 
 	var cloneWithProps = __webpack_require__(162);
 
@@ -17273,7 +15880,7 @@
 
 
 /***/ },
-/* 153 */
+/* 152 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -17296,6 +15903,24 @@
 	};
 
 	module.exports = Locale;
+
+
+/***/ },
+/* 153 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule React
+	 */
+
+	module.exports = __webpack_require__(1);
 
 
 /***/ },
@@ -17412,7 +16037,7 @@
 
 	var DOMMouseMoveTracker = __webpack_require__(187);
 	var Keys = __webpack_require__(188);
-	var React = __webpack_require__(151);
+	var React = __webpack_require__(153);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(154);
 	var ReactWheelHandler = __webpack_require__(155);
 
@@ -17895,7 +16520,7 @@
 	 * @typechecks
 	 */
 
-	var React = __webpack_require__(151);
+	var React = __webpack_require__(153);
 	var FixedDataTableRowBuffer = __webpack_require__(190);
 	var FixedDataTableRow = __webpack_require__(159);
 
@@ -18067,8 +16692,8 @@
 	 */
 
 	var DOMMouseMoveTracker = __webpack_require__(187);
-	var Locale = __webpack_require__(153);
-	var React = __webpack_require__(151);
+	var Locale = __webpack_require__(152);
+	var React = __webpack_require__(153);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(154);
 
 	var clamp = __webpack_require__(192);
@@ -18236,8 +16861,8 @@
 
 	"use strict";
 
-	var FixedDataTableHelper = __webpack_require__(152);
-	var React = __webpack_require__(151);
+	var FixedDataTableHelper = __webpack_require__(151);
+	var React = __webpack_require__(153);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(154);
 	var FixedDataTableCellGroup = __webpack_require__(193);
 
@@ -18752,7 +17377,7 @@
 	 */
 	'use strict';
 
-	var React = __webpack_require__(151);
+	var React = __webpack_require__(153);
 
 	var cloneWithProps = __webpack_require__(162);
 
@@ -19130,7 +17755,7 @@
 
 	module.exports = invariant;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 167 */
@@ -19237,6 +17862,228 @@
 
 /***/ },
 /* 169 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = typeof Object.keys === 'function'
+	  ? Object.keys : shim;
+
+	exports.shim = shim;
+	function shim (obj) {
+	  var keys = [];
+	  for (var key in obj) keys.push(key);
+	  return keys;
+	}
+
+
+/***/ },
+/* 170 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var supportsArgumentsClass = (function(){
+	  return Object.prototype.toString.call(arguments)
+	})() == '[object Arguments]';
+
+	exports = module.exports = supportsArgumentsClass ? supported : unsupported;
+
+	exports.supported = supported;
+	function supported(object) {
+	  return Object.prototype.toString.call(object) == '[object Arguments]';
+	};
+
+	exports.unsupported = unsupported;
+	function unsupported(object){
+	  return object &&
+	    typeof object == 'object' &&
+	    typeof object.length == 'number' &&
+	    Object.prototype.hasOwnProperty.call(object, 'callee') &&
+	    !Object.prototype.propertyIsEnumerable.call(object, 'callee') ||
+	    false;
+	};
+
+
+/***/ },
+/* 171 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var React = __webpack_require__(1);
+	var Draggable = __webpack_require__(144);
+	var assign = __webpack_require__(145);
+	var PureRenderMixin = __webpack_require__(184);
+	var cloneWithProps = __webpack_require__(149);
+
+	var Resizable = module.exports = React.createClass({
+	  displayName: "Resizable",
+	  mixins: [PureRenderMixin],
+
+	  propTypes: {
+	    children: React.PropTypes.element,
+	    // Functions
+	    onResizeStop: React.PropTypes.func,
+	    onResizeStart: React.PropTypes.func,
+	    onResize: React.PropTypes.func,
+
+	    width: React.PropTypes.number.isRequired,
+	    height: React.PropTypes.number.isRequired,
+	    // If you change this, be sure to update your css
+	    handleSize: React.PropTypes.array,
+	    // These will be passed wholesale to react-draggable
+	    draggableOpts: React.PropTypes.object
+	  },
+
+	  getDefaultProps: function () {
+	    return {
+	      handleSize: [20, 20]
+	    };
+	  },
+
+	  minConstraints: function () {
+	    return parseConstraints(this.props.minConstraints, this.props.handleSize[0]) || this.props.handleSize;
+	  },
+
+	  maxConstraints: function () {
+	    return parseConstraints(this.props.maxConstraints, this.props.handleSize[1]);
+	  },
+
+
+	  /**
+	   * Wrapper around drag events to provide more useful data.
+	   * 
+	   * @param  {String} handlerName Handler name to wrap.
+	   * @return {Function}           Handler function.
+	   */
+	  resizeHandler: function (handlerName) {
+	    var me = this;
+	    return function (e, _ref) {
+	      var element = _ref.element;
+	      var position = _ref.position;
+	      me.props[handlerName] && me.props[handlerName](e, { element: element, size: calcWH(position, me.props.handleSize) });
+	    };
+	  },
+
+	  render: function () {
+	    var p = this.props;
+	    // What we're doing here is getting the child of this element, and cloning it with this element's props.
+	    // We are then defining its children as:
+	    // Its original children (resizable's child's children), and
+	    // A draggable handle.
+
+	    return cloneWithProps(p.children, assign({}, p, {
+	      children: [p.children.props.children, React.createElement(Draggable, React.__spread({}, p.draggableOpts, {
+	        start: { x: p.width - 20, y: p.height - 20 },
+	        moveOnStartChange: true,
+	        onStop: this.resizeHandler("onResizeStop"),
+	        onStart: this.resizeHandler("onResizeStart"),
+	        onDrag: this.resizeHandler("onResize"),
+	        minConstraints: this.minConstraints(),
+	        maxConstraints: this.maxConstraints()
+	      }), React.createElement("span", {
+	        className: "react-resizable-handle"
+	      }))]
+	    }));
+	  }
+	});
+
+	/**
+	 * Parse left and top coordinates; we have to add the handle size to get the full picture.
+	 * @param  {Number} options.left Left coordinate.
+	 * @param  {Number} options.top  Top coordinate.
+	 * @param  {Array}  handleSize   Handle data.
+	 * @return {Object}              Coordinates
+	 */
+	function calcWH(_ref2, handleSize) {
+	  var left = _ref2.left;
+	  var top = _ref2.top;
+	  return { width: left + handleSize[0], height: top + handleSize[1] };
+	}
+
+	/**
+	 * Constraints must be subtracted by the size of the handle to work properly.
+	 * This has a side-effect of effectively limiting the minimum size to the handleSize,
+	 * which IMO is fine.
+	 * @param  {Array} constraints Constraints array.
+	 * @param  {Array} handleSize  Handle size array.
+	 * @return {Array}             Transformed constraints.
+	 */
+	function parseConstraints(constraints, handleSize) {
+	  if (!constraints) return;
+	  return constraints.map(function (c) {
+	    return c - handleSize;
+	  });
+	}
+
+/***/ },
+/* 172 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var _objectWithoutProperties = function (obj, keys) {
+	  var target = {};
+	  for (var i in obj) {
+	    if (keys.indexOf(i) >= 0) continue;
+	    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+	    target[i] = obj[i];
+	  }
+
+	  return target;
+	};
+
+	"use strict";
+	var React = __webpack_require__(1);
+	var PureRenderMixin = __webpack_require__(184);
+	var Resizable = __webpack_require__(171);
+
+	// An example use of Resizable.
+	var ResizableBox = module.exports = React.createClass({
+	  displayName: "ResizableBox",
+	  mixins: [PureRenderMixin],
+
+	  propTypes: {},
+
+	  getInitialState: function () {
+	    return {
+	      width: this.props.width,
+	      height: this.props.height
+	    };
+	  },
+
+	  onResize: function (event, _ref) {
+	    var element = _ref.element;
+	    var size = _ref.size;
+	    if (size.width !== this.state.width || size.height !== this.state.height) {
+	      this.setState({
+	        width: size.width,
+	        height: size.height
+	      });
+	    }
+	  },
+
+	  render: function () {
+	    // Basic wrapper around a Resizable instance.
+	    // If you use Resizable directly, you are responsible for updating the component
+	    // with a new width and height.
+	    var handleSize = this.props.handleSize;
+	    var minConstraints = this.props.minConstraints;
+	    var maxConstraints = this.props.maxConstraints;
+	    var props = _objectWithoutProperties(this.props, ["handleSize", "minConstraints", "maxConstraints"]);
+
+	    return React.createElement(Resizable, {
+	      minConstraints: minConstraints,
+	      maxConstraints: maxConstraints,
+	      handleSize: handleSize,
+	      width: this.state.width,
+	      height: this.state.height,
+	      onResize: this.onResize,
+	      draggableOpts: this.props.draggableOpts
+	    }, React.createElement("div", React.__spread({
+	      style: { width: this.state.width + "px", height: this.state.height + "px" }
+	    }, props), this.props.children));
+	  }
+	});
+
+/***/ },
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -19803,519 +18650,11 @@
 
 
 /***/ },
-/* 170 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	var React = __webpack_require__(1);
-	var Draggable = __webpack_require__(142);
-	var assign = __webpack_require__(144);
-	var PureRenderMixin = __webpack_require__(184);
-	var cloneWithProps = __webpack_require__(149);
-
-	var Resizable = module.exports = React.createClass({
-	  displayName: "Resizable",
-	  mixins: [PureRenderMixin],
-
-	  propTypes: {
-	    children: React.PropTypes.element,
-	    // Functions
-	    onResizeStop: React.PropTypes.func,
-	    onResizeStart: React.PropTypes.func,
-	    onResize: React.PropTypes.func,
-
-	    width: React.PropTypes.number.isRequired,
-	    height: React.PropTypes.number.isRequired,
-	    // If you change this, be sure to update your css
-	    handleSize: React.PropTypes.array,
-	    // These will be passed wholesale to react-draggable
-	    draggableOpts: React.PropTypes.object
-	  },
-
-	  getDefaultProps: function () {
-	    return {
-	      handleSize: [20, 20]
-	    };
-	  },
-
-	  minConstraints: function () {
-	    return parseConstraints(this.props.minConstraints, this.props.handleSize[0]) || this.props.handleSize;
-	  },
-
-	  maxConstraints: function () {
-	    return parseConstraints(this.props.maxConstraints, this.props.handleSize[1]);
-	  },
-
-
-	  /**
-	   * Wrapper around drag events to provide more useful data.
-	   * 
-	   * @param  {String} handlerName Handler name to wrap.
-	   * @return {Function}           Handler function.
-	   */
-	  resizeHandler: function (handlerName) {
-	    var me = this;
-	    return function (e, _ref) {
-	      var element = _ref.element;
-	      var position = _ref.position;
-	      me.props[handlerName] && me.props[handlerName](e, { element: element, size: calcWH(position, me.props.handleSize) });
-	    };
-	  },
-
-	  render: function () {
-	    var p = this.props;
-	    // What we're doing here is getting the child of this element, and cloning it with this element's props.
-	    // We are then defining its children as:
-	    // Its original children (resizable's child's children), and
-	    // A draggable handle.
-
-	    return cloneWithProps(p.children, assign({}, p, {
-	      children: [p.children.props.children, React.createElement(Draggable, React.__spread({}, p.draggableOpts, {
-	        start: { x: p.width - 20, y: p.height - 20 },
-	        moveOnStartChange: true,
-	        onStop: this.resizeHandler("onResizeStop"),
-	        onStart: this.resizeHandler("onResizeStart"),
-	        onDrag: this.resizeHandler("onResize"),
-	        minConstraints: this.minConstraints(),
-	        maxConstraints: this.maxConstraints()
-	      }), React.createElement("span", {
-	        className: "react-resizable-handle"
-	      }))]
-	    }));
-	  }
-	});
-
-	/**
-	 * Parse left and top coordinates; we have to add the handle size to get the full picture.
-	 * @param  {Number} options.left Left coordinate.
-	 * @param  {Number} options.top  Top coordinate.
-	 * @param  {Array}  handleSize   Handle data.
-	 * @return {Object}              Coordinates
-	 */
-	function calcWH(_ref2, handleSize) {
-	  var left = _ref2.left;
-	  var top = _ref2.top;
-	  return { width: left + handleSize[0], height: top + handleSize[1] };
-	}
-
-	/**
-	 * Constraints must be subtracted by the size of the handle to work properly.
-	 * This has a side-effect of effectively limiting the minimum size to the handleSize,
-	 * which IMO is fine.
-	 * @param  {Array} constraints Constraints array.
-	 * @param  {Array} handleSize  Handle size array.
-	 * @return {Array}             Transformed constraints.
-	 */
-	function parseConstraints(constraints, handleSize) {
-	  if (!constraints) return;
-	  return constraints.map(function (c) {
-	    return c - handleSize;
-	  });
-	}
-
-/***/ },
-/* 171 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var _objectWithoutProperties = function (obj, keys) {
-	  var target = {};
-	  for (var i in obj) {
-	    if (keys.indexOf(i) >= 0) continue;
-	    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-	    target[i] = obj[i];
-	  }
-
-	  return target;
-	};
-
-	"use strict";
-	var React = __webpack_require__(1);
-	var PureRenderMixin = __webpack_require__(184);
-	var Resizable = __webpack_require__(170);
-
-	// An example use of Resizable.
-	var ResizableBox = module.exports = React.createClass({
-	  displayName: "ResizableBox",
-	  mixins: [PureRenderMixin],
-
-	  propTypes: {},
-
-	  getInitialState: function () {
-	    return {
-	      width: this.props.width,
-	      height: this.props.height
-	    };
-	  },
-
-	  onResize: function (event, _ref) {
-	    var element = _ref.element;
-	    var size = _ref.size;
-	    if (size.width !== this.state.width || size.height !== this.state.height) {
-	      this.setState({
-	        width: size.width,
-	        height: size.height
-	      });
-	    }
-	  },
-
-	  render: function () {
-	    // Basic wrapper around a Resizable instance.
-	    // If you use Resizable directly, you are responsible for updating the component
-	    // with a new width and height.
-	    var handleSize = this.props.handleSize;
-	    var minConstraints = this.props.minConstraints;
-	    var maxConstraints = this.props.maxConstraints;
-	    var props = _objectWithoutProperties(this.props, ["handleSize", "minConstraints", "maxConstraints"]);
-
-	    return React.createElement(Resizable, {
-	      minConstraints: minConstraints,
-	      maxConstraints: maxConstraints,
-	      handleSize: handleSize,
-	      width: this.state.width,
-	      height: this.state.height,
-	      onResize: this.onResize,
-	      draggableOpts: this.props.draggableOpts
-	    }, React.createElement("div", React.__spread({
-	      style: { width: this.state.width + "px", height: this.state.height + "px" }
-	    }, props), this.props.children));
-	  }
-	});
-
-/***/ },
-/* 172 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = typeof Object.keys === 'function'
-	  ? Object.keys : shim;
-
-	exports.shim = shim;
-	function shim (obj) {
-	  var keys = [];
-	  for (var key in obj) keys.push(key);
-	  return keys;
-	}
-
-
-/***/ },
-/* 173 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var supportsArgumentsClass = (function(){
-	  return Object.prototype.toString.call(arguments)
-	})() == '[object Arguments]';
-
-	exports = module.exports = supportsArgumentsClass ? supported : unsupported;
-
-	exports.supported = supported;
-	function supported(object) {
-	  return Object.prototype.toString.call(object) == '[object Arguments]';
-	};
-
-	exports.unsupported = unsupported;
-	function unsupported(object){
-	  return object &&
-	    typeof object == 'object' &&
-	    typeof object.length == 'number' &&
-	    Object.prototype.hasOwnProperty.call(object, 'callee') &&
-	    !Object.prototype.propertyIsEnumerable.call(object, 'callee') ||
-	    false;
-	};
-
-
-/***/ },
-/* 174 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-
-	module.exports = React.createClass({displayName: "exports",
-	  render: function() {
-	    return (
-	      React.createElement("div", null, 
-	        React.createElement("h4", null, this.props.title), 
-	        React.createElement("svg", {
-	          viewBox: this.props.viewBox, 
-	          width: this.props.width, 
-	          height: this.props.height
-	        }, this.props.children)
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 175 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var LegendChart = __webpack_require__(176);
-	var BasicChart = __webpack_require__(174);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    legend: React.PropTypes.bool,
-	    viewBox: React.PropTypes.string
-	  },
-
-	  getDefaultProps: function() {
-	    return {
-	      legend: false
-	    };
-	  },
-
-	  render: function() {
-	    if (this.props.legend) {
-	      return React.createElement(LegendChart, React.__spread({},  this.props));
-	    }
-	    return React.createElement(BasicChart, React.__spread({},  this.props));
-	  }
-
-	});
-
-
-
-/***/ },
-/* 176 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var Legend = __webpack_require__(139);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    legend: React.PropTypes.bool,
-	    legendPosition: React.PropTypes.string,
-	    sideOffset: React.PropTypes.number,
-	    margins: React.PropTypes.object,
-	    data: React.PropTypes.oneOfType([
-	      React.PropTypes.object,
-	      React.PropTypes.array
-	    ])
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      data: {},
-	      legend: false,
-	      legendPosition: 'right',
-	      sideOffset: 90
-	    };
-	  },
-
-	  _renderLegend:function() {
-	    if (this.props.legend) {
-	      return (
-	        React.createElement(Legend, {
-	          legendPosition: this.props.legendPosition, 
-	          margins: this.props.margins, 
-	          colors: this.props.colors, 
-	          data: this.props.data, 
-	          width: this.props.width, 
-	          height: this.props.height, 
-	          sideOffset: this.props.sideOffset}
-	        ) 
-	      );
-	    }
-	  },
-
-	  render:function() {
-	    return (
-	      React.createElement("div", {style: {'width': this.props.width, 'height': this.props.height}}, 
-	        React.createElement("h4", null, this.props.title), 
-	        this._renderLegend(), 
-	        React.createElement("svg", {viewBox: this.props.viewBox, width: this.props.width - this.props.sideOffset, height: this.props.height}, this.props.children)
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 177 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var AxisTicks = __webpack_require__(198);
-	var AxisLine = __webpack_require__(199);
-	var Label = __webpack_require__(200);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    xAxisClassName: React.PropTypes.string.isRequired,
-	    xOrient: React.PropTypes.oneOf(['top', 'bottom']),
-	    xScale: React.PropTypes.func.isRequired,
-	    height: React.PropTypes.number.isRequired,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    tickStroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.string,
-	    xAxisOffset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      xAxisClassName: 'x axis',
-	      xAxisLabelOffset: 10,
-	      xOrient: 'bottom',
-	      fill: 'none',
-	      stroke: 'none',
-	      tickStroke: '#000',
-	      strokeWidth: 'none',
-	      xAxisOffset: 0,
-	      label: ''
-	    };
-	  },
-
-	  render:function() {
-	    var props = this.props;
-
-	    var t = ("translate(0," + (props.xAxisOffset + props.height) + ")");
-
-	    var tickArguments;
-	    if (typeof props.xAxisTickCount !== 'undefined') {
-	      tickArguments = [props.xAxisTickCount];
-	    }
-	    
-	    if (typeof props.xAxisTickInterval !== 'undefined') {
-	      tickArguments = [d3.time[props.xAxisTickInterval.unit], props.xAxisTickInterval.interval];
-	    }
-
-	    return (
-	      React.createElement("g", {
-	        className: props.xAxisClassName, 
-	        transform: t
-	      }, 
-	        React.createElement(Label, {
-	          label: props.xAxisLabel, 
-	          offset: props.xAxisLabelOffset, 
-	          orient: props.xOrient, 
-	          margins: props.margins, 
-	          width: props.width}
-	        ), 
-	        React.createElement(AxisTicks, {
-	          tickFormatting: props.tickFormatting, 
-	          tickArguments: tickArguments, 
-	          xScale: props.xScale, 
-	          orient: props.xOrient}
-	        ), 
-	        React.createElement(AxisLine, React.__spread({
-	          scale: props.xScale, 
-	          orient: props.xOrient}, 
-	          props)
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 178 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-	var AxisTicks = __webpack_require__(198);
-	var AxisLine = __webpack_require__(199);
-	var Label = __webpack_require__(200);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    yAxisClassName: React.PropTypes.string,
-	    yOrient: React.PropTypes.oneOf(['left', 'right']),
-	    yScale: React.PropTypes.func.isRequired,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string,
-	    tickStroke: React.PropTypes.string,
-	    strokeWidth: React.PropTypes.string,
-	    yAxisOffset: React.PropTypes.number
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      yAxisClassName: 'y axis',
-	      yOrient: 'left',
-	      fill: 'none',
-	      stroke: '#000',
-	      tickStroke: '#000',
-	      strokeWidth: '1',
-	      yAxisOffset: 0
-	    };
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-
-	    var t;
-	    if (props.yOrient === 'right') {
-	       t = ("translate(" + (props.yAxisOffset + props.width) + ",0)");
-	    } else {
-	       t = ("translate(" + props.yAxisOffset + ",0)");
-	    }
-
-	    var tickArguments;
-	    if (props.yAxisTickCount) {
-	      tickArguments = [props.yAxisTickCount];
-	    }
-	    
-	    if (props.yAxisTickInterval) {
-	      tickArguments = [d3.time[props.yAxisTickInterval.unit], props.yAxisTickInterval.interval];
-	    }
-
-	    return (
-	      React.createElement("g", {
-	        className: props.yAxisClassName, 
-	        transform: t
-	      }, 
-	        React.createElement(AxisTicks, {
-	          tickFormatting: props.tickFormatting, 
-	          tickArguments: tickArguments, 
-	          yScale: props.yScale, 
-	          orient: props.yOrient, 
-	          height: props.height, 
-	          width: props.width}
-	        ), 
-	        React.createElement(AxisLine, React.__spread({
-	          scale: props.yScale, 
-	          orient: props.yOrient}, 
-	          props)
-	        ), 
-	        React.createElement(Label, {
-	          label: props.yAxisLabel, 
-	          offset: props.yAxisLabelOffset, 
-	          orient: props.yOrient, 
-	          margins: props.margins, 
-	          height: props.height, 
-	          width: props.width}
-	        )
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
+/* 174 */,
+/* 175 */,
+/* 176 */,
+/* 177 */,
+/* 178 */,
 /* 179 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -20624,7 +18963,7 @@
 
 	module.exports = ReactElement;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 180 */
@@ -20844,21 +19183,10 @@
 
 	module.exports = warning;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
-/* 183 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-
-	module.exports.generateRandomKey = function (len) {
-	  len = len || 10;
-	  return Math.random().toString(36).substring(2).substring(0, len);
-	};
-
-
-/***/ },
+/* 183 */,
 /* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -20875,7 +19203,7 @@
 
 	'use strict';
 
-	var shallowEqual = __webpack_require__(211);
+	var shallowEqual = __webpack_require__(209);
 
 	/**
 	 * If your React component's render function is "pure", e.g. it will render the
@@ -20929,9 +19257,9 @@
 
 	"use strict";
 
-	var UserAgent_DEPRECATED = __webpack_require__(209);
+	var UserAgent_DEPRECATED = __webpack_require__(210);
 
-	var isEventSupported = __webpack_require__(210);
+	var isEventSupported = __webpack_require__(211);
 
 
 	// Reasonable defaults
@@ -21635,9 +19963,9 @@
 
 	"use strict";
 
-	var FixedDataTableHelper = __webpack_require__(152);
+	var FixedDataTableHelper = __webpack_require__(151);
 	var ImmutableObject = __webpack_require__(216);
-	var React = __webpack_require__(151);
+	var React = __webpack_require__(153);
 	var ReactComponentWithPureRenderMixin = __webpack_require__(154);
 	var FixedDataTableCell = __webpack_require__(217);
 
@@ -22061,7 +20389,7 @@
 	 * @typechecks
 	 */
 
-	var ExecutionEnvironment = __webpack_require__(134);
+	var ExecutionEnvironment = __webpack_require__(135);
 
 	var camelize = __webpack_require__(218);
 	var invariant = __webpack_require__(166);
@@ -22146,800 +20474,11 @@
 
 
 /***/ },
-/* 198 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  getDefaultProps:function() {
-	    return {
-	      innerTickSize: 6,
-	      outerTickSize: 6,
-	      tickPadding: 3,
-	      tickArguments: [10],
-	      tickValues: null,
-	      d3_identity: function(d){return d;},
-	      tickFormatting: function(d){return d;},
-	      tickFormat: null
-	    };
-	  },
-
-	  render:function() {
-	    var props = this.props;
-
-	    var tr,
-	        ticks,
-	        scale,
-	        adjustedScale,
-	        textAnchor,
-	        tickFormat,
-	        y1, y2, dy, x1, x2, dx;
-
-	    var sign = props.yScale ? -1 : 1;
-	    var tickSpacing = Math.max(props.innerTickSize, 0) + props.tickPadding;  
-
-	    scale = props.yScale ? props.yScale : props.xScale;
-
-	    ticks = props.tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, props.tickArguments) : scale.domain()) : props.tickValues;
-	    tickFormat = props.tickFormat_ == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, props.tickArguments) : props.d3_identity) : props.tickFormat_;
-
-	    adjustedScale = scale.rangeBand ? function(d)  { return scale(d) + scale.rangeBand() / 2; } : scale;
-
-	    // Still working on this
-	    // Ticks and lines are not fully aligned
-	    // in some orientations
-	    switch (props.orient) {
-	      case 'top':
-	        tr = function(tick)  {return ("translate(" + adjustedScale(tick) + ",0)");};
-	        textAnchor = "middle";
-	        y2 = props.innerTickSize * sign;
-	        y1 = tickSpacing * sign;
-	        dy =  sign < 0 ? "0em" : ".71em";
-	        break;
-	      case 'bottom':
-	        tr = function(tick)  {return ("translate(" + adjustedScale(tick) + ",0)");};
-	        textAnchor = "middle";
-	        y2 = props.innerTickSize * sign;
-	        y1 = tickSpacing * sign;
-	        dy =  sign < 0 ? "0em" : ".71em";
-	        break;
-	      case 'left':
-	        tr = function(tick)  {return ("translate(0," + adjustedScale(tick) + ")");};
-	        textAnchor = "end";
-	        x2 = props.innerTickSize * sign;
-	        x1 = tickSpacing * sign;
-	        dy = ".32em";
-	        break;
-	      case 'right':
-	        tr = function(tick)  {return ("translate(0," + adjustedScale(tick) + ")");};
-	        textAnchor = "end";
-	        x2 = props.innerTickSize;
-	        x1 = tickSpacing * sign;
-	        dy = ".32em";
-	        break;
-	    }
-
-	    return (
-	      React.createElement("g", null, 
-	        ticks.map( function(tick, i)  {
-	          return (
-	            React.createElement("g", {key: i, className: "tick", transform: tr(tick)}, 
-	              React.createElement("line", {style: {shapeRendering:'crispEdges',opacity:'1',stroke:'#000'}, x2: x2, y2: y2}
-	              ), 
-	              React.createElement("text", {
-	                strokeWidth: "0.01", 
-	                dy: dy, x: x1, y: y1, 
-	                stroke: "#000", 
-	                textAnchor: textAnchor
-	              }, 
-	                tickFormat(tick)
-	              )
-	            )
-	          );
-	          })
-	        
-	      )
-	    );
-	  }
-
-	});
-
-
-/***/ },
-/* 199 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var d3 = __webpack_require__(41);
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  propTypes: {
-	    scale: React.PropTypes.func.isRequired,
-	    innerTickSize: React.PropTypes.number,
-	    outerTickSize: React.PropTypes.number,
-	    tickPadding: React.PropTypes.number,
-	    tickArguments: React.PropTypes.array,
-	    fill: React.PropTypes.string,
-	    stroke: React.PropTypes.string
-	  },
-
-	  getDefaultProps:function() {
-	    return {
-	      innerTickSize: 6,
-	      outerTickSize: 6,
-	      tickPadding: 3,
-	      tickArguments: [10],
-	      tickValues: null,
-	      tickFormat: null 
-	    };
-	  },
-
-
-	  _d3_scaleExtent:function(domain) {
-	    var start = domain[0], stop = domain[domain.length - 1];
-	    return start < stop ? [start, stop] : [stop, start];
-	  },
-
-	  _d3_scaleRange:function(scale) {
-	    return scale.rangeExtent ? scale.rangeExtent() : this._d3_scaleExtent(scale.range());
-	  },
-
-	  render:function() {
-
-	    var props = this.props;
-	    var sign = props.orient === "top" || props.orient === "left" ? -1 : 1;
-
-	    var range = this._d3_scaleRange(props.scale);
-
-	    var d;
-
-	    if (props.orient === "bottom" || props.orient === "top") {
-	      d = "M" + range[0] + "," + sign * props.outerTickSize + "V0H" + range[1] + "V" + sign * props.outerTickSize;
-	    } else {
-	      d = "M" + sign * props.outerTickSize + "," + range[0] + "H0V" + range[1] + "H" + sign * props.outerTickSize;
-	    }
-
-
-	    return (
-	      React.createElement("path", {
-	        className: "domain", 
-	        d: d, 
-	        style: {'shapeRendering':'crispEdges'}, 
-	        fill: "none", 
-	        stroke: props.stroke, 
-	        strokeWidth: props.strokeWidth
-	      }
-	      )
-	    );
-	  }
-	});
-
-
-/***/ },
-/* 200 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-
-
-	module.exports = React.createClass({displayName: "exports",
-
-	  render:function() {
-	    var props = this.props;
-	    var strokeWidth = '0.01';
-	    if (props.label) {
-	      switch (props.orient) {
-	        case 'top':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: props.offset, x: props.width/2, 
-	              textAnchor: "middle"}, 
-	              props.label
-	            )
-	          );
-	        case 'bottom':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: props.offset, x: props.width/2, 
-	              textAnchor: "middle"}, 
-	              props.label
-	            )
-	          );
-	        case 'left':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: -props.offset, x: -props.height/2, 
-	              textAnchor: "middle", 
-	              transform: "rotate(270)"}, 
-	              props.label
-	            )
-	          );
-	        case 'right':
-	          return (
-	            React.createElement("text", {
-	              strokeWidth: strokeWidth, 
-	              y: props.offset, x: -props.height/2, 
-	              textAnchor: "middle", 
-	              transform: "rotate(270)"}, 
-	              props.label
-	            )
-	          );
-	      }
-	    }
-	    return React.createElement("text", null);
-	  }
-
-	});
-
-
-
-
-/***/ },
-/* 201 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 *  Copyright (c) 2014-2015, Facebook, Inc.
-	 *  All rights reserved.
-	 *
-	 *  This source code is licensed under the BSD-style license found in the
-	 *  LICENSE file in the root directory of this source tree. An additional grant
-	 *  of patent rights can be found in the PATENTS file in the same directory.
-	 */
-
-	/**
-	 * Cursor is expected to be required in a node or other CommonJS context:
-	 *
-	 *     var Cursor = require('immutable/contrib/cursor');
-	 *
-	 * If you wish to use it in the browser, please check out Browserify or WebPack!
-	 */
-
-	var Immutable = __webpack_require__(207);
-	var Iterable = Immutable.Iterable;
-	var Iterator = Iterable.Iterator;
-	var Seq = Immutable.Seq;
-	var Map = Immutable.Map;
-
-
-	function cursorFrom(rootData, keyPath, onChange) {
-	  if (arguments.length === 1) {
-	    keyPath = [];
-	  } else if (typeof keyPath === 'function') {
-	    onChange = keyPath;
-	    keyPath = [];
-	  } else {
-	    keyPath = valToKeyPath(keyPath);
-	  }
-	  return makeCursor(rootData, keyPath, onChange);
-	}
-
-
-	var KeyedCursorPrototype = Object.create(Seq.Keyed.prototype);
-	var IndexedCursorPrototype = Object.create(Seq.Indexed.prototype);
-
-	function KeyedCursor(rootData, keyPath, onChange, size) {
-	  this.size = size;
-	  this._rootData = rootData;
-	  this._keyPath = keyPath;
-	  this._onChange = onChange;
-	}
-	KeyedCursorPrototype.constructor = KeyedCursor;
-
-	function IndexedCursor(rootData, keyPath, onChange, size) {
-	  this.size = size;
-	  this._rootData = rootData;
-	  this._keyPath = keyPath;
-	  this._onChange = onChange;
-	}
-	IndexedCursorPrototype.constructor = IndexedCursor;
-
-	KeyedCursorPrototype.toString = function() {
-	  return this.__toString('Cursor {', '}');
-	}
-	IndexedCursorPrototype.toString = function() {
-	  return this.__toString('Cursor [', ']');
-	}
-
-	KeyedCursorPrototype.deref =
-	KeyedCursorPrototype.valueOf =
-	IndexedCursorPrototype.deref =
-	IndexedCursorPrototype.valueOf = function(notSetValue) {
-	  return this._rootData.getIn(this._keyPath, notSetValue);
-	}
-
-	KeyedCursorPrototype.get =
-	IndexedCursorPrototype.get = function(key, notSetValue) {
-	  return this.getIn([key], notSetValue);
-	}
-
-	KeyedCursorPrototype.getIn =
-	IndexedCursorPrototype.getIn = function(keyPath, notSetValue) {
-	  keyPath = listToKeyPath(keyPath);
-	  if (keyPath.length === 0) {
-	    return this;
-	  }
-	  var value = this._rootData.getIn(newKeyPath(this._keyPath, keyPath), NOT_SET);
-	  return value === NOT_SET ? notSetValue : wrappedValue(this, keyPath, value);
-	}
-
-	IndexedCursorPrototype.set =
-	KeyedCursorPrototype.set = function(key, value) {
-	  return updateCursor(this, function (m) { return m.set(key, value); }, [key]);
-	}
-
-	IndexedCursorPrototype.push = function(/* values */) {
-	  var args = arguments;
-	  return updateCursor(this, function (m) {
-	    return m.push.apply(m, args);
-	  });
-	}
-
-	IndexedCursorPrototype.pop = function() {
-	  return updateCursor(this, function (m) {
-	    return m.pop();
-	  });
-	}
-
-	IndexedCursorPrototype.unshift = function(/* values */) {
-	  var args = arguments;
-	  return updateCursor(this, function (m) {
-	    return m.unshift.apply(m, args);
-	  });
-	}
-
-	IndexedCursorPrototype.shift = function() {
-	  return updateCursor(this, function (m) {
-	    return m.shift();
-	  });
-	}
-
-	IndexedCursorPrototype.setIn =
-	KeyedCursorPrototype.setIn = Map.prototype.setIn;
-
-	KeyedCursorPrototype.remove =
-	KeyedCursorPrototype['delete'] =
-	IndexedCursorPrototype.remove =
-	IndexedCursorPrototype['delete'] = function(key) {
-	  return updateCursor(this, function (m) { return m.remove(key); }, [key]);
-	}
-
-	IndexedCursorPrototype.removeIn =
-	IndexedCursorPrototype.deleteIn =
-	KeyedCursorPrototype.removeIn =
-	KeyedCursorPrototype.deleteIn = Map.prototype.deleteIn;
-
-	KeyedCursorPrototype.clear =
-	IndexedCursorPrototype.clear = function() {
-	  return updateCursor(this, function (m) { return m.clear(); });
-	}
-
-	IndexedCursorPrototype.update =
-	KeyedCursorPrototype.update = function(keyOrFn, notSetValue, updater) {
-	  return arguments.length === 1 ?
-	    updateCursor(this, keyOrFn) :
-	    this.updateIn([keyOrFn], notSetValue, updater);
-	}
-
-	IndexedCursorPrototype.updateIn =
-	KeyedCursorPrototype.updateIn = function(keyPath, notSetValue, updater) {
-	  return updateCursor(this, function (m) {
-	    return m.updateIn(keyPath, notSetValue, updater);
-	  }, keyPath);
-	}
-
-	IndexedCursorPrototype.merge =
-	KeyedCursorPrototype.merge = function(/*...iters*/) {
-	  var args = arguments;
-	  return updateCursor(this, function (m) {
-	    return m.merge.apply(m, args);
-	  });
-	}
-
-	IndexedCursorPrototype.mergeWith =
-	KeyedCursorPrototype.mergeWith = function(merger/*, ...iters*/) {
-	  var args = arguments;
-	  return updateCursor(this, function (m) {
-	    return m.mergeWith.apply(m, args);
-	  });
-	}
-
-	IndexedCursorPrototype.mergeIn =
-	KeyedCursorPrototype.mergeIn = Map.prototype.mergeIn;
-
-	IndexedCursorPrototype.mergeDeep =
-	KeyedCursorPrototype.mergeDeep = function(/*...iters*/) {
-	  var args = arguments;
-	  return updateCursor(this, function (m) {
-	    return m.mergeDeep.apply(m, args);
-	  });
-	}
-
-	IndexedCursorPrototype.mergeDeepWith =
-	KeyedCursorPrototype.mergeDeepWith = function(merger/*, ...iters*/) {
-	  var args = arguments;
-	  return updateCursor(this, function (m) {
-	    return m.mergeDeepWith.apply(m, args);
-	  });
-	}
-
-	IndexedCursorPrototype.mergeDeepIn =
-	KeyedCursorPrototype.mergeDeepIn = Map.prototype.mergeDeepIn;
-
-	KeyedCursorPrototype.withMutations =
-	IndexedCursorPrototype.withMutations = function(fn) {
-	  return updateCursor(this, function (m) {
-	    return (m || Map()).withMutations(fn);
-	  });
-	}
-
-	KeyedCursorPrototype.cursor =
-	IndexedCursorPrototype.cursor = function(subKeyPath) {
-	  subKeyPath = valToKeyPath(subKeyPath);
-	  return subKeyPath.length === 0 ? this : subCursor(this, subKeyPath);
-	}
-
-	/**
-	 * All iterables need to implement __iterate
-	 */
-	KeyedCursorPrototype.__iterate =
-	IndexedCursorPrototype.__iterate = function(fn, reverse) {
-	  var cursor = this;
-	  var deref = cursor.deref();
-	  return deref && deref.__iterate ? deref.__iterate(
-	    function (v, k) { return fn(wrappedValue(cursor, [k], v), k, cursor); },
-	    reverse
-	  ) : 0;
-	}
-
-	/**
-	 * All iterables need to implement __iterator
-	 */
-	KeyedCursorPrototype.__iterator =
-	IndexedCursorPrototype.__iterator = function(type, reverse) {
-	  var deref = this.deref();
-	  var cursor = this;
-	  var iterator = deref && deref.__iterator &&
-	    deref.__iterator(Iterator.ENTRIES, reverse);
-	  return new Iterator(function () {
-	    if (!iterator) {
-	      return { value: undefined, done: true };
-	    }
-	    var step = iterator.next();
-	    if (step.done) {
-	      return step;
-	    }
-	    var entry = step.value;
-	    var k = entry[0];
-	    var v = wrappedValue(cursor, [k], entry[1]);
-	    return {
-	      value: type === Iterator.KEYS ? k : type === Iterator.VALUES ? v : [k, v],
-	      done: false
-	    };
-	  });
-	}
-
-	KeyedCursor.prototype = KeyedCursorPrototype;
-	IndexedCursor.prototype = IndexedCursorPrototype;
-
-
-	var NOT_SET = {}; // Sentinel value
-
-	function makeCursor(rootData, keyPath, onChange, value) {
-	  if (arguments.length < 4) {
-	    value = rootData.getIn(keyPath);
-	  }
-	  var size = value && value.size;
-	  var CursorClass = Iterable.isIndexed(value) ? IndexedCursor : KeyedCursor;
-	  return new CursorClass(rootData, keyPath, onChange, size);
-	}
-
-	function wrappedValue(cursor, keyPath, value) {
-	  return Iterable.isIterable(value) ? subCursor(cursor, keyPath, value) : value;
-	}
-
-	function subCursor(cursor, keyPath, value) {
-	  if (arguments.length < 3) {
-	    return makeCursor( // call without value
-	      cursor._rootData,
-	      newKeyPath(cursor._keyPath, keyPath),
-	      cursor._onChange
-	    );
-	  }
-	  return makeCursor(
-	    cursor._rootData,
-	    newKeyPath(cursor._keyPath, keyPath),
-	    cursor._onChange,
-	    value
-	  );
-	}
-
-	function updateCursor(cursor, changeFn, changeKeyPath) {
-	  var deepChange = arguments.length > 2;
-	  var newRootData = cursor._rootData.updateIn(
-	    cursor._keyPath,
-	    deepChange ? Map() : undefined,
-	    changeFn
-	  );
-	  var keyPath = cursor._keyPath || [];
-	  var result = cursor._onChange && cursor._onChange.call(
-	    undefined,
-	    newRootData,
-	    cursor._rootData,
-	    deepChange ? newKeyPath(keyPath, changeKeyPath) : keyPath
-	  );
-	  if (result !== undefined) {
-	    newRootData = result;
-	  }
-	  return makeCursor(newRootData, cursor._keyPath, cursor._onChange);
-	}
-
-	function newKeyPath(head, tail) {
-	  return head.concat(listToKeyPath(tail));
-	}
-
-	function listToKeyPath(list) {
-	  return Array.isArray(list) ? list : Immutable.Iterable(list).toArray();
-	}
-
-	function valToKeyPath(val) {
-	  return Array.isArray(val) ? val :
-	    Iterable.isIterable(val) ? val.toArray() :
-	    [val];
-	}
-
-	exports.from = cursorFrom;
-
-
-/***/ },
-/* 202 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	/**
-	 * Representation of a single EventEmitter function.
-	 *
-	 * @param {Function} fn Event handler to be called.
-	 * @param {Mixed} context Context for function execution.
-	 * @param {Boolean} once Only emit once
-	 * @api private
-	 */
-	function EE(fn, context, once) {
-	  this.fn = fn;
-	  this.context = context;
-	  this.once = once || false;
-	}
-
-	/**
-	 * Minimal EventEmitter interface that is molded against the Node.js
-	 * EventEmitter interface.
-	 *
-	 * @constructor
-	 * @api public
-	 */
-	function EventEmitter() { /* Nothing to set */ }
-
-	/**
-	 * Holds the assigned EventEmitters by name.
-	 *
-	 * @type {Object}
-	 * @private
-	 */
-	EventEmitter.prototype._events = undefined;
-
-	/**
-	 * Return a list of assigned event listeners.
-	 *
-	 * @param {String} event The events that should be listed.
-	 * @returns {Array}
-	 * @api public
-	 */
-	EventEmitter.prototype.listeners = function listeners(event) {
-	  if (!this._events || !this._events[event]) return [];
-	  if (this._events[event].fn) return [this._events[event].fn];
-
-	  for (var i = 0, l = this._events[event].length, ee = new Array(l); i < l; i++) {
-	    ee[i] = this._events[event][i].fn;
-	  }
-
-	  return ee;
-	};
-
-	/**
-	 * Emit an event to all registered event listeners.
-	 *
-	 * @param {String} event The name of the event.
-	 * @returns {Boolean} Indication if we've emitted an event.
-	 * @api public
-	 */
-	EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-	  if (!this._events || !this._events[event]) return false;
-
-	  var listeners = this._events[event]
-	    , len = arguments.length
-	    , args
-	    , i;
-
-	  if ('function' === typeof listeners.fn) {
-	    if (listeners.once) this.removeListener(event, listeners.fn, true);
-
-	    switch (len) {
-	      case 1: return listeners.fn.call(listeners.context), true;
-	      case 2: return listeners.fn.call(listeners.context, a1), true;
-	      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
-	      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
-	      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-	      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-	    }
-
-	    for (i = 1, args = new Array(len -1); i < len; i++) {
-	      args[i - 1] = arguments[i];
-	    }
-
-	    listeners.fn.apply(listeners.context, args);
-	  } else {
-	    var length = listeners.length
-	      , j;
-
-	    for (i = 0; i < length; i++) {
-	      if (listeners[i].once) this.removeListener(event, listeners[i].fn, true);
-
-	      switch (len) {
-	        case 1: listeners[i].fn.call(listeners[i].context); break;
-	        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
-	        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
-	        default:
-	          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
-	            args[j - 1] = arguments[j];
-	          }
-
-	          listeners[i].fn.apply(listeners[i].context, args);
-	      }
-	    }
-	  }
-
-	  return true;
-	};
-
-	/**
-	 * Register a new EventListener for the given event.
-	 *
-	 * @param {String} event Name of the event.
-	 * @param {Functon} fn Callback function.
-	 * @param {Mixed} context The context of the function.
-	 * @api public
-	 */
-	EventEmitter.prototype.on = function on(event, fn, context) {
-	  var listener = new EE(fn, context || this);
-
-	  if (!this._events) this._events = {};
-	  if (!this._events[event]) this._events[event] = listener;
-	  else {
-	    if (!this._events[event].fn) this._events[event].push(listener);
-	    else this._events[event] = [
-	      this._events[event], listener
-	    ];
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Add an EventListener that's only called once.
-	 *
-	 * @param {String} event Name of the event.
-	 * @param {Function} fn Callback function.
-	 * @param {Mixed} context The context of the function.
-	 * @api public
-	 */
-	EventEmitter.prototype.once = function once(event, fn, context) {
-	  var listener = new EE(fn, context || this, true);
-
-	  if (!this._events) this._events = {};
-	  if (!this._events[event]) this._events[event] = listener;
-	  else {
-	    if (!this._events[event].fn) this._events[event].push(listener);
-	    else this._events[event] = [
-	      this._events[event], listener
-	    ];
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Remove event listeners.
-	 *
-	 * @param {String} event The event we want to remove.
-	 * @param {Function} fn The listener that we need to find.
-	 * @param {Boolean} once Only remove once listeners.
-	 * @api public
-	 */
-	EventEmitter.prototype.removeListener = function removeListener(event, fn, once) {
-	  if (!this._events || !this._events[event]) return this;
-
-	  var listeners = this._events[event]
-	    , events = [];
-
-	  if (fn) {
-	    if (listeners.fn && (listeners.fn !== fn || (once && !listeners.once))) {
-	      events.push(listeners);
-	    }
-	    if (!listeners.fn) for (var i = 0, length = listeners.length; i < length; i++) {
-	      if (listeners[i].fn !== fn || (once && !listeners[i].once)) {
-	        events.push(listeners[i]);
-	      }
-	    }
-	  }
-
-	  //
-	  // Reset the array, or remove it completely if we have no more listeners.
-	  //
-	  if (events.length) {
-	    this._events[event] = events.length === 1 ? events[0] : events;
-	  } else {
-	    delete this._events[event];
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Remove all listeners or only the listeners for the specified event.
-	 *
-	 * @param {String} event The event want to remove all listeners for.
-	 * @api public
-	 */
-	EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
-	  if (!this._events) return this;
-
-	  if (event) delete this._events[event];
-	  else this._events = {};
-
-	  return this;
-	};
-
-	//
-	// Alias methods names because people roll like that.
-	//
-	EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
-	EventEmitter.prototype.addListener = EventEmitter.prototype.on;
-
-	//
-	// This function doesn't apply anymore.
-	//
-	EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
-	  return this;
-	};
-
-	//
-	// Expose the module.
-	//
-	EventEmitter.EventEmitter = EventEmitter;
-	EventEmitter.EventEmitter2 = EventEmitter;
-	EventEmitter.EventEmitter3 = EventEmitter;
-
-	//
-	// Expose the module.
-	//
-	module.exports = EventEmitter;
-
-
-/***/ },
+/* 198 */,
+/* 199 */,
+/* 200 */,
+/* 201 */,
+/* 202 */,
 /* 203 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -23018,7 +20557,7 @@
 
 	module.exports = ReactContext;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 204 */
@@ -23157,4950 +20696,57 @@
 
 
 /***/ },
-/* 207 */
+/* 207 */,
+/* 208 */,
+/* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 *  Copyright (c) 2014-2015, Facebook, Inc.
-	 *  All rights reserved.
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
 	 *
-	 *  This source code is licensed under the BSD-style license found in the
-	 *  LICENSE file in the root directory of this source tree. An additional grant
-	 *  of patent rights can be found in the PATENTS file in the same directory.
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule shallowEqual
 	 */
-	(function (global, factory) {
-	  true ? module.exports = factory() :
-	  typeof define === 'function' && define.amd ? define(factory) :
-	  global.Immutable = factory()
-	}(this, function () { 'use strict';var SLICE$0 = Array.prototype.slice;
 
-	  function createClass(ctor, superClass) {
-	    if (superClass) {
-	      ctor.prototype = Object.create(superClass.prototype);
-	    }
-	    ctor.prototype.constructor = ctor;
-	  }
+	'use strict';
 
-	  // Used for setting prototype methods that IE8 chokes on.
-	  var DELETE = 'delete';
-
-	  // Constants describing the size of trie nodes.
-	  var SHIFT = 5; // Resulted in best performance after ______?
-	  var SIZE = 1 << SHIFT;
-	  var MASK = SIZE - 1;
-
-	  // A consistent shared value representing "not set" which equals nothing other
-	  // than itself, and nothing that could be provided externally.
-	  var NOT_SET = {};
-
-	  // Boolean references, Rough equivalent of `bool &`.
-	  var CHANGE_LENGTH = { value: false };
-	  var DID_ALTER = { value: false };
-
-	  function MakeRef(ref) {
-	    ref.value = false;
-	    return ref;
-	  }
-
-	  function SetRef(ref) {
-	    ref && (ref.value = true);
-	  }
-
-	  // A function which returns a value representing an "owner" for transient writes
-	  // to tries. The return value will only ever equal itself, and will not equal
-	  // the return of any subsequent call of this function.
-	  function OwnerID() {}
-
-	  // http://jsperf.com/copy-array-inline
-	  function arrCopy(arr, offset) {
-	    offset = offset || 0;
-	    var len = Math.max(0, arr.length - offset);
-	    var newArr = new Array(len);
-	    for (var ii = 0; ii < len; ii++) {
-	      newArr[ii] = arr[ii + offset];
-	    }
-	    return newArr;
-	  }
-
-	  function ensureSize(iter) {
-	    if (iter.size === undefined) {
-	      iter.size = iter.__iterate(returnTrue);
-	    }
-	    return iter.size;
-	  }
-
-	  function wrapIndex(iter, index) {
-	    return index >= 0 ? (+index) : ensureSize(iter) + (+index);
-	  }
-
-	  function returnTrue() {
+	/**
+	 * Performs equality by iterating through keys on an object and returning
+	 * false when any key has values which are not strictly equal between
+	 * objA and objB. Returns true when the values of all keys are strictly equal.
+	 *
+	 * @return {boolean}
+	 */
+	function shallowEqual(objA, objB) {
+	  if (objA === objB) {
 	    return true;
 	  }
-
-	  function wholeSlice(begin, end, size) {
-	    return (begin === 0 || (size !== undefined && begin <= -size)) &&
-	      (end === undefined || (size !== undefined && end >= size));
-	  }
-
-	  function resolveBegin(begin, size) {
-	    return resolveIndex(begin, size, 0);
-	  }
-
-	  function resolveEnd(end, size) {
-	    return resolveIndex(end, size, size);
-	  }
-
-	  function resolveIndex(index, size, defaultIndex) {
-	    return index === undefined ?
-	      defaultIndex :
-	      index < 0 ?
-	        Math.max(0, size + index) :
-	        size === undefined ?
-	          index :
-	          Math.min(size, index);
-	  }
-
-	  function Iterable(value) {
-	      return isIterable(value) ? value : Seq(value);
-	    }
-
-
-	  createClass(KeyedIterable, Iterable);
-	    function KeyedIterable(value) {
-	      return isKeyed(value) ? value : KeyedSeq(value);
-	    }
-
-
-	  createClass(IndexedIterable, Iterable);
-	    function IndexedIterable(value) {
-	      return isIndexed(value) ? value : IndexedSeq(value);
-	    }
-
-
-	  createClass(SetIterable, Iterable);
-	    function SetIterable(value) {
-	      return isIterable(value) && !isAssociative(value) ? value : SetSeq(value);
-	    }
-
-
-
-	  function isIterable(maybeIterable) {
-	    return !!(maybeIterable && maybeIterable[IS_ITERABLE_SENTINEL]);
-	  }
-
-	  function isKeyed(maybeKeyed) {
-	    return !!(maybeKeyed && maybeKeyed[IS_KEYED_SENTINEL]);
-	  }
-
-	  function isIndexed(maybeIndexed) {
-	    return !!(maybeIndexed && maybeIndexed[IS_INDEXED_SENTINEL]);
-	  }
-
-	  function isAssociative(maybeAssociative) {
-	    return isKeyed(maybeAssociative) || isIndexed(maybeAssociative);
-	  }
-
-	  function isOrdered(maybeOrdered) {
-	    return !!(maybeOrdered && maybeOrdered[IS_ORDERED_SENTINEL]);
-	  }
-
-	  Iterable.isIterable = isIterable;
-	  Iterable.isKeyed = isKeyed;
-	  Iterable.isIndexed = isIndexed;
-	  Iterable.isAssociative = isAssociative;
-	  Iterable.isOrdered = isOrdered;
-
-	  Iterable.Keyed = KeyedIterable;
-	  Iterable.Indexed = IndexedIterable;
-	  Iterable.Set = SetIterable;
-
-
-	  var IS_ITERABLE_SENTINEL = '@@__IMMUTABLE_ITERABLE__@@';
-	  var IS_KEYED_SENTINEL = '@@__IMMUTABLE_KEYED__@@';
-	  var IS_INDEXED_SENTINEL = '@@__IMMUTABLE_INDEXED__@@';
-	  var IS_ORDERED_SENTINEL = '@@__IMMUTABLE_ORDERED__@@';
-
-	  /* global Symbol */
-
-	  var ITERATE_KEYS = 0;
-	  var ITERATE_VALUES = 1;
-	  var ITERATE_ENTRIES = 2;
-
-	  var REAL_ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
-	  var FAUX_ITERATOR_SYMBOL = '@@iterator';
-
-	  var ITERATOR_SYMBOL = REAL_ITERATOR_SYMBOL || FAUX_ITERATOR_SYMBOL;
-
-
-	  function src_Iterator__Iterator(next) {
-	      this.next = next;
-	    }
-
-	    src_Iterator__Iterator.prototype.toString = function() {
-	      return '[Iterator]';
-	    };
-
-
-	  src_Iterator__Iterator.KEYS = ITERATE_KEYS;
-	  src_Iterator__Iterator.VALUES = ITERATE_VALUES;
-	  src_Iterator__Iterator.ENTRIES = ITERATE_ENTRIES;
-
-	  src_Iterator__Iterator.prototype.inspect =
-	  src_Iterator__Iterator.prototype.toSource = function () { return this.toString(); }
-	  src_Iterator__Iterator.prototype[ITERATOR_SYMBOL] = function () {
-	    return this;
-	  };
-
-
-	  function iteratorValue(type, k, v, iteratorResult) {
-	    var value = type === 0 ? k : type === 1 ? v : [k, v];
-	    iteratorResult ? (iteratorResult.value = value) : (iteratorResult = {
-	      value: value, done: false
-	    });
-	    return iteratorResult;
-	  }
-
-	  function iteratorDone() {
-	    return { value: undefined, done: true };
-	  }
-
-	  function hasIterator(maybeIterable) {
-	    return !!getIteratorFn(maybeIterable);
-	  }
-
-	  function isIterator(maybeIterator) {
-	    return maybeIterator && typeof maybeIterator.next === 'function';
-	  }
-
-	  function getIterator(iterable) {
-	    var iteratorFn = getIteratorFn(iterable);
-	    return iteratorFn && iteratorFn.call(iterable);
-	  }
-
-	  function getIteratorFn(iterable) {
-	    var iteratorFn = iterable && (
-	      (REAL_ITERATOR_SYMBOL && iterable[REAL_ITERATOR_SYMBOL]) ||
-	      iterable[FAUX_ITERATOR_SYMBOL]
-	    );
-	    if (typeof iteratorFn === 'function') {
-	      return iteratorFn;
-	    }
-	  }
-
-	  function isArrayLike(value) {
-	    return value && typeof value.length === 'number';
-	  }
-
-	  createClass(Seq, Iterable);
-	    function Seq(value) {
-	      return value === null || value === undefined ? emptySequence() :
-	        isIterable(value) ? value.toSeq() : seqFromValue(value);
-	    }
-
-	    Seq.of = function(/*...values*/) {
-	      return Seq(arguments);
-	    };
-
-	    Seq.prototype.toSeq = function() {
-	      return this;
-	    };
-
-	    Seq.prototype.toString = function() {
-	      return this.__toString('Seq {', '}');
-	    };
-
-	    Seq.prototype.cacheResult = function() {
-	      if (!this._cache && this.__iterateUncached) {
-	        this._cache = this.entrySeq().toArray();
-	        this.size = this._cache.length;
-	      }
-	      return this;
-	    };
-
-	    // abstract __iterateUncached(fn, reverse)
-
-	    Seq.prototype.__iterate = function(fn, reverse) {
-	      return seqIterate(this, fn, reverse, true);
-	    };
-
-	    // abstract __iteratorUncached(type, reverse)
-
-	    Seq.prototype.__iterator = function(type, reverse) {
-	      return seqIterator(this, type, reverse, true);
-	    };
-
-
-
-	  createClass(KeyedSeq, Seq);
-	    function KeyedSeq(value) {
-	      return value === null || value === undefined ?
-	        emptySequence().toKeyedSeq() :
-	        isIterable(value) ?
-	          (isKeyed(value) ? value.toSeq() : value.fromEntrySeq()) :
-	          keyedSeqFromValue(value);
-	    }
-
-	    KeyedSeq.prototype.toKeyedSeq = function() {
-	      return this;
-	    };
-
-
-
-	  createClass(IndexedSeq, Seq);
-	    function IndexedSeq(value) {
-	      return value === null || value === undefined ? emptySequence() :
-	        !isIterable(value) ? indexedSeqFromValue(value) :
-	        isKeyed(value) ? value.entrySeq() : value.toIndexedSeq();
-	    }
-
-	    IndexedSeq.of = function(/*...values*/) {
-	      return IndexedSeq(arguments);
-	    };
-
-	    IndexedSeq.prototype.toIndexedSeq = function() {
-	      return this;
-	    };
-
-	    IndexedSeq.prototype.toString = function() {
-	      return this.__toString('Seq [', ']');
-	    };
-
-	    IndexedSeq.prototype.__iterate = function(fn, reverse) {
-	      return seqIterate(this, fn, reverse, false);
-	    };
-
-	    IndexedSeq.prototype.__iterator = function(type, reverse) {
-	      return seqIterator(this, type, reverse, false);
-	    };
-
-
-
-	  createClass(SetSeq, Seq);
-	    function SetSeq(value) {
-	      return (
-	        value === null || value === undefined ? emptySequence() :
-	        !isIterable(value) ? indexedSeqFromValue(value) :
-	        isKeyed(value) ? value.entrySeq() : value
-	      ).toSetSeq();
-	    }
-
-	    SetSeq.of = function(/*...values*/) {
-	      return SetSeq(arguments);
-	    };
-
-	    SetSeq.prototype.toSetSeq = function() {
-	      return this;
-	    };
-
-
-
-	  Seq.isSeq = isSeq;
-	  Seq.Keyed = KeyedSeq;
-	  Seq.Set = SetSeq;
-	  Seq.Indexed = IndexedSeq;
-
-	  var IS_SEQ_SENTINEL = '@@__IMMUTABLE_SEQ__@@';
-
-	  Seq.prototype[IS_SEQ_SENTINEL] = true;
-
-
-
-	  // #pragma Root Sequences
-
-	  createClass(ArraySeq, IndexedSeq);
-	    function ArraySeq(array) {
-	      this._array = array;
-	      this.size = array.length;
-	    }
-
-	    ArraySeq.prototype.get = function(index, notSetValue) {
-	      return this.has(index) ? this._array[wrapIndex(this, index)] : notSetValue;
-	    };
-
-	    ArraySeq.prototype.__iterate = function(fn, reverse) {
-	      var array = this._array;
-	      var maxIndex = array.length - 1;
-	      for (var ii = 0; ii <= maxIndex; ii++) {
-	        if (fn(array[reverse ? maxIndex - ii : ii], ii, this) === false) {
-	          return ii + 1;
-	        }
-	      }
-	      return ii;
-	    };
-
-	    ArraySeq.prototype.__iterator = function(type, reverse) {
-	      var array = this._array;
-	      var maxIndex = array.length - 1;
-	      var ii = 0;
-	      return new src_Iterator__Iterator(function() 
-	        {return ii > maxIndex ?
-	          iteratorDone() :
-	          iteratorValue(type, ii, array[reverse ? maxIndex - ii++ : ii++])}
-	      );
-	    };
-
-
-
-	  createClass(ObjectSeq, KeyedSeq);
-	    function ObjectSeq(object) {
-	      var keys = Object.keys(object);
-	      this._object = object;
-	      this._keys = keys;
-	      this.size = keys.length;
-	    }
-
-	    ObjectSeq.prototype.get = function(key, notSetValue) {
-	      if (notSetValue !== undefined && !this.has(key)) {
-	        return notSetValue;
-	      }
-	      return this._object[key];
-	    };
-
-	    ObjectSeq.prototype.has = function(key) {
-	      return this._object.hasOwnProperty(key);
-	    };
-
-	    ObjectSeq.prototype.__iterate = function(fn, reverse) {
-	      var object = this._object;
-	      var keys = this._keys;
-	      var maxIndex = keys.length - 1;
-	      for (var ii = 0; ii <= maxIndex; ii++) {
-	        var key = keys[reverse ? maxIndex - ii : ii];
-	        if (fn(object[key], key, this) === false) {
-	          return ii + 1;
-	        }
-	      }
-	      return ii;
-	    };
-
-	    ObjectSeq.prototype.__iterator = function(type, reverse) {
-	      var object = this._object;
-	      var keys = this._keys;
-	      var maxIndex = keys.length - 1;
-	      var ii = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        var key = keys[reverse ? maxIndex - ii : ii];
-	        return ii++ > maxIndex ?
-	          iteratorDone() :
-	          iteratorValue(type, key, object[key]);
-	      });
-	    };
-
-	  ObjectSeq.prototype[IS_ORDERED_SENTINEL] = true;
-
-
-	  createClass(IterableSeq, IndexedSeq);
-	    function IterableSeq(iterable) {
-	      this._iterable = iterable;
-	      this.size = iterable.length || iterable.size;
-	    }
-
-	    IterableSeq.prototype.__iterateUncached = function(fn, reverse) {
-	      if (reverse) {
-	        return this.cacheResult().__iterate(fn, reverse);
-	      }
-	      var iterable = this._iterable;
-	      var iterator = getIterator(iterable);
-	      var iterations = 0;
-	      if (isIterator(iterator)) {
-	        var step;
-	        while (!(step = iterator.next()).done) {
-	          if (fn(step.value, iterations++, this) === false) {
-	            break;
-	          }
-	        }
-	      }
-	      return iterations;
-	    };
-
-	    IterableSeq.prototype.__iteratorUncached = function(type, reverse) {
-	      if (reverse) {
-	        return this.cacheResult().__iterator(type, reverse);
-	      }
-	      var iterable = this._iterable;
-	      var iterator = getIterator(iterable);
-	      if (!isIterator(iterator)) {
-	        return new src_Iterator__Iterator(iteratorDone);
-	      }
-	      var iterations = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        var step = iterator.next();
-	        return step.done ? step : iteratorValue(type, iterations++, step.value);
-	      });
-	    };
-
-
-
-	  createClass(IteratorSeq, IndexedSeq);
-	    function IteratorSeq(iterator) {
-	      this._iterator = iterator;
-	      this._iteratorCache = [];
-	    }
-
-	    IteratorSeq.prototype.__iterateUncached = function(fn, reverse) {
-	      if (reverse) {
-	        return this.cacheResult().__iterate(fn, reverse);
-	      }
-	      var iterator = this._iterator;
-	      var cache = this._iteratorCache;
-	      var iterations = 0;
-	      while (iterations < cache.length) {
-	        if (fn(cache[iterations], iterations++, this) === false) {
-	          return iterations;
-	        }
-	      }
-	      var step;
-	      while (!(step = iterator.next()).done) {
-	        var val = step.value;
-	        cache[iterations] = val;
-	        if (fn(val, iterations++, this) === false) {
-	          break;
-	        }
-	      }
-	      return iterations;
-	    };
-
-	    IteratorSeq.prototype.__iteratorUncached = function(type, reverse) {
-	      if (reverse) {
-	        return this.cacheResult().__iterator(type, reverse);
-	      }
-	      var iterator = this._iterator;
-	      var cache = this._iteratorCache;
-	      var iterations = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        if (iterations >= cache.length) {
-	          var step = iterator.next();
-	          if (step.done) {
-	            return step;
-	          }
-	          cache[iterations] = step.value;
-	        }
-	        return iteratorValue(type, iterations, cache[iterations++]);
-	      });
-	    };
-
-
-
-
-	  // # pragma Helper functions
-
-	  function isSeq(maybeSeq) {
-	    return !!(maybeSeq && maybeSeq[IS_SEQ_SENTINEL]);
-	  }
-
-	  var EMPTY_SEQ;
-
-	  function emptySequence() {
-	    return EMPTY_SEQ || (EMPTY_SEQ = new ArraySeq([]));
-	  }
-
-	  function keyedSeqFromValue(value) {
-	    var seq =
-	      Array.isArray(value) ? new ArraySeq(value).fromEntrySeq() :
-	      isIterator(value) ? new IteratorSeq(value).fromEntrySeq() :
-	      hasIterator(value) ? new IterableSeq(value).fromEntrySeq() :
-	      typeof value === 'object' ? new ObjectSeq(value) :
-	      undefined;
-	    if (!seq) {
-	      throw new TypeError(
-	        'Expected Array or iterable object of [k, v] entries, '+
-	        'or keyed object: ' + value
-	      );
-	    }
-	    return seq;
-	  }
-
-	  function indexedSeqFromValue(value) {
-	    var seq = maybeIndexedSeqFromValue(value);
-	    if (!seq) {
-	      throw new TypeError(
-	        'Expected Array or iterable object of values: ' + value
-	      );
-	    }
-	    return seq;
-	  }
-
-	  function seqFromValue(value) {
-	    var seq = maybeIndexedSeqFromValue(value) ||
-	      (typeof value === 'object' && new ObjectSeq(value));
-	    if (!seq) {
-	      throw new TypeError(
-	        'Expected Array or iterable object of values, or keyed object: ' + value
-	      );
-	    }
-	    return seq;
-	  }
-
-	  function maybeIndexedSeqFromValue(value) {
-	    return (
-	      isArrayLike(value) ? new ArraySeq(value) :
-	      isIterator(value) ? new IteratorSeq(value) :
-	      hasIterator(value) ? new IterableSeq(value) :
-	      undefined
-	    );
-	  }
-
-	  function seqIterate(seq, fn, reverse, useKeys) {
-	    var cache = seq._cache;
-	    if (cache) {
-	      var maxIndex = cache.length - 1;
-	      for (var ii = 0; ii <= maxIndex; ii++) {
-	        var entry = cache[reverse ? maxIndex - ii : ii];
-	        if (fn(entry[1], useKeys ? entry[0] : ii, seq) === false) {
-	          return ii + 1;
-	        }
-	      }
-	      return ii;
-	    }
-	    return seq.__iterateUncached(fn, reverse);
-	  }
-
-	  function seqIterator(seq, type, reverse, useKeys) {
-	    var cache = seq._cache;
-	    if (cache) {
-	      var maxIndex = cache.length - 1;
-	      var ii = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        var entry = cache[reverse ? maxIndex - ii : ii];
-	        return ii++ > maxIndex ?
-	          iteratorDone() :
-	          iteratorValue(type, useKeys ? entry[0] : ii - 1, entry[1]);
-	      });
-	    }
-	    return seq.__iteratorUncached(type, reverse);
-	  }
-
-	  createClass(Collection, Iterable);
-	    function Collection() {
-	      throw TypeError('Abstract');
-	    }
-
-
-	  createClass(KeyedCollection, Collection);function KeyedCollection() {}
-
-	  createClass(IndexedCollection, Collection);function IndexedCollection() {}
-
-	  createClass(SetCollection, Collection);function SetCollection() {}
-
-
-	  Collection.Keyed = KeyedCollection;
-	  Collection.Indexed = IndexedCollection;
-	  Collection.Set = SetCollection;
-
-	  /**
-	   * An extension of the "same-value" algorithm as [described for use by ES6 Map
-	   * and Set](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map#Key_equality)
-	   *
-	   * NaN is considered the same as NaN, however -0 and 0 are considered the same
-	   * value, which is different from the algorithm described by
-	   * [`Object.is`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is).
-	   *
-	   * This is extended further to allow Objects to describe the values they
-	   * represent, by way of `valueOf` or `equals` (and `hashCode`).
-	   *
-	   * Note: because of this extension, the key equality of Immutable.Map and the
-	   * value equality of Immutable.Set will differ from ES6 Map and Set.
-	   *
-	   * ### Defining custom values
-	   *
-	   * The easiest way to describe the value an object represents is by implementing
-	   * `valueOf`. For example, `Date` represents a value by returning a unix
-	   * timestamp for `valueOf`:
-	   *
-	   *     var date1 = new Date(1234567890000); // Fri Feb 13 2009 ...
-	   *     var date2 = new Date(1234567890000);
-	   *     date1.valueOf(); // 1234567890000
-	   *     assert( date1 !== date2 );
-	   *     assert( Immutable.is( date1, date2 ) );
-	   *
-	   * Note: overriding `valueOf` may have other implications if you use this object
-	   * where JavaScript expects a primitive, such as implicit string coercion.
-	   *
-	   * For more complex types, especially collections, implementing `valueOf` may
-	   * not be performant. An alternative is to implement `equals` and `hashCode`.
-	   *
-	   * `equals` takes another object, presumably of similar type, and returns true
-	   * if the it is equal. Equality is symmetrical, so the same result should be
-	   * returned if this and the argument are flipped.
-	   *
-	   *     assert( a.equals(b) === b.equals(a) );
-	   *
-	   * `hashCode` returns a 32bit integer number representing the object which will
-	   * be used to determine how to store the value object in a Map or Set. You must
-	   * provide both or neither methods, one must not exist without the other.
-	   *
-	   * Also, an important relationship between these methods must be upheld: if two
-	   * values are equal, they *must* return the same hashCode. If the values are not
-	   * equal, they might have the same hashCode; this is called a hash collision,
-	   * and while undesirable for performance reasons, it is acceptable.
-	   *
-	   *     if (a.equals(b)) {
-	   *       assert( a.hashCode() === b.hashCode() );
-	   *     }
-	   *
-	   * All Immutable collections implement `equals` and `hashCode`.
-	   *
-	   */
-	  function is(valueA, valueB) {
-	    if (valueA === valueB || (valueA !== valueA && valueB !== valueB)) {
-	      return true;
-	    }
-	    if (!valueA || !valueB) {
+	  var key;
+	  // Test for A's keys different from B.
+	  for (key in objA) {
+	    if (objA.hasOwnProperty(key) &&
+	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
 	      return false;
 	    }
-	    if (typeof valueA.valueOf === 'function' &&
-	        typeof valueB.valueOf === 'function') {
-	      valueA = valueA.valueOf();
-	      valueB = valueB.valueOf();
-	      if (valueA === valueB || (valueA !== valueA && valueB !== valueB)) {
-	        return true;
-	      }
-	      if (!valueA || !valueB) {
-	        return false;
-	      }
-	    }
-	    if (typeof valueA.equals === 'function' &&
-	        typeof valueB.equals === 'function' &&
-	        valueA.equals(valueB)) {
-	      return true;
-	    }
-	    return false;
 	  }
-
-	  function fromJS(json, converter) {
-	    return converter ?
-	      fromJSWith(converter, json, '', {'': json}) :
-	      fromJSDefault(json);
-	  }
-
-	  function fromJSWith(converter, json, key, parentJSON) {
-	    if (Array.isArray(json)) {
-	      return converter.call(parentJSON, key, IndexedSeq(json).map(function(v, k)  {return fromJSWith(converter, v, k, json)}));
-	    }
-	    if (isPlainObj(json)) {
-	      return converter.call(parentJSON, key, KeyedSeq(json).map(function(v, k)  {return fromJSWith(converter, v, k, json)}));
-	    }
-	    return json;
-	  }
-
-	  function fromJSDefault(json) {
-	    if (Array.isArray(json)) {
-	      return IndexedSeq(json).map(fromJSDefault).toList();
-	    }
-	    if (isPlainObj(json)) {
-	      return KeyedSeq(json).map(fromJSDefault).toMap();
-	    }
-	    return json;
-	  }
-
-	  function isPlainObj(value) {
-	    return value && (value.constructor === Object || value.constructor === undefined);
-	  }
-
-	  var src_Math__imul =
-	    typeof Math.imul === 'function' && Math.imul(0xffffffff, 2) === -2 ?
-	    Math.imul :
-	    function imul(a, b) {
-	      a = a | 0; // int
-	      b = b | 0; // int
-	      var c = a & 0xffff;
-	      var d = b & 0xffff;
-	      // Shift by 0 fixes the sign on the high part.
-	      return (c * d) + ((((a >>> 16) * d + c * (b >>> 16)) << 16) >>> 0) | 0; // int
-	    };
-
-	  // v8 has an optimization for storing 31-bit signed numbers.
-	  // Values which have either 00 or 11 as the high order bits qualify.
-	  // This function drops the highest order bit in a signed number, maintaining
-	  // the sign bit.
-	  function smi(i32) {
-	    return ((i32 >>> 1) & 0x40000000) | (i32 & 0xBFFFFFFF);
-	  }
-
-	  function hash(o) {
-	    if (o === false || o === null || o === undefined) {
-	      return 0;
-	    }
-	    if (typeof o.valueOf === 'function') {
-	      o = o.valueOf();
-	      if (o === false || o === null || o === undefined) {
-	        return 0;
-	      }
-	    }
-	    if (o === true) {
-	      return 1;
-	    }
-	    var type = typeof o;
-	    if (type === 'number') {
-	      var h = o | 0;
-	      if (h !== o) {
-	        h ^= o * 0xFFFFFFFF;
-	      }
-	      while (o > 0xFFFFFFFF) {
-	        o /= 0xFFFFFFFF;
-	        h ^= o;
-	      }
-	      return smi(h);
-	    }
-	    if (type === 'string') {
-	      return o.length > STRING_HASH_CACHE_MIN_STRLEN ? cachedHashString(o) : hashString(o);
-	    }
-	    if (typeof o.hashCode === 'function') {
-	      return o.hashCode();
-	    }
-	    return hashJSObj(o);
-	  }
-
-	  function cachedHashString(string) {
-	    var hash = stringHashCache[string];
-	    if (hash === undefined) {
-	      hash = hashString(string);
-	      if (STRING_HASH_CACHE_SIZE === STRING_HASH_CACHE_MAX_SIZE) {
-	        STRING_HASH_CACHE_SIZE = 0;
-	        stringHashCache = {};
-	      }
-	      STRING_HASH_CACHE_SIZE++;
-	      stringHashCache[string] = hash;
-	    }
-	    return hash;
-	  }
-
-	  // http://jsperf.com/hashing-strings
-	  function hashString(string) {
-	    // This is the hash from JVM
-	    // The hash code for a string is computed as
-	    // s[0] * 31 ^ (n - 1) + s[1] * 31 ^ (n - 2) + ... + s[n - 1],
-	    // where s[i] is the ith character of the string and n is the length of
-	    // the string. We "mod" the result to make it between 0 (inclusive) and 2^31
-	    // (exclusive) by dropping high bits.
-	    var hash = 0;
-	    for (var ii = 0; ii < string.length; ii++) {
-	      hash = 31 * hash + string.charCodeAt(ii) | 0;
-	    }
-	    return smi(hash);
-	  }
-
-	  function hashJSObj(obj) {
-	    var hash;
-	    if (usingWeakMap) {
-	      hash = weakMap.get(obj);
-	      if (hash !== undefined) {
-	        return hash;
-	      }
-	    }
-
-	    hash = obj[UID_HASH_KEY];
-	    if (hash !== undefined) {
-	      return hash;
-	    }
-
-	    if (!canDefineProperty) {
-	      hash = obj.propertyIsEnumerable && obj.propertyIsEnumerable[UID_HASH_KEY];
-	      if (hash !== undefined) {
-	        return hash;
-	      }
-
-	      hash = getIENodeHash(obj);
-	      if (hash !== undefined) {
-	        return hash;
-	      }
-	    }
-
-	    hash = ++objHashUID;
-	    if (objHashUID & 0x40000000) {
-	      objHashUID = 0;
-	    }
-
-	    if (usingWeakMap) {
-	      weakMap.set(obj, hash);
-	    } else if (isExtensible !== undefined && isExtensible(obj) === false) {
-	      throw new Error('Non-extensible objects are not allowed as keys.');
-	    } else if (canDefineProperty) {
-	      Object.defineProperty(obj, UID_HASH_KEY, {
-	        'enumerable': false,
-	        'configurable': false,
-	        'writable': false,
-	        'value': hash
-	      });
-	    } else if (obj.propertyIsEnumerable !== undefined &&
-	               obj.propertyIsEnumerable === obj.constructor.prototype.propertyIsEnumerable) {
-	      // Since we can't define a non-enumerable property on the object
-	      // we'll hijack one of the less-used non-enumerable properties to
-	      // save our hash on it. Since this is a function it will not show up in
-	      // `JSON.stringify` which is what we want.
-	      obj.propertyIsEnumerable = function() {
-	        return this.constructor.prototype.propertyIsEnumerable.apply(this, arguments);
-	      };
-	      obj.propertyIsEnumerable[UID_HASH_KEY] = hash;
-	    } else if (obj.nodeType !== undefined) {
-	      // At this point we couldn't get the IE `uniqueID` to use as a hash
-	      // and we couldn't use a non-enumerable property to exploit the
-	      // dontEnum bug so we simply add the `UID_HASH_KEY` on the node
-	      // itself.
-	      obj[UID_HASH_KEY] = hash;
-	    } else {
-	      throw new Error('Unable to set a non-enumerable property on object.');
-	    }
-
-	    return hash;
-	  }
-
-	  // Get references to ES5 object methods.
-	  var isExtensible = Object.isExtensible;
-
-	  // True if Object.defineProperty works as expected. IE8 fails this test.
-	  var canDefineProperty = (function() {
-	    try {
-	      Object.defineProperty({}, '@', {});
-	      return true;
-	    } catch (e) {
+	  // Test for B's keys missing from A.
+	  for (key in objB) {
+	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
 	      return false;
 	    }
-	  }());
-
-	  // IE has a `uniqueID` property on DOM nodes. We can construct the hash from it
-	  // and avoid memory leaks from the IE cloneNode bug.
-	  function getIENodeHash(node) {
-	    if (node && node.nodeType > 0) {
-	      switch (node.nodeType) {
-	        case 1: // Element
-	          return node.uniqueID;
-	        case 9: // Document
-	          return node.documentElement && node.documentElement.uniqueID;
-	      }
-	    }
 	  }
-
-	  // If possible, use a WeakMap.
-	  var usingWeakMap = typeof WeakMap === 'function';
-	  var weakMap;
-	  if (usingWeakMap) {
-	    weakMap = new WeakMap();
-	  }
-
-	  var objHashUID = 0;
-
-	  var UID_HASH_KEY = '__immutablehash__';
-	  if (typeof Symbol === 'function') {
-	    UID_HASH_KEY = Symbol(UID_HASH_KEY);
-	  }
-
-	  var STRING_HASH_CACHE_MIN_STRLEN = 16;
-	  var STRING_HASH_CACHE_MAX_SIZE = 255;
-	  var STRING_HASH_CACHE_SIZE = 0;
-	  var stringHashCache = {};
-
-	  function invariant(condition, error) {
-	    if (!condition) throw new Error(error);
-	  }
-
-	  function assertNotInfinite(size) {
-	    invariant(
-	      size !== Infinity,
-	      'Cannot perform this action with an infinite size.'
-	    );
-	  }
-
-	  createClass(ToKeyedSequence, KeyedSeq);
-	    function ToKeyedSequence(indexed, useKeys) {
-	      this._iter = indexed;
-	      this._useKeys = useKeys;
-	      this.size = indexed.size;
-	    }
-
-	    ToKeyedSequence.prototype.get = function(key, notSetValue) {
-	      return this._iter.get(key, notSetValue);
-	    };
-
-	    ToKeyedSequence.prototype.has = function(key) {
-	      return this._iter.has(key);
-	    };
-
-	    ToKeyedSequence.prototype.valueSeq = function() {
-	      return this._iter.valueSeq();
-	    };
-
-	    ToKeyedSequence.prototype.reverse = function() {var this$0 = this;
-	      var reversedSequence = reverseFactory(this, true);
-	      if (!this._useKeys) {
-	        reversedSequence.valueSeq = function()  {return this$0._iter.toSeq().reverse()};
-	      }
-	      return reversedSequence;
-	    };
-
-	    ToKeyedSequence.prototype.map = function(mapper, context) {var this$0 = this;
-	      var mappedSequence = mapFactory(this, mapper, context);
-	      if (!this._useKeys) {
-	        mappedSequence.valueSeq = function()  {return this$0._iter.toSeq().map(mapper, context)};
-	      }
-	      return mappedSequence;
-	    };
-
-	    ToKeyedSequence.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      var ii;
-	      return this._iter.__iterate(
-	        this._useKeys ?
-	          function(v, k)  {return fn(v, k, this$0)} :
-	          ((ii = reverse ? resolveSize(this) : 0),
-	            function(v ) {return fn(v, reverse ? --ii : ii++, this$0)}),
-	        reverse
-	      );
-	    };
-
-	    ToKeyedSequence.prototype.__iterator = function(type, reverse) {
-	      if (this._useKeys) {
-	        return this._iter.__iterator(type, reverse);
-	      }
-	      var iterator = this._iter.__iterator(ITERATE_VALUES, reverse);
-	      var ii = reverse ? resolveSize(this) : 0;
-	      return new src_Iterator__Iterator(function()  {
-	        var step = iterator.next();
-	        return step.done ? step :
-	          iteratorValue(type, reverse ? --ii : ii++, step.value, step);
-	      });
-	    };
-
-	  ToKeyedSequence.prototype[IS_ORDERED_SENTINEL] = true;
-
-
-	  createClass(ToIndexedSequence, IndexedSeq);
-	    function ToIndexedSequence(iter) {
-	      this._iter = iter;
-	      this.size = iter.size;
-	    }
-
-	    ToIndexedSequence.prototype.includes = function(value) {
-	      return this._iter.includes(value);
-	    };
-
-	    ToIndexedSequence.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      var iterations = 0;
-	      return this._iter.__iterate(function(v ) {return fn(v, iterations++, this$0)}, reverse);
-	    };
-
-	    ToIndexedSequence.prototype.__iterator = function(type, reverse) {
-	      var iterator = this._iter.__iterator(ITERATE_VALUES, reverse);
-	      var iterations = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        var step = iterator.next();
-	        return step.done ? step :
-	          iteratorValue(type, iterations++, step.value, step)
-	      });
-	    };
-
-
-
-	  createClass(ToSetSequence, SetSeq);
-	    function ToSetSequence(iter) {
-	      this._iter = iter;
-	      this.size = iter.size;
-	    }
-
-	    ToSetSequence.prototype.has = function(key) {
-	      return this._iter.includes(key);
-	    };
-
-	    ToSetSequence.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      return this._iter.__iterate(function(v ) {return fn(v, v, this$0)}, reverse);
-	    };
-
-	    ToSetSequence.prototype.__iterator = function(type, reverse) {
-	      var iterator = this._iter.__iterator(ITERATE_VALUES, reverse);
-	      return new src_Iterator__Iterator(function()  {
-	        var step = iterator.next();
-	        return step.done ? step :
-	          iteratorValue(type, step.value, step.value, step);
-	      });
-	    };
-
-
-
-	  createClass(FromEntriesSequence, KeyedSeq);
-	    function FromEntriesSequence(entries) {
-	      this._iter = entries;
-	      this.size = entries.size;
-	    }
-
-	    FromEntriesSequence.prototype.entrySeq = function() {
-	      return this._iter.toSeq();
-	    };
-
-	    FromEntriesSequence.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      return this._iter.__iterate(function(entry ) {
-	        // Check if entry exists first so array access doesn't throw for holes
-	        // in the parent iteration.
-	        if (entry) {
-	          validateEntry(entry);
-	          var indexedIterable = isIterable(entry);
-	          return fn(
-	            indexedIterable ? entry.get(1) : entry[1],
-	            indexedIterable ? entry.get(0) : entry[0],
-	            this$0
-	          );
-	        }
-	      }, reverse);
-	    };
-
-	    FromEntriesSequence.prototype.__iterator = function(type, reverse) {
-	      var iterator = this._iter.__iterator(ITERATE_VALUES, reverse);
-	      return new src_Iterator__Iterator(function()  {
-	        while (true) {
-	          var step = iterator.next();
-	          if (step.done) {
-	            return step;
-	          }
-	          var entry = step.value;
-	          // Check if entry exists first so array access doesn't throw for holes
-	          // in the parent iteration.
-	          if (entry) {
-	            validateEntry(entry);
-	            var indexedIterable = isIterable(entry);
-	            return iteratorValue(
-	              type,
-	              indexedIterable ? entry.get(0) : entry[0],
-	              indexedIterable ? entry.get(1) : entry[1],
-	              step
-	            );
-	          }
-	        }
-	      });
-	    };
-
-
-	  ToIndexedSequence.prototype.cacheResult =
-	  ToKeyedSequence.prototype.cacheResult =
-	  ToSetSequence.prototype.cacheResult =
-	  FromEntriesSequence.prototype.cacheResult =
-	    cacheResultThrough;
-
-
-	  function flipFactory(iterable) {
-	    var flipSequence = makeSequence(iterable);
-	    flipSequence._iter = iterable;
-	    flipSequence.size = iterable.size;
-	    flipSequence.flip = function()  {return iterable};
-	    flipSequence.reverse = function () {
-	      var reversedSequence = iterable.reverse.apply(this); // super.reverse()
-	      reversedSequence.flip = function()  {return iterable.reverse()};
-	      return reversedSequence;
-	    };
-	    flipSequence.has = function(key ) {return iterable.includes(key)};
-	    flipSequence.includes = function(key ) {return iterable.has(key)};
-	    flipSequence.cacheResult = cacheResultThrough;
-	    flipSequence.__iterateUncached = function (fn, reverse) {var this$0 = this;
-	      return iterable.__iterate(function(v, k)  {return fn(k, v, this$0) !== false}, reverse);
-	    }
-	    flipSequence.__iteratorUncached = function(type, reverse) {
-	      if (type === ITERATE_ENTRIES) {
-	        var iterator = iterable.__iterator(type, reverse);
-	        return new src_Iterator__Iterator(function()  {
-	          var step = iterator.next();
-	          if (!step.done) {
-	            var k = step.value[0];
-	            step.value[0] = step.value[1];
-	            step.value[1] = k;
-	          }
-	          return step;
-	        });
-	      }
-	      return iterable.__iterator(
-	        type === ITERATE_VALUES ? ITERATE_KEYS : ITERATE_VALUES,
-	        reverse
-	      );
-	    }
-	    return flipSequence;
-	  }
-
-
-	  function mapFactory(iterable, mapper, context) {
-	    var mappedSequence = makeSequence(iterable);
-	    mappedSequence.size = iterable.size;
-	    mappedSequence.has = function(key ) {return iterable.has(key)};
-	    mappedSequence.get = function(key, notSetValue)  {
-	      var v = iterable.get(key, NOT_SET);
-	      return v === NOT_SET ?
-	        notSetValue :
-	        mapper.call(context, v, key, iterable);
-	    };
-	    mappedSequence.__iterateUncached = function (fn, reverse) {var this$0 = this;
-	      return iterable.__iterate(
-	        function(v, k, c)  {return fn(mapper.call(context, v, k, c), k, this$0) !== false},
-	        reverse
-	      );
-	    }
-	    mappedSequence.__iteratorUncached = function (type, reverse) {
-	      var iterator = iterable.__iterator(ITERATE_ENTRIES, reverse);
-	      return new src_Iterator__Iterator(function()  {
-	        var step = iterator.next();
-	        if (step.done) {
-	          return step;
-	        }
-	        var entry = step.value;
-	        var key = entry[0];
-	        return iteratorValue(
-	          type,
-	          key,
-	          mapper.call(context, entry[1], key, iterable),
-	          step
-	        );
-	      });
-	    }
-	    return mappedSequence;
-	  }
-
-
-	  function reverseFactory(iterable, useKeys) {
-	    var reversedSequence = makeSequence(iterable);
-	    reversedSequence._iter = iterable;
-	    reversedSequence.size = iterable.size;
-	    reversedSequence.reverse = function()  {return iterable};
-	    if (iterable.flip) {
-	      reversedSequence.flip = function () {
-	        var flipSequence = flipFactory(iterable);
-	        flipSequence.reverse = function()  {return iterable.flip()};
-	        return flipSequence;
-	      };
-	    }
-	    reversedSequence.get = function(key, notSetValue) 
-	      {return iterable.get(useKeys ? key : -1 - key, notSetValue)};
-	    reversedSequence.has = function(key )
-	      {return iterable.has(useKeys ? key : -1 - key)};
-	    reversedSequence.includes = function(value ) {return iterable.includes(value)};
-	    reversedSequence.cacheResult = cacheResultThrough;
-	    reversedSequence.__iterate = function (fn, reverse) {var this$0 = this;
-	      return iterable.__iterate(function(v, k)  {return fn(v, k, this$0)}, !reverse);
-	    };
-	    reversedSequence.__iterator =
-	      function(type, reverse)  {return iterable.__iterator(type, !reverse)};
-	    return reversedSequence;
-	  }
-
-
-	  function filterFactory(iterable, predicate, context, useKeys) {
-	    var filterSequence = makeSequence(iterable);
-	    if (useKeys) {
-	      filterSequence.has = function(key ) {
-	        var v = iterable.get(key, NOT_SET);
-	        return v !== NOT_SET && !!predicate.call(context, v, key, iterable);
-	      };
-	      filterSequence.get = function(key, notSetValue)  {
-	        var v = iterable.get(key, NOT_SET);
-	        return v !== NOT_SET && predicate.call(context, v, key, iterable) ?
-	          v : notSetValue;
-	      };
-	    }
-	    filterSequence.__iterateUncached = function (fn, reverse) {var this$0 = this;
-	      var iterations = 0;
-	      iterable.__iterate(function(v, k, c)  {
-	        if (predicate.call(context, v, k, c)) {
-	          iterations++;
-	          return fn(v, useKeys ? k : iterations - 1, this$0);
-	        }
-	      }, reverse);
-	      return iterations;
-	    };
-	    filterSequence.__iteratorUncached = function (type, reverse) {
-	      var iterator = iterable.__iterator(ITERATE_ENTRIES, reverse);
-	      var iterations = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        while (true) {
-	          var step = iterator.next();
-	          if (step.done) {
-	            return step;
-	          }
-	          var entry = step.value;
-	          var key = entry[0];
-	          var value = entry[1];
-	          if (predicate.call(context, value, key, iterable)) {
-	            return iteratorValue(type, useKeys ? key : iterations++, value, step);
-	          }
-	        }
-	      });
-	    }
-	    return filterSequence;
-	  }
-
-
-	  function countByFactory(iterable, grouper, context) {
-	    var groups = src_Map__Map().asMutable();
-	    iterable.__iterate(function(v, k)  {
-	      groups.update(
-	        grouper.call(context, v, k, iterable),
-	        0,
-	        function(a ) {return a + 1}
-	      );
-	    });
-	    return groups.asImmutable();
-	  }
-
-
-	  function groupByFactory(iterable, grouper, context) {
-	    var isKeyedIter = isKeyed(iterable);
-	    var groups = (isOrdered(iterable) ? OrderedMap() : src_Map__Map()).asMutable();
-	    iterable.__iterate(function(v, k)  {
-	      groups.update(
-	        grouper.call(context, v, k, iterable),
-	        function(a ) {return (a = a || [], a.push(isKeyedIter ? [k, v] : v), a)}
-	      );
-	    });
-	    var coerce = iterableClass(iterable);
-	    return groups.map(function(arr ) {return reify(iterable, coerce(arr))});
-	  }
-
-
-	  function sliceFactory(iterable, begin, end, useKeys) {
-	    var originalSize = iterable.size;
-
-	    if (wholeSlice(begin, end, originalSize)) {
-	      return iterable;
-	    }
-
-	    var resolvedBegin = resolveBegin(begin, originalSize);
-	    var resolvedEnd = resolveEnd(end, originalSize);
-
-	    // begin or end will be NaN if they were provided as negative numbers and
-	    // this iterable's size is unknown. In that case, cache first so there is
-	    // a known size.
-	    if (resolvedBegin !== resolvedBegin || resolvedEnd !== resolvedEnd) {
-	      return sliceFactory(iterable.toSeq().cacheResult(), begin, end, useKeys);
-	    }
-
-	    var sliceSize = resolvedEnd - resolvedBegin;
-	    if (sliceSize < 0) {
-	      sliceSize = 0;
-	    }
-
-	    var sliceSeq = makeSequence(iterable);
-
-	    sliceSeq.size = sliceSize === 0 ? sliceSize : iterable.size && sliceSize || undefined;
-
-	    if (!useKeys && isSeq(iterable) && sliceSize >= 0) {
-	      sliceSeq.get = function (index, notSetValue) {
-	        index = wrapIndex(this, index);
-	        return index >= 0 && index < sliceSize ?
-	          iterable.get(index + resolvedBegin, notSetValue) :
-	          notSetValue;
-	      }
-	    }
-
-	    sliceSeq.__iterateUncached = function(fn, reverse) {var this$0 = this;
-	      if (sliceSize === 0) {
-	        return 0;
-	      }
-	      if (reverse) {
-	        return this.cacheResult().__iterate(fn, reverse);
-	      }
-	      var skipped = 0;
-	      var isSkipping = true;
-	      var iterations = 0;
-	      iterable.__iterate(function(v, k)  {
-	        if (!(isSkipping && (isSkipping = skipped++ < resolvedBegin))) {
-	          iterations++;
-	          return fn(v, useKeys ? k : iterations - 1, this$0) !== false &&
-	                 iterations !== sliceSize;
-	        }
-	      });
-	      return iterations;
-	    };
-
-	    sliceSeq.__iteratorUncached = function(type, reverse) {
-	      if (sliceSize && reverse) {
-	        return this.cacheResult().__iterator(type, reverse);
-	      }
-	      // Don't bother instantiating parent iterator if taking 0.
-	      var iterator = sliceSize && iterable.__iterator(type, reverse);
-	      var skipped = 0;
-	      var iterations = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        while (skipped++ < resolvedBegin) {
-	          iterator.next();
-	        }
-	        if (++iterations > sliceSize) {
-	          return iteratorDone();
-	        }
-	        var step = iterator.next();
-	        if (useKeys || type === ITERATE_VALUES) {
-	          return step;
-	        } else if (type === ITERATE_KEYS) {
-	          return iteratorValue(type, iterations - 1, undefined, step);
-	        } else {
-	          return iteratorValue(type, iterations - 1, step.value[1], step);
-	        }
-	      });
-	    }
-
-	    return sliceSeq;
-	  }
-
-
-	  function takeWhileFactory(iterable, predicate, context) {
-	    var takeSequence = makeSequence(iterable);
-	    takeSequence.__iterateUncached = function(fn, reverse) {var this$0 = this;
-	      if (reverse) {
-	        return this.cacheResult().__iterate(fn, reverse);
-	      }
-	      var iterations = 0;
-	      iterable.__iterate(function(v, k, c) 
-	        {return predicate.call(context, v, k, c) && ++iterations && fn(v, k, this$0)}
-	      );
-	      return iterations;
-	    };
-	    takeSequence.__iteratorUncached = function(type, reverse) {var this$0 = this;
-	      if (reverse) {
-	        return this.cacheResult().__iterator(type, reverse);
-	      }
-	      var iterator = iterable.__iterator(ITERATE_ENTRIES, reverse);
-	      var iterating = true;
-	      return new src_Iterator__Iterator(function()  {
-	        if (!iterating) {
-	          return iteratorDone();
-	        }
-	        var step = iterator.next();
-	        if (step.done) {
-	          return step;
-	        }
-	        var entry = step.value;
-	        var k = entry[0];
-	        var v = entry[1];
-	        if (!predicate.call(context, v, k, this$0)) {
-	          iterating = false;
-	          return iteratorDone();
-	        }
-	        return type === ITERATE_ENTRIES ? step :
-	          iteratorValue(type, k, v, step);
-	      });
-	    };
-	    return takeSequence;
-	  }
-
-
-	  function skipWhileFactory(iterable, predicate, context, useKeys) {
-	    var skipSequence = makeSequence(iterable);
-	    skipSequence.__iterateUncached = function (fn, reverse) {var this$0 = this;
-	      if (reverse) {
-	        return this.cacheResult().__iterate(fn, reverse);
-	      }
-	      var isSkipping = true;
-	      var iterations = 0;
-	      iterable.__iterate(function(v, k, c)  {
-	        if (!(isSkipping && (isSkipping = predicate.call(context, v, k, c)))) {
-	          iterations++;
-	          return fn(v, useKeys ? k : iterations - 1, this$0);
-	        }
-	      });
-	      return iterations;
-	    };
-	    skipSequence.__iteratorUncached = function(type, reverse) {var this$0 = this;
-	      if (reverse) {
-	        return this.cacheResult().__iterator(type, reverse);
-	      }
-	      var iterator = iterable.__iterator(ITERATE_ENTRIES, reverse);
-	      var skipping = true;
-	      var iterations = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        var step, k, v;
-	        do {
-	          step = iterator.next();
-	          if (step.done) {
-	            if (useKeys || type === ITERATE_VALUES) {
-	              return step;
-	            } else if (type === ITERATE_KEYS) {
-	              return iteratorValue(type, iterations++, undefined, step);
-	            } else {
-	              return iteratorValue(type, iterations++, step.value[1], step);
-	            }
-	          }
-	          var entry = step.value;
-	          k = entry[0];
-	          v = entry[1];
-	          skipping && (skipping = predicate.call(context, v, k, this$0));
-	        } while (skipping);
-	        return type === ITERATE_ENTRIES ? step :
-	          iteratorValue(type, k, v, step);
-	      });
-	    };
-	    return skipSequence;
-	  }
-
-
-	  function concatFactory(iterable, values) {
-	    var isKeyedIterable = isKeyed(iterable);
-	    var iters = [iterable].concat(values).map(function(v ) {
-	      if (!isIterable(v)) {
-	        v = isKeyedIterable ?
-	          keyedSeqFromValue(v) :
-	          indexedSeqFromValue(Array.isArray(v) ? v : [v]);
-	      } else if (isKeyedIterable) {
-	        v = KeyedIterable(v);
-	      }
-	      return v;
-	    }).filter(function(v ) {return v.size !== 0});
-
-	    if (iters.length === 0) {
-	      return iterable;
-	    }
-
-	    if (iters.length === 1) {
-	      var singleton = iters[0];
-	      if (singleton === iterable ||
-	          isKeyedIterable && isKeyed(singleton) ||
-	          isIndexed(iterable) && isIndexed(singleton)) {
-	        return singleton;
-	      }
-	    }
-
-	    var concatSeq = new ArraySeq(iters);
-	    if (isKeyedIterable) {
-	      concatSeq = concatSeq.toKeyedSeq();
-	    } else if (!isIndexed(iterable)) {
-	      concatSeq = concatSeq.toSetSeq();
-	    }
-	    concatSeq = concatSeq.flatten(true);
-	    concatSeq.size = iters.reduce(
-	      function(sum, seq)  {
-	        if (sum !== undefined) {
-	          var size = seq.size;
-	          if (size !== undefined) {
-	            return sum + size;
-	          }
-	        }
-	      },
-	      0
-	    );
-	    return concatSeq;
-	  }
-
-
-	  function flattenFactory(iterable, depth, useKeys) {
-	    var flatSequence = makeSequence(iterable);
-	    flatSequence.__iterateUncached = function(fn, reverse) {
-	      var iterations = 0;
-	      var stopped = false;
-	      function flatDeep(iter, currentDepth) {var this$0 = this;
-	        iter.__iterate(function(v, k)  {
-	          if ((!depth || currentDepth < depth) && isIterable(v)) {
-	            flatDeep(v, currentDepth + 1);
-	          } else if (fn(v, useKeys ? k : iterations++, this$0) === false) {
-	            stopped = true;
-	          }
-	          return !stopped;
-	        }, reverse);
-	      }
-	      flatDeep(iterable, 0);
-	      return iterations;
-	    }
-	    flatSequence.__iteratorUncached = function(type, reverse) {
-	      var iterator = iterable.__iterator(type, reverse);
-	      var stack = [];
-	      var iterations = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        while (iterator) {
-	          var step = iterator.next();
-	          if (step.done !== false) {
-	            iterator = stack.pop();
-	            continue;
-	          }
-	          var v = step.value;
-	          if (type === ITERATE_ENTRIES) {
-	            v = v[1];
-	          }
-	          if ((!depth || stack.length < depth) && isIterable(v)) {
-	            stack.push(iterator);
-	            iterator = v.__iterator(type, reverse);
-	          } else {
-	            return useKeys ? step : iteratorValue(type, iterations++, v, step);
-	          }
-	        }
-	        return iteratorDone();
-	      });
-	    }
-	    return flatSequence;
-	  }
-
-
-	  function flatMapFactory(iterable, mapper, context) {
-	    var coerce = iterableClass(iterable);
-	    return iterable.toSeq().map(
-	      function(v, k)  {return coerce(mapper.call(context, v, k, iterable))}
-	    ).flatten(true);
-	  }
-
-
-	  function interposeFactory(iterable, separator) {
-	    var interposedSequence = makeSequence(iterable);
-	    interposedSequence.size = iterable.size && iterable.size * 2 -1;
-	    interposedSequence.__iterateUncached = function(fn, reverse) {var this$0 = this;
-	      var iterations = 0;
-	      iterable.__iterate(function(v, k) 
-	        {return (!iterations || fn(separator, iterations++, this$0) !== false) &&
-	        fn(v, iterations++, this$0) !== false},
-	        reverse
-	      );
-	      return iterations;
-	    };
-	    interposedSequence.__iteratorUncached = function(type, reverse) {
-	      var iterator = iterable.__iterator(ITERATE_VALUES, reverse);
-	      var iterations = 0;
-	      var step;
-	      return new src_Iterator__Iterator(function()  {
-	        if (!step || iterations % 2) {
-	          step = iterator.next();
-	          if (step.done) {
-	            return step;
-	          }
-	        }
-	        return iterations % 2 ?
-	          iteratorValue(type, iterations++, separator) :
-	          iteratorValue(type, iterations++, step.value, step);
-	      });
-	    };
-	    return interposedSequence;
-	  }
-
-
-	  function sortFactory(iterable, comparator, mapper) {
-	    if (!comparator) {
-	      comparator = defaultComparator;
-	    }
-	    var isKeyedIterable = isKeyed(iterable);
-	    var index = 0;
-	    var entries = iterable.toSeq().map(
-	      function(v, k)  {return [k, v, index++, mapper ? mapper(v, k, iterable) : v]}
-	    ).toArray();
-	    entries.sort(function(a, b)  {return comparator(a[3], b[3]) || a[2] - b[2]}).forEach(
-	      isKeyedIterable ?
-	      function(v, i)  { entries[i].length = 2; } :
-	      function(v, i)  { entries[i] = v[1]; }
-	    );
-	    return isKeyedIterable ? KeyedSeq(entries) :
-	      isIndexed(iterable) ? IndexedSeq(entries) :
-	      SetSeq(entries);
-	  }
-
-
-	  function maxFactory(iterable, comparator, mapper) {
-	    if (!comparator) {
-	      comparator = defaultComparator;
-	    }
-	    if (mapper) {
-	      var entry = iterable.toSeq()
-	        .map(function(v, k)  {return [v, mapper(v, k, iterable)]})
-	        .reduce(function(a, b)  {return maxCompare(comparator, a[1], b[1]) ? b : a});
-	      return entry && entry[0];
-	    } else {
-	      return iterable.reduce(function(a, b)  {return maxCompare(comparator, a, b) ? b : a});
-	    }
-	  }
-
-	  function maxCompare(comparator, a, b) {
-	    var comp = comparator(b, a);
-	    // b is considered the new max if the comparator declares them equal, but
-	    // they are not equal and b is in fact a nullish value.
-	    return (comp === 0 && b !== a && (b === undefined || b === null || b !== b)) || comp > 0;
-	  }
-
-
-	  function zipWithFactory(keyIter, zipper, iters) {
-	    var zipSequence = makeSequence(keyIter);
-	    zipSequence.size = new ArraySeq(iters).map(function(i ) {return i.size}).min();
-	    // Note: this a generic base implementation of __iterate in terms of
-	    // __iterator which may be more generically useful in the future.
-	    zipSequence.__iterate = function(fn, reverse) {
-	      /* generic:
-	      var iterator = this.__iterator(ITERATE_ENTRIES, reverse);
-	      var step;
-	      var iterations = 0;
-	      while (!(step = iterator.next()).done) {
-	        iterations++;
-	        if (fn(step.value[1], step.value[0], this) === false) {
-	          break;
-	        }
-	      }
-	      return iterations;
-	      */
-	      // indexed:
-	      var iterator = this.__iterator(ITERATE_VALUES, reverse);
-	      var step;
-	      var iterations = 0;
-	      while (!(step = iterator.next()).done) {
-	        if (fn(step.value, iterations++, this) === false) {
-	          break;
-	        }
-	      }
-	      return iterations;
-	    };
-	    zipSequence.__iteratorUncached = function(type, reverse) {
-	      var iterators = iters.map(function(i )
-	        {return (i = Iterable(i), getIterator(reverse ? i.reverse() : i))}
-	      );
-	      var iterations = 0;
-	      var isDone = false;
-	      return new src_Iterator__Iterator(function()  {
-	        var steps;
-	        if (!isDone) {
-	          steps = iterators.map(function(i ) {return i.next()});
-	          isDone = steps.some(function(s ) {return s.done});
-	        }
-	        if (isDone) {
-	          return iteratorDone();
-	        }
-	        return iteratorValue(
-	          type,
-	          iterations++,
-	          zipper.apply(null, steps.map(function(s ) {return s.value}))
-	        );
-	      });
-	    };
-	    return zipSequence
-	  }
-
-
-	  // #pragma Helper Functions
-
-	  function reify(iter, seq) {
-	    return isSeq(iter) ? seq : iter.constructor(seq);
-	  }
-
-	  function validateEntry(entry) {
-	    if (entry !== Object(entry)) {
-	      throw new TypeError('Expected [K, V] tuple: ' + entry);
-	    }
-	  }
-
-	  function resolveSize(iter) {
-	    assertNotInfinite(iter.size);
-	    return ensureSize(iter);
-	  }
-
-	  function iterableClass(iterable) {
-	    return isKeyed(iterable) ? KeyedIterable :
-	      isIndexed(iterable) ? IndexedIterable :
-	      SetIterable;
-	  }
-
-	  function makeSequence(iterable) {
-	    return Object.create(
-	      (
-	        isKeyed(iterable) ? KeyedSeq :
-	        isIndexed(iterable) ? IndexedSeq :
-	        SetSeq
-	      ).prototype
-	    );
-	  }
-
-	  function cacheResultThrough() {
-	    if (this._iter.cacheResult) {
-	      this._iter.cacheResult();
-	      this.size = this._iter.size;
-	      return this;
-	    } else {
-	      return Seq.prototype.cacheResult.call(this);
-	    }
-	  }
-
-	  function defaultComparator(a, b) {
-	    return a > b ? 1 : a < b ? -1 : 0;
-	  }
-
-	  function forceIterator(keyPath) {
-	    var iter = getIterator(keyPath);
-	    if (!iter) {
-	      // Array might not be iterable in this environment, so we need a fallback
-	      // to our wrapped type.
-	      if (!isArrayLike(keyPath)) {
-	        throw new TypeError('Expected iterable or array-like: ' + keyPath);
-	      }
-	      iter = getIterator(Iterable(keyPath));
-	    }
-	    return iter;
-	  }
-
-	  createClass(src_Map__Map, KeyedCollection);
-
-	    // @pragma Construction
-
-	    function src_Map__Map(value) {
-	      return value === null || value === undefined ? emptyMap() :
-	        isMap(value) ? value :
-	        emptyMap().withMutations(function(map ) {
-	          var iter = KeyedIterable(value);
-	          assertNotInfinite(iter.size);
-	          iter.forEach(function(v, k)  {return map.set(k, v)});
-	        });
-	    }
-
-	    src_Map__Map.prototype.toString = function() {
-	      return this.__toString('Map {', '}');
-	    };
-
-	    // @pragma Access
-
-	    src_Map__Map.prototype.get = function(k, notSetValue) {
-	      return this._root ?
-	        this._root.get(0, undefined, k, notSetValue) :
-	        notSetValue;
-	    };
-
-	    // @pragma Modification
-
-	    src_Map__Map.prototype.set = function(k, v) {
-	      return updateMap(this, k, v);
-	    };
-
-	    src_Map__Map.prototype.setIn = function(keyPath, v) {
-	      return this.updateIn(keyPath, NOT_SET, function()  {return v});
-	    };
-
-	    src_Map__Map.prototype.remove = function(k) {
-	      return updateMap(this, k, NOT_SET);
-	    };
-
-	    src_Map__Map.prototype.deleteIn = function(keyPath) {
-	      return this.updateIn(keyPath, function()  {return NOT_SET});
-	    };
-
-	    src_Map__Map.prototype.update = function(k, notSetValue, updater) {
-	      return arguments.length === 1 ?
-	        k(this) :
-	        this.updateIn([k], notSetValue, updater);
-	    };
-
-	    src_Map__Map.prototype.updateIn = function(keyPath, notSetValue, updater) {
-	      if (!updater) {
-	        updater = notSetValue;
-	        notSetValue = undefined;
-	      }
-	      var updatedValue = updateInDeepMap(
-	        this,
-	        forceIterator(keyPath),
-	        notSetValue,
-	        updater
-	      );
-	      return updatedValue === NOT_SET ? undefined : updatedValue;
-	    };
-
-	    src_Map__Map.prototype.clear = function() {
-	      if (this.size === 0) {
-	        return this;
-	      }
-	      if (this.__ownerID) {
-	        this.size = 0;
-	        this._root = null;
-	        this.__hash = undefined;
-	        this.__altered = true;
-	        return this;
-	      }
-	      return emptyMap();
-	    };
-
-	    // @pragma Composition
-
-	    src_Map__Map.prototype.merge = function(/*...iters*/) {
-	      return mergeIntoMapWith(this, undefined, arguments);
-	    };
-
-	    src_Map__Map.prototype.mergeWith = function(merger) {var iters = SLICE$0.call(arguments, 1);
-	      return mergeIntoMapWith(this, merger, iters);
-	    };
-
-	    src_Map__Map.prototype.mergeIn = function(keyPath) {var iters = SLICE$0.call(arguments, 1);
-	      return this.updateIn(keyPath, emptyMap(), function(m ) {return m.merge.apply(m, iters)});
-	    };
-
-	    src_Map__Map.prototype.mergeDeep = function(/*...iters*/) {
-	      return mergeIntoMapWith(this, deepMerger(undefined), arguments);
-	    };
-
-	    src_Map__Map.prototype.mergeDeepWith = function(merger) {var iters = SLICE$0.call(arguments, 1);
-	      return mergeIntoMapWith(this, deepMerger(merger), iters);
-	    };
-
-	    src_Map__Map.prototype.mergeDeepIn = function(keyPath) {var iters = SLICE$0.call(arguments, 1);
-	      return this.updateIn(keyPath, emptyMap(), function(m ) {return m.mergeDeep.apply(m, iters)});
-	    };
-
-	    src_Map__Map.prototype.sort = function(comparator) {
-	      // Late binding
-	      return OrderedMap(sortFactory(this, comparator));
-	    };
-
-	    src_Map__Map.prototype.sortBy = function(mapper, comparator) {
-	      // Late binding
-	      return OrderedMap(sortFactory(this, comparator, mapper));
-	    };
-
-	    // @pragma Mutability
-
-	    src_Map__Map.prototype.withMutations = function(fn) {
-	      var mutable = this.asMutable();
-	      fn(mutable);
-	      return mutable.wasAltered() ? mutable.__ensureOwner(this.__ownerID) : this;
-	    };
-
-	    src_Map__Map.prototype.asMutable = function() {
-	      return this.__ownerID ? this : this.__ensureOwner(new OwnerID());
-	    };
-
-	    src_Map__Map.prototype.asImmutable = function() {
-	      return this.__ensureOwner();
-	    };
-
-	    src_Map__Map.prototype.wasAltered = function() {
-	      return this.__altered;
-	    };
-
-	    src_Map__Map.prototype.__iterator = function(type, reverse) {
-	      return new MapIterator(this, type, reverse);
-	    };
-
-	    src_Map__Map.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      var iterations = 0;
-	      this._root && this._root.iterate(function(entry ) {
-	        iterations++;
-	        return fn(entry[1], entry[0], this$0);
-	      }, reverse);
-	      return iterations;
-	    };
-
-	    src_Map__Map.prototype.__ensureOwner = function(ownerID) {
-	      if (ownerID === this.__ownerID) {
-	        return this;
-	      }
-	      if (!ownerID) {
-	        this.__ownerID = ownerID;
-	        this.__altered = false;
-	        return this;
-	      }
-	      return makeMap(this.size, this._root, ownerID, this.__hash);
-	    };
-
-
-	  function isMap(maybeMap) {
-	    return !!(maybeMap && maybeMap[IS_MAP_SENTINEL]);
-	  }
-
-	  src_Map__Map.isMap = isMap;
-
-	  var IS_MAP_SENTINEL = '@@__IMMUTABLE_MAP__@@';
-
-	  var MapPrototype = src_Map__Map.prototype;
-	  MapPrototype[IS_MAP_SENTINEL] = true;
-	  MapPrototype[DELETE] = MapPrototype.remove;
-	  MapPrototype.removeIn = MapPrototype.deleteIn;
-
-
-	  // #pragma Trie Nodes
-
-
-
-	    function ArrayMapNode(ownerID, entries) {
-	      this.ownerID = ownerID;
-	      this.entries = entries;
-	    }
-
-	    ArrayMapNode.prototype.get = function(shift, keyHash, key, notSetValue) {
-	      var entries = this.entries;
-	      for (var ii = 0, len = entries.length; ii < len; ii++) {
-	        if (is(key, entries[ii][0])) {
-	          return entries[ii][1];
-	        }
-	      }
-	      return notSetValue;
-	    };
-
-	    ArrayMapNode.prototype.update = function(ownerID, shift, keyHash, key, value, didChangeSize, didAlter) {
-	      var removed = value === NOT_SET;
-
-	      var entries = this.entries;
-	      var idx = 0;
-	      for (var len = entries.length; idx < len; idx++) {
-	        if (is(key, entries[idx][0])) {
-	          break;
-	        }
-	      }
-	      var exists = idx < len;
-
-	      if (exists ? entries[idx][1] === value : removed) {
-	        return this;
-	      }
-
-	      SetRef(didAlter);
-	      (removed || !exists) && SetRef(didChangeSize);
-
-	      if (removed && entries.length === 1) {
-	        return; // undefined
-	      }
-
-	      if (!exists && !removed && entries.length >= MAX_ARRAY_MAP_SIZE) {
-	        return createNodes(ownerID, entries, key, value);
-	      }
-
-	      var isEditable = ownerID && ownerID === this.ownerID;
-	      var newEntries = isEditable ? entries : arrCopy(entries);
-
-	      if (exists) {
-	        if (removed) {
-	          idx === len - 1 ? newEntries.pop() : (newEntries[idx] = newEntries.pop());
-	        } else {
-	          newEntries[idx] = [key, value];
-	        }
-	      } else {
-	        newEntries.push([key, value]);
-	      }
-
-	      if (isEditable) {
-	        this.entries = newEntries;
-	        return this;
-	      }
-
-	      return new ArrayMapNode(ownerID, newEntries);
-	    };
-
-
-
-
-	    function BitmapIndexedNode(ownerID, bitmap, nodes) {
-	      this.ownerID = ownerID;
-	      this.bitmap = bitmap;
-	      this.nodes = nodes;
-	    }
-
-	    BitmapIndexedNode.prototype.get = function(shift, keyHash, key, notSetValue) {
-	      if (keyHash === undefined) {
-	        keyHash = hash(key);
-	      }
-	      var bit = (1 << ((shift === 0 ? keyHash : keyHash >>> shift) & MASK));
-	      var bitmap = this.bitmap;
-	      return (bitmap & bit) === 0 ? notSetValue :
-	        this.nodes[popCount(bitmap & (bit - 1))].get(shift + SHIFT, keyHash, key, notSetValue);
-	    };
-
-	    BitmapIndexedNode.prototype.update = function(ownerID, shift, keyHash, key, value, didChangeSize, didAlter) {
-	      if (keyHash === undefined) {
-	        keyHash = hash(key);
-	      }
-	      var keyHashFrag = (shift === 0 ? keyHash : keyHash >>> shift) & MASK;
-	      var bit = 1 << keyHashFrag;
-	      var bitmap = this.bitmap;
-	      var exists = (bitmap & bit) !== 0;
-
-	      if (!exists && value === NOT_SET) {
-	        return this;
-	      }
-
-	      var idx = popCount(bitmap & (bit - 1));
-	      var nodes = this.nodes;
-	      var node = exists ? nodes[idx] : undefined;
-	      var newNode = updateNode(node, ownerID, shift + SHIFT, keyHash, key, value, didChangeSize, didAlter);
-
-	      if (newNode === node) {
-	        return this;
-	      }
-
-	      if (!exists && newNode && nodes.length >= MAX_BITMAP_INDEXED_SIZE) {
-	        return expandNodes(ownerID, nodes, bitmap, keyHashFrag, newNode);
-	      }
-
-	      if (exists && !newNode && nodes.length === 2 && isLeafNode(nodes[idx ^ 1])) {
-	        return nodes[idx ^ 1];
-	      }
-
-	      if (exists && newNode && nodes.length === 1 && isLeafNode(newNode)) {
-	        return newNode;
-	      }
-
-	      var isEditable = ownerID && ownerID === this.ownerID;
-	      var newBitmap = exists ? newNode ? bitmap : bitmap ^ bit : bitmap | bit;
-	      var newNodes = exists ? newNode ?
-	        setIn(nodes, idx, newNode, isEditable) :
-	        spliceOut(nodes, idx, isEditable) :
-	        spliceIn(nodes, idx, newNode, isEditable);
-
-	      if (isEditable) {
-	        this.bitmap = newBitmap;
-	        this.nodes = newNodes;
-	        return this;
-	      }
-
-	      return new BitmapIndexedNode(ownerID, newBitmap, newNodes);
-	    };
-
-
-
-
-	    function HashArrayMapNode(ownerID, count, nodes) {
-	      this.ownerID = ownerID;
-	      this.count = count;
-	      this.nodes = nodes;
-	    }
-
-	    HashArrayMapNode.prototype.get = function(shift, keyHash, key, notSetValue) {
-	      if (keyHash === undefined) {
-	        keyHash = hash(key);
-	      }
-	      var idx = (shift === 0 ? keyHash : keyHash >>> shift) & MASK;
-	      var node = this.nodes[idx];
-	      return node ? node.get(shift + SHIFT, keyHash, key, notSetValue) : notSetValue;
-	    };
-
-	    HashArrayMapNode.prototype.update = function(ownerID, shift, keyHash, key, value, didChangeSize, didAlter) {
-	      if (keyHash === undefined) {
-	        keyHash = hash(key);
-	      }
-	      var idx = (shift === 0 ? keyHash : keyHash >>> shift) & MASK;
-	      var removed = value === NOT_SET;
-	      var nodes = this.nodes;
-	      var node = nodes[idx];
-
-	      if (removed && !node) {
-	        return this;
-	      }
-
-	      var newNode = updateNode(node, ownerID, shift + SHIFT, keyHash, key, value, didChangeSize, didAlter);
-	      if (newNode === node) {
-	        return this;
-	      }
-
-	      var newCount = this.count;
-	      if (!node) {
-	        newCount++;
-	      } else if (!newNode) {
-	        newCount--;
-	        if (newCount < MIN_HASH_ARRAY_MAP_SIZE) {
-	          return packNodes(ownerID, nodes, newCount, idx);
-	        }
-	      }
-
-	      var isEditable = ownerID && ownerID === this.ownerID;
-	      var newNodes = setIn(nodes, idx, newNode, isEditable);
-
-	      if (isEditable) {
-	        this.count = newCount;
-	        this.nodes = newNodes;
-	        return this;
-	      }
-
-	      return new HashArrayMapNode(ownerID, newCount, newNodes);
-	    };
-
-
-
-
-	    function HashCollisionNode(ownerID, keyHash, entries) {
-	      this.ownerID = ownerID;
-	      this.keyHash = keyHash;
-	      this.entries = entries;
-	    }
-
-	    HashCollisionNode.prototype.get = function(shift, keyHash, key, notSetValue) {
-	      var entries = this.entries;
-	      for (var ii = 0, len = entries.length; ii < len; ii++) {
-	        if (is(key, entries[ii][0])) {
-	          return entries[ii][1];
-	        }
-	      }
-	      return notSetValue;
-	    };
-
-	    HashCollisionNode.prototype.update = function(ownerID, shift, keyHash, key, value, didChangeSize, didAlter) {
-	      if (keyHash === undefined) {
-	        keyHash = hash(key);
-	      }
-
-	      var removed = value === NOT_SET;
-
-	      if (keyHash !== this.keyHash) {
-	        if (removed) {
-	          return this;
-	        }
-	        SetRef(didAlter);
-	        SetRef(didChangeSize);
-	        return mergeIntoNode(this, ownerID, shift, keyHash, [key, value]);
-	      }
-
-	      var entries = this.entries;
-	      var idx = 0;
-	      for (var len = entries.length; idx < len; idx++) {
-	        if (is(key, entries[idx][0])) {
-	          break;
-	        }
-	      }
-	      var exists = idx < len;
-
-	      if (exists ? entries[idx][1] === value : removed) {
-	        return this;
-	      }
-
-	      SetRef(didAlter);
-	      (removed || !exists) && SetRef(didChangeSize);
-
-	      if (removed && len === 2) {
-	        return new ValueNode(ownerID, this.keyHash, entries[idx ^ 1]);
-	      }
-
-	      var isEditable = ownerID && ownerID === this.ownerID;
-	      var newEntries = isEditable ? entries : arrCopy(entries);
-
-	      if (exists) {
-	        if (removed) {
-	          idx === len - 1 ? newEntries.pop() : (newEntries[idx] = newEntries.pop());
-	        } else {
-	          newEntries[idx] = [key, value];
-	        }
-	      } else {
-	        newEntries.push([key, value]);
-	      }
-
-	      if (isEditable) {
-	        this.entries = newEntries;
-	        return this;
-	      }
-
-	      return new HashCollisionNode(ownerID, this.keyHash, newEntries);
-	    };
-
-
-
-
-	    function ValueNode(ownerID, keyHash, entry) {
-	      this.ownerID = ownerID;
-	      this.keyHash = keyHash;
-	      this.entry = entry;
-	    }
-
-	    ValueNode.prototype.get = function(shift, keyHash, key, notSetValue) {
-	      return is(key, this.entry[0]) ? this.entry[1] : notSetValue;
-	    };
-
-	    ValueNode.prototype.update = function(ownerID, shift, keyHash, key, value, didChangeSize, didAlter) {
-	      var removed = value === NOT_SET;
-	      var keyMatch = is(key, this.entry[0]);
-	      if (keyMatch ? value === this.entry[1] : removed) {
-	        return this;
-	      }
-
-	      SetRef(didAlter);
-
-	      if (removed) {
-	        SetRef(didChangeSize);
-	        return; // undefined
-	      }
-
-	      if (keyMatch) {
-	        if (ownerID && ownerID === this.ownerID) {
-	          this.entry[1] = value;
-	          return this;
-	        }
-	        return new ValueNode(ownerID, this.keyHash, [key, value]);
-	      }
-
-	      SetRef(didChangeSize);
-	      return mergeIntoNode(this, ownerID, shift, hash(key), [key, value]);
-	    };
-
-
-
-	  // #pragma Iterators
-
-	  ArrayMapNode.prototype.iterate =
-	  HashCollisionNode.prototype.iterate = function (fn, reverse) {
-	    var entries = this.entries;
-	    for (var ii = 0, maxIndex = entries.length - 1; ii <= maxIndex; ii++) {
-	      if (fn(entries[reverse ? maxIndex - ii : ii]) === false) {
-	        return false;
-	      }
-	    }
-	  }
-
-	  BitmapIndexedNode.prototype.iterate =
-	  HashArrayMapNode.prototype.iterate = function (fn, reverse) {
-	    var nodes = this.nodes;
-	    for (var ii = 0, maxIndex = nodes.length - 1; ii <= maxIndex; ii++) {
-	      var node = nodes[reverse ? maxIndex - ii : ii];
-	      if (node && node.iterate(fn, reverse) === false) {
-	        return false;
-	      }
-	    }
-	  }
-
-	  ValueNode.prototype.iterate = function (fn, reverse) {
-	    return fn(this.entry);
-	  }
-
-	  createClass(MapIterator, src_Iterator__Iterator);
-
-	    function MapIterator(map, type, reverse) {
-	      this._type = type;
-	      this._reverse = reverse;
-	      this._stack = map._root && mapIteratorFrame(map._root);
-	    }
-
-	    MapIterator.prototype.next = function() {
-	      var type = this._type;
-	      var stack = this._stack;
-	      while (stack) {
-	        var node = stack.node;
-	        var index = stack.index++;
-	        var maxIndex;
-	        if (node.entry) {
-	          if (index === 0) {
-	            return mapIteratorValue(type, node.entry);
-	          }
-	        } else if (node.entries) {
-	          maxIndex = node.entries.length - 1;
-	          if (index <= maxIndex) {
-	            return mapIteratorValue(type, node.entries[this._reverse ? maxIndex - index : index]);
-	          }
-	        } else {
-	          maxIndex = node.nodes.length - 1;
-	          if (index <= maxIndex) {
-	            var subNode = node.nodes[this._reverse ? maxIndex - index : index];
-	            if (subNode) {
-	              if (subNode.entry) {
-	                return mapIteratorValue(type, subNode.entry);
-	              }
-	              stack = this._stack = mapIteratorFrame(subNode, stack);
-	            }
-	            continue;
-	          }
-	        }
-	        stack = this._stack = this._stack.__prev;
-	      }
-	      return iteratorDone();
-	    };
-
-
-	  function mapIteratorValue(type, entry) {
-	    return iteratorValue(type, entry[0], entry[1]);
-	  }
-
-	  function mapIteratorFrame(node, prev) {
-	    return {
-	      node: node,
-	      index: 0,
-	      __prev: prev
-	    };
-	  }
-
-	  function makeMap(size, root, ownerID, hash) {
-	    var map = Object.create(MapPrototype);
-	    map.size = size;
-	    map._root = root;
-	    map.__ownerID = ownerID;
-	    map.__hash = hash;
-	    map.__altered = false;
-	    return map;
-	  }
-
-	  var EMPTY_MAP;
-	  function emptyMap() {
-	    return EMPTY_MAP || (EMPTY_MAP = makeMap(0));
-	  }
-
-	  function updateMap(map, k, v) {
-	    var newRoot;
-	    var newSize;
-	    if (!map._root) {
-	      if (v === NOT_SET) {
-	        return map;
-	      }
-	      newSize = 1;
-	      newRoot = new ArrayMapNode(map.__ownerID, [[k, v]]);
-	    } else {
-	      var didChangeSize = MakeRef(CHANGE_LENGTH);
-	      var didAlter = MakeRef(DID_ALTER);
-	      newRoot = updateNode(map._root, map.__ownerID, 0, undefined, k, v, didChangeSize, didAlter);
-	      if (!didAlter.value) {
-	        return map;
-	      }
-	      newSize = map.size + (didChangeSize.value ? v === NOT_SET ? -1 : 1 : 0);
-	    }
-	    if (map.__ownerID) {
-	      map.size = newSize;
-	      map._root = newRoot;
-	      map.__hash = undefined;
-	      map.__altered = true;
-	      return map;
-	    }
-	    return newRoot ? makeMap(newSize, newRoot) : emptyMap();
-	  }
-
-	  function updateNode(node, ownerID, shift, keyHash, key, value, didChangeSize, didAlter) {
-	    if (!node) {
-	      if (value === NOT_SET) {
-	        return node;
-	      }
-	      SetRef(didAlter);
-	      SetRef(didChangeSize);
-	      return new ValueNode(ownerID, keyHash, [key, value]);
-	    }
-	    return node.update(ownerID, shift, keyHash, key, value, didChangeSize, didAlter);
-	  }
-
-	  function isLeafNode(node) {
-	    return node.constructor === ValueNode || node.constructor === HashCollisionNode;
-	  }
-
-	  function mergeIntoNode(node, ownerID, shift, keyHash, entry) {
-	    if (node.keyHash === keyHash) {
-	      return new HashCollisionNode(ownerID, keyHash, [node.entry, entry]);
-	    }
-
-	    var idx1 = (shift === 0 ? node.keyHash : node.keyHash >>> shift) & MASK;
-	    var idx2 = (shift === 0 ? keyHash : keyHash >>> shift) & MASK;
-
-	    var newNode;
-	    var nodes = idx1 === idx2 ?
-	      [mergeIntoNode(node, ownerID, shift + SHIFT, keyHash, entry)] :
-	      ((newNode = new ValueNode(ownerID, keyHash, entry)), idx1 < idx2 ? [node, newNode] : [newNode, node]);
-
-	    return new BitmapIndexedNode(ownerID, (1 << idx1) | (1 << idx2), nodes);
-	  }
-
-	  function createNodes(ownerID, entries, key, value) {
-	    if (!ownerID) {
-	      ownerID = new OwnerID();
-	    }
-	    var node = new ValueNode(ownerID, hash(key), [key, value]);
-	    for (var ii = 0; ii < entries.length; ii++) {
-	      var entry = entries[ii];
-	      node = node.update(ownerID, 0, undefined, entry[0], entry[1]);
-	    }
-	    return node;
-	  }
-
-	  function packNodes(ownerID, nodes, count, excluding) {
-	    var bitmap = 0;
-	    var packedII = 0;
-	    var packedNodes = new Array(count);
-	    for (var ii = 0, bit = 1, len = nodes.length; ii < len; ii++, bit <<= 1) {
-	      var node = nodes[ii];
-	      if (node !== undefined && ii !== excluding) {
-	        bitmap |= bit;
-	        packedNodes[packedII++] = node;
-	      }
-	    }
-	    return new BitmapIndexedNode(ownerID, bitmap, packedNodes);
-	  }
-
-	  function expandNodes(ownerID, nodes, bitmap, including, node) {
-	    var count = 0;
-	    var expandedNodes = new Array(SIZE);
-	    for (var ii = 0; bitmap !== 0; ii++, bitmap >>>= 1) {
-	      expandedNodes[ii] = bitmap & 1 ? nodes[count++] : undefined;
-	    }
-	    expandedNodes[including] = node;
-	    return new HashArrayMapNode(ownerID, count + 1, expandedNodes);
-	  }
-
-	  function mergeIntoMapWith(map, merger, iterables) {
-	    var iters = [];
-	    for (var ii = 0; ii < iterables.length; ii++) {
-	      var value = iterables[ii];
-	      var iter = KeyedIterable(value);
-	      if (!isIterable(value)) {
-	        iter = iter.map(function(v ) {return fromJS(v)});
-	      }
-	      iters.push(iter);
-	    }
-	    return mergeIntoCollectionWith(map, merger, iters);
-	  }
-
-	  function deepMerger(merger) {
-	    return function(existing, value, key) 
-	      {return existing && existing.mergeDeepWith && isIterable(value) ?
-	        existing.mergeDeepWith(merger, value) :
-	        merger ? merger(existing, value, key) : value};
-	  }
-
-	  function mergeIntoCollectionWith(collection, merger, iters) {
-	    iters = iters.filter(function(x ) {return x.size !== 0});
-	    if (iters.length === 0) {
-	      return collection;
-	    }
-	    if (collection.size === 0 && !collection.__ownerID && iters.length === 1) {
-	      return collection.constructor(iters[0]);
-	    }
-	    return collection.withMutations(function(collection ) {
-	      var mergeIntoMap = merger ?
-	        function(value, key)  {
-	          collection.update(key, NOT_SET, function(existing )
-	            {return existing === NOT_SET ? value : merger(existing, value, key)}
-	          );
-	        } :
-	        function(value, key)  {
-	          collection.set(key, value);
-	        }
-	      for (var ii = 0; ii < iters.length; ii++) {
-	        iters[ii].forEach(mergeIntoMap);
-	      }
-	    });
-	  }
-
-	  function updateInDeepMap(existing, keyPathIter, notSetValue, updater) {
-	    var isNotSet = existing === NOT_SET;
-	    var step = keyPathIter.next();
-	    if (step.done) {
-	      var existingValue = isNotSet ? notSetValue : existing;
-	      var newValue = updater(existingValue);
-	      return newValue === existingValue ? existing : newValue;
-	    }
-	    invariant(
-	      isNotSet || (existing && existing.set),
-	      'invalid keyPath'
-	    );
-	    var key = step.value;
-	    var nextExisting = isNotSet ? NOT_SET : existing.get(key, NOT_SET);
-	    var nextUpdated = updateInDeepMap(
-	      nextExisting,
-	      keyPathIter,
-	      notSetValue,
-	      updater
-	    );
-	    return nextUpdated === nextExisting ? existing :
-	      nextUpdated === NOT_SET ? existing.remove(key) :
-	      (isNotSet ? emptyMap() : existing).set(key, nextUpdated);
-	  }
-
-	  function popCount(x) {
-	    x = x - ((x >> 1) & 0x55555555);
-	    x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
-	    x = (x + (x >> 4)) & 0x0f0f0f0f;
-	    x = x + (x >> 8);
-	    x = x + (x >> 16);
-	    return x & 0x7f;
-	  }
-
-	  function setIn(array, idx, val, canEdit) {
-	    var newArray = canEdit ? array : arrCopy(array);
-	    newArray[idx] = val;
-	    return newArray;
-	  }
-
-	  function spliceIn(array, idx, val, canEdit) {
-	    var newLen = array.length + 1;
-	    if (canEdit && idx + 1 === newLen) {
-	      array[idx] = val;
-	      return array;
-	    }
-	    var newArray = new Array(newLen);
-	    var after = 0;
-	    for (var ii = 0; ii < newLen; ii++) {
-	      if (ii === idx) {
-	        newArray[ii] = val;
-	        after = -1;
-	      } else {
-	        newArray[ii] = array[ii + after];
-	      }
-	    }
-	    return newArray;
-	  }
-
-	  function spliceOut(array, idx, canEdit) {
-	    var newLen = array.length - 1;
-	    if (canEdit && idx === newLen) {
-	      array.pop();
-	      return array;
-	    }
-	    var newArray = new Array(newLen);
-	    var after = 0;
-	    for (var ii = 0; ii < newLen; ii++) {
-	      if (ii === idx) {
-	        after = 1;
-	      }
-	      newArray[ii] = array[ii + after];
-	    }
-	    return newArray;
-	  }
-
-	  var MAX_ARRAY_MAP_SIZE = SIZE / 4;
-	  var MAX_BITMAP_INDEXED_SIZE = SIZE / 2;
-	  var MIN_HASH_ARRAY_MAP_SIZE = SIZE / 4;
-
-	  createClass(List, IndexedCollection);
-
-	    // @pragma Construction
-
-	    function List(value) {
-	      var empty = emptyList();
-	      if (value === null || value === undefined) {
-	        return empty;
-	      }
-	      if (isList(value)) {
-	        return value;
-	      }
-	      var iter = IndexedIterable(value);
-	      var size = iter.size;
-	      if (size === 0) {
-	        return empty;
-	      }
-	      assertNotInfinite(size);
-	      if (size > 0 && size < SIZE) {
-	        return makeList(0, size, SHIFT, null, new VNode(iter.toArray()));
-	      }
-	      return empty.withMutations(function(list ) {
-	        list.setSize(size);
-	        iter.forEach(function(v, i)  {return list.set(i, v)});
-	      });
-	    }
-
-	    List.of = function(/*...values*/) {
-	      return this(arguments);
-	    };
-
-	    List.prototype.toString = function() {
-	      return this.__toString('List [', ']');
-	    };
-
-	    // @pragma Access
-
-	    List.prototype.get = function(index, notSetValue) {
-	      index = wrapIndex(this, index);
-	      if (index < 0 || index >= this.size) {
-	        return notSetValue;
-	      }
-	      index += this._origin;
-	      var node = listNodeFor(this, index);
-	      return node && node.array[index & MASK];
-	    };
-
-	    // @pragma Modification
-
-	    List.prototype.set = function(index, value) {
-	      return updateList(this, index, value);
-	    };
-
-	    List.prototype.remove = function(index) {
-	      return !this.has(index) ? this :
-	        index === 0 ? this.shift() :
-	        index === this.size - 1 ? this.pop() :
-	        this.splice(index, 1);
-	    };
-
-	    List.prototype.clear = function() {
-	      if (this.size === 0) {
-	        return this;
-	      }
-	      if (this.__ownerID) {
-	        this.size = this._origin = this._capacity = 0;
-	        this._level = SHIFT;
-	        this._root = this._tail = null;
-	        this.__hash = undefined;
-	        this.__altered = true;
-	        return this;
-	      }
-	      return emptyList();
-	    };
-
-	    List.prototype.push = function(/*...values*/) {
-	      var values = arguments;
-	      var oldSize = this.size;
-	      return this.withMutations(function(list ) {
-	        setListBounds(list, 0, oldSize + values.length);
-	        for (var ii = 0; ii < values.length; ii++) {
-	          list.set(oldSize + ii, values[ii]);
-	        }
-	      });
-	    };
-
-	    List.prototype.pop = function() {
-	      return setListBounds(this, 0, -1);
-	    };
-
-	    List.prototype.unshift = function(/*...values*/) {
-	      var values = arguments;
-	      return this.withMutations(function(list ) {
-	        setListBounds(list, -values.length);
-	        for (var ii = 0; ii < values.length; ii++) {
-	          list.set(ii, values[ii]);
-	        }
-	      });
-	    };
-
-	    List.prototype.shift = function() {
-	      return setListBounds(this, 1);
-	    };
-
-	    // @pragma Composition
-
-	    List.prototype.merge = function(/*...iters*/) {
-	      return mergeIntoListWith(this, undefined, arguments);
-	    };
-
-	    List.prototype.mergeWith = function(merger) {var iters = SLICE$0.call(arguments, 1);
-	      return mergeIntoListWith(this, merger, iters);
-	    };
-
-	    List.prototype.mergeDeep = function(/*...iters*/) {
-	      return mergeIntoListWith(this, deepMerger(undefined), arguments);
-	    };
-
-	    List.prototype.mergeDeepWith = function(merger) {var iters = SLICE$0.call(arguments, 1);
-	      return mergeIntoListWith(this, deepMerger(merger), iters);
-	    };
-
-	    List.prototype.setSize = function(size) {
-	      return setListBounds(this, 0, size);
-	    };
-
-	    // @pragma Iteration
-
-	    List.prototype.slice = function(begin, end) {
-	      var size = this.size;
-	      if (wholeSlice(begin, end, size)) {
-	        return this;
-	      }
-	      return setListBounds(
-	        this,
-	        resolveBegin(begin, size),
-	        resolveEnd(end, size)
-	      );
-	    };
-
-	    List.prototype.__iterator = function(type, reverse) {
-	      var index = 0;
-	      var values = iterateList(this, reverse);
-	      return new src_Iterator__Iterator(function()  {
-	        var value = values();
-	        return value === DONE ?
-	          iteratorDone() :
-	          iteratorValue(type, index++, value);
-	      });
-	    };
-
-	    List.prototype.__iterate = function(fn, reverse) {
-	      var index = 0;
-	      var values = iterateList(this, reverse);
-	      var value;
-	      while ((value = values()) !== DONE) {
-	        if (fn(value, index++, this) === false) {
-	          break;
-	        }
-	      }
-	      return index;
-	    };
-
-	    List.prototype.__ensureOwner = function(ownerID) {
-	      if (ownerID === this.__ownerID) {
-	        return this;
-	      }
-	      if (!ownerID) {
-	        this.__ownerID = ownerID;
-	        return this;
-	      }
-	      return makeList(this._origin, this._capacity, this._level, this._root, this._tail, ownerID, this.__hash);
-	    };
-
-
-	  function isList(maybeList) {
-	    return !!(maybeList && maybeList[IS_LIST_SENTINEL]);
-	  }
-
-	  List.isList = isList;
-
-	  var IS_LIST_SENTINEL = '@@__IMMUTABLE_LIST__@@';
-
-	  var ListPrototype = List.prototype;
-	  ListPrototype[IS_LIST_SENTINEL] = true;
-	  ListPrototype[DELETE] = ListPrototype.remove;
-	  ListPrototype.setIn = MapPrototype.setIn;
-	  ListPrototype.deleteIn =
-	  ListPrototype.removeIn = MapPrototype.removeIn;
-	  ListPrototype.update = MapPrototype.update;
-	  ListPrototype.updateIn = MapPrototype.updateIn;
-	  ListPrototype.mergeIn = MapPrototype.mergeIn;
-	  ListPrototype.mergeDeepIn = MapPrototype.mergeDeepIn;
-	  ListPrototype.withMutations = MapPrototype.withMutations;
-	  ListPrototype.asMutable = MapPrototype.asMutable;
-	  ListPrototype.asImmutable = MapPrototype.asImmutable;
-	  ListPrototype.wasAltered = MapPrototype.wasAltered;
-
-
-
-	    function VNode(array, ownerID) {
-	      this.array = array;
-	      this.ownerID = ownerID;
-	    }
-
-	    // TODO: seems like these methods are very similar
-
-	    VNode.prototype.removeBefore = function(ownerID, level, index) {
-	      if (index === level ? 1 << level : 0 || this.array.length === 0) {
-	        return this;
-	      }
-	      var originIndex = (index >>> level) & MASK;
-	      if (originIndex >= this.array.length) {
-	        return new VNode([], ownerID);
-	      }
-	      var removingFirst = originIndex === 0;
-	      var newChild;
-	      if (level > 0) {
-	        var oldChild = this.array[originIndex];
-	        newChild = oldChild && oldChild.removeBefore(ownerID, level - SHIFT, index);
-	        if (newChild === oldChild && removingFirst) {
-	          return this;
-	        }
-	      }
-	      if (removingFirst && !newChild) {
-	        return this;
-	      }
-	      var editable = editableVNode(this, ownerID);
-	      if (!removingFirst) {
-	        for (var ii = 0; ii < originIndex; ii++) {
-	          editable.array[ii] = undefined;
-	        }
-	      }
-	      if (newChild) {
-	        editable.array[originIndex] = newChild;
-	      }
-	      return editable;
-	    };
-
-	    VNode.prototype.removeAfter = function(ownerID, level, index) {
-	      if (index === level ? 1 << level : 0 || this.array.length === 0) {
-	        return this;
-	      }
-	      var sizeIndex = ((index - 1) >>> level) & MASK;
-	      if (sizeIndex >= this.array.length) {
-	        return this;
-	      }
-	      var removingLast = sizeIndex === this.array.length - 1;
-	      var newChild;
-	      if (level > 0) {
-	        var oldChild = this.array[sizeIndex];
-	        newChild = oldChild && oldChild.removeAfter(ownerID, level - SHIFT, index);
-	        if (newChild === oldChild && removingLast) {
-	          return this;
-	        }
-	      }
-	      if (removingLast && !newChild) {
-	        return this;
-	      }
-	      var editable = editableVNode(this, ownerID);
-	      if (!removingLast) {
-	        editable.array.pop();
-	      }
-	      if (newChild) {
-	        editable.array[sizeIndex] = newChild;
-	      }
-	      return editable;
-	    };
-
-
-
-	  var DONE = {};
-
-	  function iterateList(list, reverse) {
-	    var left = list._origin;
-	    var right = list._capacity;
-	    var tailPos = getTailOffset(right);
-	    var tail = list._tail;
-
-	    return iterateNodeOrLeaf(list._root, list._level, 0);
-
-	    function iterateNodeOrLeaf(node, level, offset) {
-	      return level === 0 ?
-	        iterateLeaf(node, offset) :
-	        iterateNode(node, level, offset);
-	    }
-
-	    function iterateLeaf(node, offset) {
-	      var array = offset === tailPos ? tail && tail.array : node && node.array;
-	      var from = offset > left ? 0 : left - offset;
-	      var to = right - offset;
-	      if (to > SIZE) {
-	        to = SIZE;
-	      }
-	      return function()  {
-	        if (from === to) {
-	          return DONE;
-	        }
-	        var idx = reverse ? --to : from++;
-	        return array && array[idx];
-	      };
-	    }
-
-	    function iterateNode(node, level, offset) {
-	      var values;
-	      var array = node && node.array;
-	      var from = offset > left ? 0 : (left - offset) >> level;
-	      var to = ((right - offset) >> level) + 1;
-	      if (to > SIZE) {
-	        to = SIZE;
-	      }
-	      return function()  {
-	        do {
-	          if (values) {
-	            var value = values();
-	            if (value !== DONE) {
-	              return value;
-	            }
-	            values = null;
-	          }
-	          if (from === to) {
-	            return DONE;
-	          }
-	          var idx = reverse ? --to : from++;
-	          values = iterateNodeOrLeaf(
-	            array && array[idx], level - SHIFT, offset + (idx << level)
-	          );
-	        } while (true);
-	      };
-	    }
-	  }
-
-	  function makeList(origin, capacity, level, root, tail, ownerID, hash) {
-	    var list = Object.create(ListPrototype);
-	    list.size = capacity - origin;
-	    list._origin = origin;
-	    list._capacity = capacity;
-	    list._level = level;
-	    list._root = root;
-	    list._tail = tail;
-	    list.__ownerID = ownerID;
-	    list.__hash = hash;
-	    list.__altered = false;
-	    return list;
-	  }
-
-	  var EMPTY_LIST;
-	  function emptyList() {
-	    return EMPTY_LIST || (EMPTY_LIST = makeList(0, 0, SHIFT));
-	  }
-
-	  function updateList(list, index, value) {
-	    index = wrapIndex(list, index);
-
-	    if (index >= list.size || index < 0) {
-	      return list.withMutations(function(list ) {
-	        index < 0 ?
-	          setListBounds(list, index).set(0, value) :
-	          setListBounds(list, 0, index + 1).set(index, value)
-	      });
-	    }
-
-	    index += list._origin;
-
-	    var newTail = list._tail;
-	    var newRoot = list._root;
-	    var didAlter = MakeRef(DID_ALTER);
-	    if (index >= getTailOffset(list._capacity)) {
-	      newTail = updateVNode(newTail, list.__ownerID, 0, index, value, didAlter);
-	    } else {
-	      newRoot = updateVNode(newRoot, list.__ownerID, list._level, index, value, didAlter);
-	    }
-
-	    if (!didAlter.value) {
-	      return list;
-	    }
-
-	    if (list.__ownerID) {
-	      list._root = newRoot;
-	      list._tail = newTail;
-	      list.__hash = undefined;
-	      list.__altered = true;
-	      return list;
-	    }
-	    return makeList(list._origin, list._capacity, list._level, newRoot, newTail);
-	  }
-
-	  function updateVNode(node, ownerID, level, index, value, didAlter) {
-	    var idx = (index >>> level) & MASK;
-	    var nodeHas = node && idx < node.array.length;
-	    if (!nodeHas && value === undefined) {
-	      return node;
-	    }
-
-	    var newNode;
-
-	    if (level > 0) {
-	      var lowerNode = node && node.array[idx];
-	      var newLowerNode = updateVNode(lowerNode, ownerID, level - SHIFT, index, value, didAlter);
-	      if (newLowerNode === lowerNode) {
-	        return node;
-	      }
-	      newNode = editableVNode(node, ownerID);
-	      newNode.array[idx] = newLowerNode;
-	      return newNode;
-	    }
-
-	    if (nodeHas && node.array[idx] === value) {
-	      return node;
-	    }
-
-	    SetRef(didAlter);
-
-	    newNode = editableVNode(node, ownerID);
-	    if (value === undefined && idx === newNode.array.length - 1) {
-	      newNode.array.pop();
-	    } else {
-	      newNode.array[idx] = value;
-	    }
-	    return newNode;
-	  }
-
-	  function editableVNode(node, ownerID) {
-	    if (ownerID && node && ownerID === node.ownerID) {
-	      return node;
-	    }
-	    return new VNode(node ? node.array.slice() : [], ownerID);
-	  }
-
-	  function listNodeFor(list, rawIndex) {
-	    if (rawIndex >= getTailOffset(list._capacity)) {
-	      return list._tail;
-	    }
-	    if (rawIndex < 1 << (list._level + SHIFT)) {
-	      var node = list._root;
-	      var level = list._level;
-	      while (node && level > 0) {
-	        node = node.array[(rawIndex >>> level) & MASK];
-	        level -= SHIFT;
-	      }
-	      return node;
-	    }
-	  }
-
-	  function setListBounds(list, begin, end) {
-	    var owner = list.__ownerID || new OwnerID();
-	    var oldOrigin = list._origin;
-	    var oldCapacity = list._capacity;
-	    var newOrigin = oldOrigin + begin;
-	    var newCapacity = end === undefined ? oldCapacity : end < 0 ? oldCapacity + end : oldOrigin + end;
-	    if (newOrigin === oldOrigin && newCapacity === oldCapacity) {
-	      return list;
-	    }
-
-	    // If it's going to end after it starts, it's empty.
-	    if (newOrigin >= newCapacity) {
-	      return list.clear();
-	    }
-
-	    var newLevel = list._level;
-	    var newRoot = list._root;
-
-	    // New origin might require creating a higher root.
-	    var offsetShift = 0;
-	    while (newOrigin + offsetShift < 0) {
-	      newRoot = new VNode(newRoot && newRoot.array.length ? [undefined, newRoot] : [], owner);
-	      newLevel += SHIFT;
-	      offsetShift += 1 << newLevel;
-	    }
-	    if (offsetShift) {
-	      newOrigin += offsetShift;
-	      oldOrigin += offsetShift;
-	      newCapacity += offsetShift;
-	      oldCapacity += offsetShift;
-	    }
-
-	    var oldTailOffset = getTailOffset(oldCapacity);
-	    var newTailOffset = getTailOffset(newCapacity);
-
-	    // New size might require creating a higher root.
-	    while (newTailOffset >= 1 << (newLevel + SHIFT)) {
-	      newRoot = new VNode(newRoot && newRoot.array.length ? [newRoot] : [], owner);
-	      newLevel += SHIFT;
-	    }
-
-	    // Locate or create the new tail.
-	    var oldTail = list._tail;
-	    var newTail = newTailOffset < oldTailOffset ?
-	      listNodeFor(list, newCapacity - 1) :
-	      newTailOffset > oldTailOffset ? new VNode([], owner) : oldTail;
-
-	    // Merge Tail into tree.
-	    if (oldTail && newTailOffset > oldTailOffset && newOrigin < oldCapacity && oldTail.array.length) {
-	      newRoot = editableVNode(newRoot, owner);
-	      var node = newRoot;
-	      for (var level = newLevel; level > SHIFT; level -= SHIFT) {
-	        var idx = (oldTailOffset >>> level) & MASK;
-	        node = node.array[idx] = editableVNode(node.array[idx], owner);
-	      }
-	      node.array[(oldTailOffset >>> SHIFT) & MASK] = oldTail;
-	    }
-
-	    // If the size has been reduced, there's a chance the tail needs to be trimmed.
-	    if (newCapacity < oldCapacity) {
-	      newTail = newTail && newTail.removeAfter(owner, 0, newCapacity);
-	    }
-
-	    // If the new origin is within the tail, then we do not need a root.
-	    if (newOrigin >= newTailOffset) {
-	      newOrigin -= newTailOffset;
-	      newCapacity -= newTailOffset;
-	      newLevel = SHIFT;
-	      newRoot = null;
-	      newTail = newTail && newTail.removeBefore(owner, 0, newOrigin);
-
-	    // Otherwise, if the root has been trimmed, garbage collect.
-	    } else if (newOrigin > oldOrigin || newTailOffset < oldTailOffset) {
-	      offsetShift = 0;
-
-	      // Identify the new top root node of the subtree of the old root.
-	      while (newRoot) {
-	        var beginIndex = (newOrigin >>> newLevel) & MASK;
-	        if (beginIndex !== (newTailOffset >>> newLevel) & MASK) {
-	          break;
-	        }
-	        if (beginIndex) {
-	          offsetShift += (1 << newLevel) * beginIndex;
-	        }
-	        newLevel -= SHIFT;
-	        newRoot = newRoot.array[beginIndex];
-	      }
-
-	      // Trim the new sides of the new root.
-	      if (newRoot && newOrigin > oldOrigin) {
-	        newRoot = newRoot.removeBefore(owner, newLevel, newOrigin - offsetShift);
-	      }
-	      if (newRoot && newTailOffset < oldTailOffset) {
-	        newRoot = newRoot.removeAfter(owner, newLevel, newTailOffset - offsetShift);
-	      }
-	      if (offsetShift) {
-	        newOrigin -= offsetShift;
-	        newCapacity -= offsetShift;
-	      }
-	    }
-
-	    if (list.__ownerID) {
-	      list.size = newCapacity - newOrigin;
-	      list._origin = newOrigin;
-	      list._capacity = newCapacity;
-	      list._level = newLevel;
-	      list._root = newRoot;
-	      list._tail = newTail;
-	      list.__hash = undefined;
-	      list.__altered = true;
-	      return list;
-	    }
-	    return makeList(newOrigin, newCapacity, newLevel, newRoot, newTail);
-	  }
-
-	  function mergeIntoListWith(list, merger, iterables) {
-	    var iters = [];
-	    var maxSize = 0;
-	    for (var ii = 0; ii < iterables.length; ii++) {
-	      var value = iterables[ii];
-	      var iter = IndexedIterable(value);
-	      if (iter.size > maxSize) {
-	        maxSize = iter.size;
-	      }
-	      if (!isIterable(value)) {
-	        iter = iter.map(function(v ) {return fromJS(v)});
-	      }
-	      iters.push(iter);
-	    }
-	    if (maxSize > list.size) {
-	      list = list.setSize(maxSize);
-	    }
-	    return mergeIntoCollectionWith(list, merger, iters);
-	  }
-
-	  function getTailOffset(size) {
-	    return size < SIZE ? 0 : (((size - 1) >>> SHIFT) << SHIFT);
-	  }
-
-	  createClass(OrderedMap, src_Map__Map);
-
-	    // @pragma Construction
-
-	    function OrderedMap(value) {
-	      return value === null || value === undefined ? emptyOrderedMap() :
-	        isOrderedMap(value) ? value :
-	        emptyOrderedMap().withMutations(function(map ) {
-	          var iter = KeyedIterable(value);
-	          assertNotInfinite(iter.size);
-	          iter.forEach(function(v, k)  {return map.set(k, v)});
-	        });
-	    }
-
-	    OrderedMap.of = function(/*...values*/) {
-	      return this(arguments);
-	    };
-
-	    OrderedMap.prototype.toString = function() {
-	      return this.__toString('OrderedMap {', '}');
-	    };
-
-	    // @pragma Access
-
-	    OrderedMap.prototype.get = function(k, notSetValue) {
-	      var index = this._map.get(k);
-	      return index !== undefined ? this._list.get(index)[1] : notSetValue;
-	    };
-
-	    // @pragma Modification
-
-	    OrderedMap.prototype.clear = function() {
-	      if (this.size === 0) {
-	        return this;
-	      }
-	      if (this.__ownerID) {
-	        this.size = 0;
-	        this._map.clear();
-	        this._list.clear();
-	        return this;
-	      }
-	      return emptyOrderedMap();
-	    };
-
-	    OrderedMap.prototype.set = function(k, v) {
-	      return updateOrderedMap(this, k, v);
-	    };
-
-	    OrderedMap.prototype.remove = function(k) {
-	      return updateOrderedMap(this, k, NOT_SET);
-	    };
-
-	    OrderedMap.prototype.wasAltered = function() {
-	      return this._map.wasAltered() || this._list.wasAltered();
-	    };
-
-	    OrderedMap.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      return this._list.__iterate(
-	        function(entry ) {return entry && fn(entry[1], entry[0], this$0)},
-	        reverse
-	      );
-	    };
-
-	    OrderedMap.prototype.__iterator = function(type, reverse) {
-	      return this._list.fromEntrySeq().__iterator(type, reverse);
-	    };
-
-	    OrderedMap.prototype.__ensureOwner = function(ownerID) {
-	      if (ownerID === this.__ownerID) {
-	        return this;
-	      }
-	      var newMap = this._map.__ensureOwner(ownerID);
-	      var newList = this._list.__ensureOwner(ownerID);
-	      if (!ownerID) {
-	        this.__ownerID = ownerID;
-	        this._map = newMap;
-	        this._list = newList;
-	        return this;
-	      }
-	      return makeOrderedMap(newMap, newList, ownerID, this.__hash);
-	    };
-
-
-	  function isOrderedMap(maybeOrderedMap) {
-	    return isMap(maybeOrderedMap) && isOrdered(maybeOrderedMap);
-	  }
-
-	  OrderedMap.isOrderedMap = isOrderedMap;
-
-	  OrderedMap.prototype[IS_ORDERED_SENTINEL] = true;
-	  OrderedMap.prototype[DELETE] = OrderedMap.prototype.remove;
-
-
-
-	  function makeOrderedMap(map, list, ownerID, hash) {
-	    var omap = Object.create(OrderedMap.prototype);
-	    omap.size = map ? map.size : 0;
-	    omap._map = map;
-	    omap._list = list;
-	    omap.__ownerID = ownerID;
-	    omap.__hash = hash;
-	    return omap;
-	  }
-
-	  var EMPTY_ORDERED_MAP;
-	  function emptyOrderedMap() {
-	    return EMPTY_ORDERED_MAP || (EMPTY_ORDERED_MAP = makeOrderedMap(emptyMap(), emptyList()));
-	  }
-
-	  function updateOrderedMap(omap, k, v) {
-	    var map = omap._map;
-	    var list = omap._list;
-	    var i = map.get(k);
-	    var has = i !== undefined;
-	    var newMap;
-	    var newList;
-	    if (v === NOT_SET) { // removed
-	      if (!has) {
-	        return omap;
-	      }
-	      if (list.size >= SIZE && list.size >= map.size * 2) {
-	        newList = list.filter(function(entry, idx)  {return entry !== undefined && i !== idx});
-	        newMap = newList.toKeyedSeq().map(function(entry ) {return entry[0]}).flip().toMap();
-	        if (omap.__ownerID) {
-	          newMap.__ownerID = newList.__ownerID = omap.__ownerID;
-	        }
-	      } else {
-	        newMap = map.remove(k);
-	        newList = i === list.size - 1 ? list.pop() : list.set(i, undefined);
-	      }
-	    } else {
-	      if (has) {
-	        if (v === list.get(i)[1]) {
-	          return omap;
-	        }
-	        newMap = map;
-	        newList = list.set(i, [k, v]);
-	      } else {
-	        newMap = map.set(k, list.size);
-	        newList = list.set(list.size, [k, v]);
-	      }
-	    }
-	    if (omap.__ownerID) {
-	      omap.size = newMap.size;
-	      omap._map = newMap;
-	      omap._list = newList;
-	      omap.__hash = undefined;
-	      return omap;
-	    }
-	    return makeOrderedMap(newMap, newList);
-	  }
-
-	  createClass(Stack, IndexedCollection);
-
-	    // @pragma Construction
-
-	    function Stack(value) {
-	      return value === null || value === undefined ? emptyStack() :
-	        isStack(value) ? value :
-	        emptyStack().unshiftAll(value);
-	    }
-
-	    Stack.of = function(/*...values*/) {
-	      return this(arguments);
-	    };
-
-	    Stack.prototype.toString = function() {
-	      return this.__toString('Stack [', ']');
-	    };
-
-	    // @pragma Access
-
-	    Stack.prototype.get = function(index, notSetValue) {
-	      var head = this._head;
-	      index = wrapIndex(this, index);
-	      while (head && index--) {
-	        head = head.next;
-	      }
-	      return head ? head.value : notSetValue;
-	    };
-
-	    Stack.prototype.peek = function() {
-	      return this._head && this._head.value;
-	    };
-
-	    // @pragma Modification
-
-	    Stack.prototype.push = function(/*...values*/) {
-	      if (arguments.length === 0) {
-	        return this;
-	      }
-	      var newSize = this.size + arguments.length;
-	      var head = this._head;
-	      for (var ii = arguments.length - 1; ii >= 0; ii--) {
-	        head = {
-	          value: arguments[ii],
-	          next: head
-	        };
-	      }
-	      if (this.__ownerID) {
-	        this.size = newSize;
-	        this._head = head;
-	        this.__hash = undefined;
-	        this.__altered = true;
-	        return this;
-	      }
-	      return makeStack(newSize, head);
-	    };
-
-	    Stack.prototype.pushAll = function(iter) {
-	      iter = IndexedIterable(iter);
-	      if (iter.size === 0) {
-	        return this;
-	      }
-	      assertNotInfinite(iter.size);
-	      var newSize = this.size;
-	      var head = this._head;
-	      iter.reverse().forEach(function(value ) {
-	        newSize++;
-	        head = {
-	          value: value,
-	          next: head
-	        };
-	      });
-	      if (this.__ownerID) {
-	        this.size = newSize;
-	        this._head = head;
-	        this.__hash = undefined;
-	        this.__altered = true;
-	        return this;
-	      }
-	      return makeStack(newSize, head);
-	    };
-
-	    Stack.prototype.pop = function() {
-	      return this.slice(1);
-	    };
-
-	    Stack.prototype.unshift = function(/*...values*/) {
-	      return this.push.apply(this, arguments);
-	    };
-
-	    Stack.prototype.unshiftAll = function(iter) {
-	      return this.pushAll(iter);
-	    };
-
-	    Stack.prototype.shift = function() {
-	      return this.pop.apply(this, arguments);
-	    };
-
-	    Stack.prototype.clear = function() {
-	      if (this.size === 0) {
-	        return this;
-	      }
-	      if (this.__ownerID) {
-	        this.size = 0;
-	        this._head = undefined;
-	        this.__hash = undefined;
-	        this.__altered = true;
-	        return this;
-	      }
-	      return emptyStack();
-	    };
-
-	    Stack.prototype.slice = function(begin, end) {
-	      if (wholeSlice(begin, end, this.size)) {
-	        return this;
-	      }
-	      var resolvedBegin = resolveBegin(begin, this.size);
-	      var resolvedEnd = resolveEnd(end, this.size);
-	      if (resolvedEnd !== this.size) {
-	        // super.slice(begin, end);
-	        return IndexedCollection.prototype.slice.call(this, begin, end);
-	      }
-	      var newSize = this.size - resolvedBegin;
-	      var head = this._head;
-	      while (resolvedBegin--) {
-	        head = head.next;
-	      }
-	      if (this.__ownerID) {
-	        this.size = newSize;
-	        this._head = head;
-	        this.__hash = undefined;
-	        this.__altered = true;
-	        return this;
-	      }
-	      return makeStack(newSize, head);
-	    };
-
-	    // @pragma Mutability
-
-	    Stack.prototype.__ensureOwner = function(ownerID) {
-	      if (ownerID === this.__ownerID) {
-	        return this;
-	      }
-	      if (!ownerID) {
-	        this.__ownerID = ownerID;
-	        this.__altered = false;
-	        return this;
-	      }
-	      return makeStack(this.size, this._head, ownerID, this.__hash);
-	    };
-
-	    // @pragma Iteration
-
-	    Stack.prototype.__iterate = function(fn, reverse) {
-	      if (reverse) {
-	        return this.reverse().__iterate(fn);
-	      }
-	      var iterations = 0;
-	      var node = this._head;
-	      while (node) {
-	        if (fn(node.value, iterations++, this) === false) {
-	          break;
-	        }
-	        node = node.next;
-	      }
-	      return iterations;
-	    };
-
-	    Stack.prototype.__iterator = function(type, reverse) {
-	      if (reverse) {
-	        return this.reverse().__iterator(type);
-	      }
-	      var iterations = 0;
-	      var node = this._head;
-	      return new src_Iterator__Iterator(function()  {
-	        if (node) {
-	          var value = node.value;
-	          node = node.next;
-	          return iteratorValue(type, iterations++, value);
-	        }
-	        return iteratorDone();
-	      });
-	    };
-
-
-	  function isStack(maybeStack) {
-	    return !!(maybeStack && maybeStack[IS_STACK_SENTINEL]);
-	  }
-
-	  Stack.isStack = isStack;
-
-	  var IS_STACK_SENTINEL = '@@__IMMUTABLE_STACK__@@';
-
-	  var StackPrototype = Stack.prototype;
-	  StackPrototype[IS_STACK_SENTINEL] = true;
-	  StackPrototype.withMutations = MapPrototype.withMutations;
-	  StackPrototype.asMutable = MapPrototype.asMutable;
-	  StackPrototype.asImmutable = MapPrototype.asImmutable;
-	  StackPrototype.wasAltered = MapPrototype.wasAltered;
-
-
-	  function makeStack(size, head, ownerID, hash) {
-	    var map = Object.create(StackPrototype);
-	    map.size = size;
-	    map._head = head;
-	    map.__ownerID = ownerID;
-	    map.__hash = hash;
-	    map.__altered = false;
-	    return map;
-	  }
-
-	  var EMPTY_STACK;
-	  function emptyStack() {
-	    return EMPTY_STACK || (EMPTY_STACK = makeStack(0));
-	  }
-
-	  createClass(src_Set__Set, SetCollection);
-
-	    // @pragma Construction
-
-	    function src_Set__Set(value) {
-	      return value === null || value === undefined ? emptySet() :
-	        isSet(value) ? value :
-	        emptySet().withMutations(function(set ) {
-	          var iter = SetIterable(value);
-	          assertNotInfinite(iter.size);
-	          iter.forEach(function(v ) {return set.add(v)});
-	        });
-	    }
-
-	    src_Set__Set.of = function(/*...values*/) {
-	      return this(arguments);
-	    };
-
-	    src_Set__Set.fromKeys = function(value) {
-	      return this(KeyedIterable(value).keySeq());
-	    };
-
-	    src_Set__Set.prototype.toString = function() {
-	      return this.__toString('Set {', '}');
-	    };
-
-	    // @pragma Access
-
-	    src_Set__Set.prototype.has = function(value) {
-	      return this._map.has(value);
-	    };
-
-	    // @pragma Modification
-
-	    src_Set__Set.prototype.add = function(value) {
-	      return updateSet(this, this._map.set(value, true));
-	    };
-
-	    src_Set__Set.prototype.remove = function(value) {
-	      return updateSet(this, this._map.remove(value));
-	    };
-
-	    src_Set__Set.prototype.clear = function() {
-	      return updateSet(this, this._map.clear());
-	    };
-
-	    // @pragma Composition
-
-	    src_Set__Set.prototype.union = function() {var iters = SLICE$0.call(arguments, 0);
-	      iters = iters.filter(function(x ) {return x.size !== 0});
-	      if (iters.length === 0) {
-	        return this;
-	      }
-	      if (this.size === 0 && !this.__ownerID && iters.length === 1) {
-	        return this.constructor(iters[0]);
-	      }
-	      return this.withMutations(function(set ) {
-	        for (var ii = 0; ii < iters.length; ii++) {
-	          SetIterable(iters[ii]).forEach(function(value ) {return set.add(value)});
-	        }
-	      });
-	    };
-
-	    src_Set__Set.prototype.intersect = function() {var iters = SLICE$0.call(arguments, 0);
-	      if (iters.length === 0) {
-	        return this;
-	      }
-	      iters = iters.map(function(iter ) {return SetIterable(iter)});
-	      var originalSet = this;
-	      return this.withMutations(function(set ) {
-	        originalSet.forEach(function(value ) {
-	          if (!iters.every(function(iter ) {return iter.includes(value)})) {
-	            set.remove(value);
-	          }
-	        });
-	      });
-	    };
-
-	    src_Set__Set.prototype.subtract = function() {var iters = SLICE$0.call(arguments, 0);
-	      if (iters.length === 0) {
-	        return this;
-	      }
-	      iters = iters.map(function(iter ) {return SetIterable(iter)});
-	      var originalSet = this;
-	      return this.withMutations(function(set ) {
-	        originalSet.forEach(function(value ) {
-	          if (iters.some(function(iter ) {return iter.includes(value)})) {
-	            set.remove(value);
-	          }
-	        });
-	      });
-	    };
-
-	    src_Set__Set.prototype.merge = function() {
-	      return this.union.apply(this, arguments);
-	    };
-
-	    src_Set__Set.prototype.mergeWith = function(merger) {var iters = SLICE$0.call(arguments, 1);
-	      return this.union.apply(this, iters);
-	    };
-
-	    src_Set__Set.prototype.sort = function(comparator) {
-	      // Late binding
-	      return OrderedSet(sortFactory(this, comparator));
-	    };
-
-	    src_Set__Set.prototype.sortBy = function(mapper, comparator) {
-	      // Late binding
-	      return OrderedSet(sortFactory(this, comparator, mapper));
-	    };
-
-	    src_Set__Set.prototype.wasAltered = function() {
-	      return this._map.wasAltered();
-	    };
-
-	    src_Set__Set.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      return this._map.__iterate(function(_, k)  {return fn(k, k, this$0)}, reverse);
-	    };
-
-	    src_Set__Set.prototype.__iterator = function(type, reverse) {
-	      return this._map.map(function(_, k)  {return k}).__iterator(type, reverse);
-	    };
-
-	    src_Set__Set.prototype.__ensureOwner = function(ownerID) {
-	      if (ownerID === this.__ownerID) {
-	        return this;
-	      }
-	      var newMap = this._map.__ensureOwner(ownerID);
-	      if (!ownerID) {
-	        this.__ownerID = ownerID;
-	        this._map = newMap;
-	        return this;
-	      }
-	      return this.__make(newMap, ownerID);
-	    };
-
-
-	  function isSet(maybeSet) {
-	    return !!(maybeSet && maybeSet[IS_SET_SENTINEL]);
-	  }
-
-	  src_Set__Set.isSet = isSet;
-
-	  var IS_SET_SENTINEL = '@@__IMMUTABLE_SET__@@';
-
-	  var SetPrototype = src_Set__Set.prototype;
-	  SetPrototype[IS_SET_SENTINEL] = true;
-	  SetPrototype[DELETE] = SetPrototype.remove;
-	  SetPrototype.mergeDeep = SetPrototype.merge;
-	  SetPrototype.mergeDeepWith = SetPrototype.mergeWith;
-	  SetPrototype.withMutations = MapPrototype.withMutations;
-	  SetPrototype.asMutable = MapPrototype.asMutable;
-	  SetPrototype.asImmutable = MapPrototype.asImmutable;
-
-	  SetPrototype.__empty = emptySet;
-	  SetPrototype.__make = makeSet;
-
-	  function updateSet(set, newMap) {
-	    if (set.__ownerID) {
-	      set.size = newMap.size;
-	      set._map = newMap;
-	      return set;
-	    }
-	    return newMap === set._map ? set :
-	      newMap.size === 0 ? set.__empty() :
-	      set.__make(newMap);
-	  }
-
-	  function makeSet(map, ownerID) {
-	    var set = Object.create(SetPrototype);
-	    set.size = map ? map.size : 0;
-	    set._map = map;
-	    set.__ownerID = ownerID;
-	    return set;
-	  }
-
-	  var EMPTY_SET;
-	  function emptySet() {
-	    return EMPTY_SET || (EMPTY_SET = makeSet(emptyMap()));
-	  }
-
-	  createClass(OrderedSet, src_Set__Set);
-
-	    // @pragma Construction
-
-	    function OrderedSet(value) {
-	      return value === null || value === undefined ? emptyOrderedSet() :
-	        isOrderedSet(value) ? value :
-	        emptyOrderedSet().withMutations(function(set ) {
-	          var iter = SetIterable(value);
-	          assertNotInfinite(iter.size);
-	          iter.forEach(function(v ) {return set.add(v)});
-	        });
-	    }
-
-	    OrderedSet.of = function(/*...values*/) {
-	      return this(arguments);
-	    };
-
-	    OrderedSet.fromKeys = function(value) {
-	      return this(KeyedIterable(value).keySeq());
-	    };
-
-	    OrderedSet.prototype.toString = function() {
-	      return this.__toString('OrderedSet {', '}');
-	    };
-
-
-	  function isOrderedSet(maybeOrderedSet) {
-	    return isSet(maybeOrderedSet) && isOrdered(maybeOrderedSet);
-	  }
-
-	  OrderedSet.isOrderedSet = isOrderedSet;
-
-	  var OrderedSetPrototype = OrderedSet.prototype;
-	  OrderedSetPrototype[IS_ORDERED_SENTINEL] = true;
-
-	  OrderedSetPrototype.__empty = emptyOrderedSet;
-	  OrderedSetPrototype.__make = makeOrderedSet;
-
-	  function makeOrderedSet(map, ownerID) {
-	    var set = Object.create(OrderedSetPrototype);
-	    set.size = map ? map.size : 0;
-	    set._map = map;
-	    set.__ownerID = ownerID;
-	    return set;
-	  }
-
-	  var EMPTY_ORDERED_SET;
-	  function emptyOrderedSet() {
-	    return EMPTY_ORDERED_SET || (EMPTY_ORDERED_SET = makeOrderedSet(emptyOrderedMap()));
-	  }
-
-	  createClass(Record, KeyedCollection);
-
-	    function Record(defaultValues, name) {
-	      var hasInitialized;
-
-	      var RecordType = function Record(values) {
-	        if (values instanceof RecordType) {
-	          return values;
-	        }
-	        if (!(this instanceof RecordType)) {
-	          return new RecordType(values);
-	        }
-	        if (!hasInitialized) {
-	          hasInitialized = true;
-	          var keys = Object.keys(defaultValues);
-	          setProps(RecordTypePrototype, keys);
-	          RecordTypePrototype.size = keys.length;
-	          RecordTypePrototype._name = name;
-	          RecordTypePrototype._keys = keys;
-	          RecordTypePrototype._defaultValues = defaultValues;
-	        }
-	        this._map = src_Map__Map(values);
-	      };
-
-	      var RecordTypePrototype = RecordType.prototype = Object.create(RecordPrototype);
-	      RecordTypePrototype.constructor = RecordType;
-
-	      return RecordType;
-	    }
-
-	    Record.prototype.toString = function() {
-	      return this.__toString(recordName(this) + ' {', '}');
-	    };
-
-	    // @pragma Access
-
-	    Record.prototype.has = function(k) {
-	      return this._defaultValues.hasOwnProperty(k);
-	    };
-
-	    Record.prototype.get = function(k, notSetValue) {
-	      if (!this.has(k)) {
-	        return notSetValue;
-	      }
-	      var defaultVal = this._defaultValues[k];
-	      return this._map ? this._map.get(k, defaultVal) : defaultVal;
-	    };
-
-	    // @pragma Modification
-
-	    Record.prototype.clear = function() {
-	      if (this.__ownerID) {
-	        this._map && this._map.clear();
-	        return this;
-	      }
-	      var RecordType = this.constructor;
-	      return RecordType._empty || (RecordType._empty = makeRecord(this, emptyMap()));
-	    };
-
-	    Record.prototype.set = function(k, v) {
-	      if (!this.has(k)) {
-	        throw new Error('Cannot set unknown key "' + k + '" on ' + recordName(this));
-	      }
-	      var newMap = this._map && this._map.set(k, v);
-	      if (this.__ownerID || newMap === this._map) {
-	        return this;
-	      }
-	      return makeRecord(this, newMap);
-	    };
-
-	    Record.prototype.remove = function(k) {
-	      if (!this.has(k)) {
-	        return this;
-	      }
-	      var newMap = this._map && this._map.remove(k);
-	      if (this.__ownerID || newMap === this._map) {
-	        return this;
-	      }
-	      return makeRecord(this, newMap);
-	    };
-
-	    Record.prototype.wasAltered = function() {
-	      return this._map.wasAltered();
-	    };
-
-	    Record.prototype.__iterator = function(type, reverse) {var this$0 = this;
-	      return KeyedIterable(this._defaultValues).map(function(_, k)  {return this$0.get(k)}).__iterator(type, reverse);
-	    };
-
-	    Record.prototype.__iterate = function(fn, reverse) {var this$0 = this;
-	      return KeyedIterable(this._defaultValues).map(function(_, k)  {return this$0.get(k)}).__iterate(fn, reverse);
-	    };
-
-	    Record.prototype.__ensureOwner = function(ownerID) {
-	      if (ownerID === this.__ownerID) {
-	        return this;
-	      }
-	      var newMap = this._map && this._map.__ensureOwner(ownerID);
-	      if (!ownerID) {
-	        this.__ownerID = ownerID;
-	        this._map = newMap;
-	        return this;
-	      }
-	      return makeRecord(this, newMap, ownerID);
-	    };
-
-
-	  var RecordPrototype = Record.prototype;
-	  RecordPrototype[DELETE] = RecordPrototype.remove;
-	  RecordPrototype.deleteIn =
-	  RecordPrototype.removeIn = MapPrototype.removeIn;
-	  RecordPrototype.merge = MapPrototype.merge;
-	  RecordPrototype.mergeWith = MapPrototype.mergeWith;
-	  RecordPrototype.mergeIn = MapPrototype.mergeIn;
-	  RecordPrototype.mergeDeep = MapPrototype.mergeDeep;
-	  RecordPrototype.mergeDeepWith = MapPrototype.mergeDeepWith;
-	  RecordPrototype.mergeDeepIn = MapPrototype.mergeDeepIn;
-	  RecordPrototype.setIn = MapPrototype.setIn;
-	  RecordPrototype.update = MapPrototype.update;
-	  RecordPrototype.updateIn = MapPrototype.updateIn;
-	  RecordPrototype.withMutations = MapPrototype.withMutations;
-	  RecordPrototype.asMutable = MapPrototype.asMutable;
-	  RecordPrototype.asImmutable = MapPrototype.asImmutable;
-
-
-	  function makeRecord(likeRecord, map, ownerID) {
-	    var record = Object.create(Object.getPrototypeOf(likeRecord));
-	    record._map = map;
-	    record.__ownerID = ownerID;
-	    return record;
-	  }
-
-	  function recordName(record) {
-	    return record._name || record.constructor.name || 'Record';
-	  }
-
-	  function setProps(prototype, names) {
-	    try {
-	      names.forEach(setProp.bind(undefined, prototype));
-	    } catch (error) {
-	      // Object.defineProperty failed. Probably IE8.
-	    }
-	  }
-
-	  function setProp(prototype, name) {
-	    Object.defineProperty(prototype, name, {
-	      get: function() {
-	        return this.get(name);
-	      },
-	      set: function(value) {
-	        invariant(this.__ownerID, 'Cannot set on an immutable record.');
-	        this.set(name, value);
-	      }
-	    });
-	  }
-
-	  function deepEqual(a, b) {
-	    if (a === b) {
-	      return true;
-	    }
-
-	    if (
-	      !isIterable(b) ||
-	      a.size !== undefined && b.size !== undefined && a.size !== b.size ||
-	      a.__hash !== undefined && b.__hash !== undefined && a.__hash !== b.__hash ||
-	      isKeyed(a) !== isKeyed(b) ||
-	      isIndexed(a) !== isIndexed(b) ||
-	      isOrdered(a) !== isOrdered(b)
-	    ) {
-	      return false;
-	    }
-
-	    if (a.size === 0 && b.size === 0) {
-	      return true;
-	    }
-
-	    var notAssociative = !isAssociative(a);
-
-	    if (isOrdered(a)) {
-	      var entries = a.entries();
-	      return b.every(function(v, k)  {
-	        var entry = entries.next().value;
-	        return entry && is(entry[1], v) && (notAssociative || is(entry[0], k));
-	      }) && entries.next().done;
-	    }
-
-	    var flipped = false;
-
-	    if (a.size === undefined) {
-	      if (b.size === undefined) {
-	        if (typeof a.cacheResult === 'function') {
-	          a.cacheResult();
-	        }
-	      } else {
-	        flipped = true;
-	        var _ = a;
-	        a = b;
-	        b = _;
-	      }
-	    }
-
-	    var allEqual = true;
-	    var bSize = b.__iterate(function(v, k)  {
-	      if (notAssociative ? !a.has(v) :
-	          flipped ? !is(v, a.get(k, NOT_SET)) : !is(a.get(k, NOT_SET), v)) {
-	        allEqual = false;
-	        return false;
-	      }
-	    });
-
-	    return allEqual && a.size === bSize;
-	  }
-
-	  createClass(Range, IndexedSeq);
-
-	    function Range(start, end, step) {
-	      if (!(this instanceof Range)) {
-	        return new Range(start, end, step);
-	      }
-	      invariant(step !== 0, 'Cannot step a Range by 0');
-	      start = start || 0;
-	      if (end === undefined) {
-	        end = Infinity;
-	      }
-	      step = step === undefined ? 1 : Math.abs(step);
-	      if (end < start) {
-	        step = -step;
-	      }
-	      this._start = start;
-	      this._end = end;
-	      this._step = step;
-	      this.size = Math.max(0, Math.ceil((end - start) / step - 1) + 1);
-	      if (this.size === 0) {
-	        if (EMPTY_RANGE) {
-	          return EMPTY_RANGE;
-	        }
-	        EMPTY_RANGE = this;
-	      }
-	    }
-
-	    Range.prototype.toString = function() {
-	      if (this.size === 0) {
-	        return 'Range []';
-	      }
-	      return 'Range [ ' +
-	        this._start + '...' + this._end +
-	        (this._step > 1 ? ' by ' + this._step : '') +
-	      ' ]';
-	    };
-
-	    Range.prototype.get = function(index, notSetValue) {
-	      return this.has(index) ?
-	        this._start + wrapIndex(this, index) * this._step :
-	        notSetValue;
-	    };
-
-	    Range.prototype.includes = function(searchValue) {
-	      var possibleIndex = (searchValue - this._start) / this._step;
-	      return possibleIndex >= 0 &&
-	        possibleIndex < this.size &&
-	        possibleIndex === Math.floor(possibleIndex);
-	    };
-
-	    Range.prototype.slice = function(begin, end) {
-	      if (wholeSlice(begin, end, this.size)) {
-	        return this;
-	      }
-	      begin = resolveBegin(begin, this.size);
-	      end = resolveEnd(end, this.size);
-	      if (end <= begin) {
-	        return new Range(0, 0);
-	      }
-	      return new Range(this.get(begin, this._end), this.get(end, this._end), this._step);
-	    };
-
-	    Range.prototype.indexOf = function(searchValue) {
-	      var offsetValue = searchValue - this._start;
-	      if (offsetValue % this._step === 0) {
-	        var index = offsetValue / this._step;
-	        if (index >= 0 && index < this.size) {
-	          return index
-	        }
-	      }
-	      return -1;
-	    };
-
-	    Range.prototype.lastIndexOf = function(searchValue) {
-	      return this.indexOf(searchValue);
-	    };
-
-	    Range.prototype.__iterate = function(fn, reverse) {
-	      var maxIndex = this.size - 1;
-	      var step = this._step;
-	      var value = reverse ? this._start + maxIndex * step : this._start;
-	      for (var ii = 0; ii <= maxIndex; ii++) {
-	        if (fn(value, ii, this) === false) {
-	          return ii + 1;
-	        }
-	        value += reverse ? -step : step;
-	      }
-	      return ii;
-	    };
-
-	    Range.prototype.__iterator = function(type, reverse) {
-	      var maxIndex = this.size - 1;
-	      var step = this._step;
-	      var value = reverse ? this._start + maxIndex * step : this._start;
-	      var ii = 0;
-	      return new src_Iterator__Iterator(function()  {
-	        var v = value;
-	        value += reverse ? -step : step;
-	        return ii > maxIndex ? iteratorDone() : iteratorValue(type, ii++, v);
-	      });
-	    };
-
-	    Range.prototype.equals = function(other) {
-	      return other instanceof Range ?
-	        this._start === other._start &&
-	        this._end === other._end &&
-	        this._step === other._step :
-	        deepEqual(this, other);
-	    };
-
-
-	  var EMPTY_RANGE;
-
-	  createClass(Repeat, IndexedSeq);
-
-	    function Repeat(value, times) {
-	      if (!(this instanceof Repeat)) {
-	        return new Repeat(value, times);
-	      }
-	      this._value = value;
-	      this.size = times === undefined ? Infinity : Math.max(0, times);
-	      if (this.size === 0) {
-	        if (EMPTY_REPEAT) {
-	          return EMPTY_REPEAT;
-	        }
-	        EMPTY_REPEAT = this;
-	      }
-	    }
-
-	    Repeat.prototype.toString = function() {
-	      if (this.size === 0) {
-	        return 'Repeat []';
-	      }
-	      return 'Repeat [ ' + this._value + ' ' + this.size + ' times ]';
-	    };
-
-	    Repeat.prototype.get = function(index, notSetValue) {
-	      return this.has(index) ? this._value : notSetValue;
-	    };
-
-	    Repeat.prototype.includes = function(searchValue) {
-	      return is(this._value, searchValue);
-	    };
-
-	    Repeat.prototype.slice = function(begin, end) {
-	      var size = this.size;
-	      return wholeSlice(begin, end, size) ? this :
-	        new Repeat(this._value, resolveEnd(end, size) - resolveBegin(begin, size));
-	    };
-
-	    Repeat.prototype.reverse = function() {
-	      return this;
-	    };
-
-	    Repeat.prototype.indexOf = function(searchValue) {
-	      if (is(this._value, searchValue)) {
-	        return 0;
-	      }
-	      return -1;
-	    };
-
-	    Repeat.prototype.lastIndexOf = function(searchValue) {
-	      if (is(this._value, searchValue)) {
-	        return this.size;
-	      }
-	      return -1;
-	    };
-
-	    Repeat.prototype.__iterate = function(fn, reverse) {
-	      for (var ii = 0; ii < this.size; ii++) {
-	        if (fn(this._value, ii, this) === false) {
-	          return ii + 1;
-	        }
-	      }
-	      return ii;
-	    };
-
-	    Repeat.prototype.__iterator = function(type, reverse) {var this$0 = this;
-	      var ii = 0;
-	      return new src_Iterator__Iterator(function() 
-	        {return ii < this$0.size ? iteratorValue(type, ii++, this$0._value) : iteratorDone()}
-	      );
-	    };
-
-	    Repeat.prototype.equals = function(other) {
-	      return other instanceof Repeat ?
-	        is(this._value, other._value) :
-	        deepEqual(other);
-	    };
-
-
-	  var EMPTY_REPEAT;
-
-	  /**
-	   * Contributes additional methods to a constructor
-	   */
-	  function mixin(ctor, methods) {
-	    var keyCopier = function(key ) { ctor.prototype[key] = methods[key]; };
-	    Object.keys(methods).forEach(keyCopier);
-	    Object.getOwnPropertySymbols &&
-	      Object.getOwnPropertySymbols(methods).forEach(keyCopier);
-	    return ctor;
-	  }
-
-	  Iterable.Iterator = src_Iterator__Iterator;
-
-	  mixin(Iterable, {
-
-	    // ### Conversion to other types
-
-	    toArray: function() {
-	      assertNotInfinite(this.size);
-	      var array = new Array(this.size || 0);
-	      this.valueSeq().__iterate(function(v, i)  { array[i] = v; });
-	      return array;
-	    },
-
-	    toIndexedSeq: function() {
-	      return new ToIndexedSequence(this);
-	    },
-
-	    toJS: function() {
-	      return this.toSeq().map(
-	        function(value ) {return value && typeof value.toJS === 'function' ? value.toJS() : value}
-	      ).__toJS();
-	    },
-
-	    toJSON: function() {
-	      return this.toSeq().map(
-	        function(value ) {return value && typeof value.toJSON === 'function' ? value.toJSON() : value}
-	      ).__toJS();
-	    },
-
-	    toKeyedSeq: function() {
-	      return new ToKeyedSequence(this, true);
-	    },
-
-	    toMap: function() {
-	      // Use Late Binding here to solve the circular dependency.
-	      return src_Map__Map(this.toKeyedSeq());
-	    },
-
-	    toObject: function() {
-	      assertNotInfinite(this.size);
-	      var object = {};
-	      this.__iterate(function(v, k)  { object[k] = v; });
-	      return object;
-	    },
-
-	    toOrderedMap: function() {
-	      // Use Late Binding here to solve the circular dependency.
-	      return OrderedMap(this.toKeyedSeq());
-	    },
-
-	    toOrderedSet: function() {
-	      // Use Late Binding here to solve the circular dependency.
-	      return OrderedSet(isKeyed(this) ? this.valueSeq() : this);
-	    },
-
-	    toSet: function() {
-	      // Use Late Binding here to solve the circular dependency.
-	      return src_Set__Set(isKeyed(this) ? this.valueSeq() : this);
-	    },
-
-	    toSetSeq: function() {
-	      return new ToSetSequence(this);
-	    },
-
-	    toSeq: function() {
-	      return isIndexed(this) ? this.toIndexedSeq() :
-	        isKeyed(this) ? this.toKeyedSeq() :
-	        this.toSetSeq();
-	    },
-
-	    toStack: function() {
-	      // Use Late Binding here to solve the circular dependency.
-	      return Stack(isKeyed(this) ? this.valueSeq() : this);
-	    },
-
-	    toList: function() {
-	      // Use Late Binding here to solve the circular dependency.
-	      return List(isKeyed(this) ? this.valueSeq() : this);
-	    },
-
-
-	    // ### Common JavaScript methods and properties
-
-	    toString: function() {
-	      return '[Iterable]';
-	    },
-
-	    __toString: function(head, tail) {
-	      if (this.size === 0) {
-	        return head + tail;
-	      }
-	      return head + ' ' + this.toSeq().map(this.__toStringMapper).join(', ') + ' ' + tail;
-	    },
-
-
-	    // ### ES6 Collection methods (ES6 Array and Map)
-
-	    concat: function() {var values = SLICE$0.call(arguments, 0);
-	      return reify(this, concatFactory(this, values));
-	    },
-
-	    contains: function(searchValue) {
-	      return this.includes(searchValue);
-	    },
-
-	    includes: function(searchValue) {
-	      return this.some(function(value ) {return is(value, searchValue)});
-	    },
-
-	    entries: function() {
-	      return this.__iterator(ITERATE_ENTRIES);
-	    },
-
-	    every: function(predicate, context) {
-	      assertNotInfinite(this.size);
-	      var returnValue = true;
-	      this.__iterate(function(v, k, c)  {
-	        if (!predicate.call(context, v, k, c)) {
-	          returnValue = false;
-	          return false;
-	        }
-	      });
-	      return returnValue;
-	    },
-
-	    filter: function(predicate, context) {
-	      return reify(this, filterFactory(this, predicate, context, true));
-	    },
-
-	    find: function(predicate, context, notSetValue) {
-	      var entry = this.findEntry(predicate, context);
-	      return entry ? entry[1] : notSetValue;
-	    },
-
-	    findEntry: function(predicate, context) {
-	      var found;
-	      this.__iterate(function(v, k, c)  {
-	        if (predicate.call(context, v, k, c)) {
-	          found = [k, v];
-	          return false;
-	        }
-	      });
-	      return found;
-	    },
-
-	    findLastEntry: function(predicate, context) {
-	      return this.toSeq().reverse().findEntry(predicate, context);
-	    },
-
-	    forEach: function(sideEffect, context) {
-	      assertNotInfinite(this.size);
-	      return this.__iterate(context ? sideEffect.bind(context) : sideEffect);
-	    },
-
-	    join: function(separator) {
-	      assertNotInfinite(this.size);
-	      separator = separator !== undefined ? '' + separator : ',';
-	      var joined = '';
-	      var isFirst = true;
-	      this.__iterate(function(v ) {
-	        isFirst ? (isFirst = false) : (joined += separator);
-	        joined += v !== null && v !== undefined ? v.toString() : '';
-	      });
-	      return joined;
-	    },
-
-	    keys: function() {
-	      return this.__iterator(ITERATE_KEYS);
-	    },
-
-	    map: function(mapper, context) {
-	      return reify(this, mapFactory(this, mapper, context));
-	    },
-
-	    reduce: function(reducer, initialReduction, context) {
-	      assertNotInfinite(this.size);
-	      var reduction;
-	      var useFirst;
-	      if (arguments.length < 2) {
-	        useFirst = true;
-	      } else {
-	        reduction = initialReduction;
-	      }
-	      this.__iterate(function(v, k, c)  {
-	        if (useFirst) {
-	          useFirst = false;
-	          reduction = v;
-	        } else {
-	          reduction = reducer.call(context, reduction, v, k, c);
-	        }
-	      });
-	      return reduction;
-	    },
-
-	    reduceRight: function(reducer, initialReduction, context) {
-	      var reversed = this.toKeyedSeq().reverse();
-	      return reversed.reduce.apply(reversed, arguments);
-	    },
-
-	    reverse: function() {
-	      return reify(this, reverseFactory(this, true));
-	    },
-
-	    slice: function(begin, end) {
-	      return reify(this, sliceFactory(this, begin, end, true));
-	    },
-
-	    some: function(predicate, context) {
-	      return !this.every(not(predicate), context);
-	    },
-
-	    sort: function(comparator) {
-	      return reify(this, sortFactory(this, comparator));
-	    },
-
-	    values: function() {
-	      return this.__iterator(ITERATE_VALUES);
-	    },
-
-
-	    // ### More sequential methods
-
-	    butLast: function() {
-	      return this.slice(0, -1);
-	    },
-
-	    isEmpty: function() {
-	      return this.size !== undefined ? this.size === 0 : !this.some(function()  {return true});
-	    },
-
-	    count: function(predicate, context) {
-	      return ensureSize(
-	        predicate ? this.toSeq().filter(predicate, context) : this
-	      );
-	    },
-
-	    countBy: function(grouper, context) {
-	      return countByFactory(this, grouper, context);
-	    },
-
-	    equals: function(other) {
-	      return deepEqual(this, other);
-	    },
-
-	    entrySeq: function() {
-	      var iterable = this;
-	      if (iterable._cache) {
-	        // We cache as an entries array, so we can just return the cache!
-	        return new ArraySeq(iterable._cache);
-	      }
-	      var entriesSequence = iterable.toSeq().map(entryMapper).toIndexedSeq();
-	      entriesSequence.fromEntrySeq = function()  {return iterable.toSeq()};
-	      return entriesSequence;
-	    },
-
-	    filterNot: function(predicate, context) {
-	      return this.filter(not(predicate), context);
-	    },
-
-	    findLast: function(predicate, context, notSetValue) {
-	      return this.toKeyedSeq().reverse().find(predicate, context, notSetValue);
-	    },
-
-	    first: function() {
-	      return this.find(returnTrue);
-	    },
-
-	    flatMap: function(mapper, context) {
-	      return reify(this, flatMapFactory(this, mapper, context));
-	    },
-
-	    flatten: function(depth) {
-	      return reify(this, flattenFactory(this, depth, true));
-	    },
-
-	    fromEntrySeq: function() {
-	      return new FromEntriesSequence(this);
-	    },
-
-	    get: function(searchKey, notSetValue) {
-	      return this.find(function(_, key)  {return is(key, searchKey)}, undefined, notSetValue);
-	    },
-
-	    getIn: function(searchKeyPath, notSetValue) {
-	      var nested = this;
-	      // Note: in an ES6 environment, we would prefer:
-	      // for (var key of searchKeyPath) {
-	      var iter = forceIterator(searchKeyPath);
-	      var step;
-	      while (!(step = iter.next()).done) {
-	        var key = step.value;
-	        nested = nested && nested.get ? nested.get(key, NOT_SET) : NOT_SET;
-	        if (nested === NOT_SET) {
-	          return notSetValue;
-	        }
-	      }
-	      return nested;
-	    },
-
-	    groupBy: function(grouper, context) {
-	      return groupByFactory(this, grouper, context);
-	    },
-
-	    has: function(searchKey) {
-	      return this.get(searchKey, NOT_SET) !== NOT_SET;
-	    },
-
-	    hasIn: function(searchKeyPath) {
-	      return this.getIn(searchKeyPath, NOT_SET) !== NOT_SET;
-	    },
-
-	    isSubset: function(iter) {
-	      iter = typeof iter.includes === 'function' ? iter : Iterable(iter);
-	      return this.every(function(value ) {return iter.includes(value)});
-	    },
-
-	    isSuperset: function(iter) {
-	      return iter.isSubset(this);
-	    },
-
-	    keySeq: function() {
-	      return this.toSeq().map(keyMapper).toIndexedSeq();
-	    },
-
-	    last: function() {
-	      return this.toSeq().reverse().first();
-	    },
-
-	    max: function(comparator) {
-	      return maxFactory(this, comparator);
-	    },
-
-	    maxBy: function(mapper, comparator) {
-	      return maxFactory(this, comparator, mapper);
-	    },
-
-	    min: function(comparator) {
-	      return maxFactory(this, comparator ? neg(comparator) : defaultNegComparator);
-	    },
-
-	    minBy: function(mapper, comparator) {
-	      return maxFactory(this, comparator ? neg(comparator) : defaultNegComparator, mapper);
-	    },
-
-	    rest: function() {
-	      return this.slice(1);
-	    },
-
-	    skip: function(amount) {
-	      return this.slice(Math.max(0, amount));
-	    },
-
-	    skipLast: function(amount) {
-	      return reify(this, this.toSeq().reverse().skip(amount).reverse());
-	    },
-
-	    skipWhile: function(predicate, context) {
-	      return reify(this, skipWhileFactory(this, predicate, context, true));
-	    },
-
-	    skipUntil: function(predicate, context) {
-	      return this.skipWhile(not(predicate), context);
-	    },
-
-	    sortBy: function(mapper, comparator) {
-	      return reify(this, sortFactory(this, comparator, mapper));
-	    },
-
-	    take: function(amount) {
-	      return this.slice(0, Math.max(0, amount));
-	    },
-
-	    takeLast: function(amount) {
-	      return reify(this, this.toSeq().reverse().take(amount).reverse());
-	    },
-
-	    takeWhile: function(predicate, context) {
-	      return reify(this, takeWhileFactory(this, predicate, context));
-	    },
-
-	    takeUntil: function(predicate, context) {
-	      return this.takeWhile(not(predicate), context);
-	    },
-
-	    valueSeq: function() {
-	      return this.toIndexedSeq();
-	    },
-
-
-	    // ### Hashable Object
-
-	    hashCode: function() {
-	      return this.__hash || (this.__hash = hashIterable(this));
-	    },
-
-
-	    // ### Internal
-
-	    // abstract __iterate(fn, reverse)
-
-	    // abstract __iterator(type, reverse)
-	  });
-
-	  // var IS_ITERABLE_SENTINEL = '@@__IMMUTABLE_ITERABLE__@@';
-	  // var IS_KEYED_SENTINEL = '@@__IMMUTABLE_KEYED__@@';
-	  // var IS_INDEXED_SENTINEL = '@@__IMMUTABLE_INDEXED__@@';
-	  // var IS_ORDERED_SENTINEL = '@@__IMMUTABLE_ORDERED__@@';
-
-	  var IterablePrototype = Iterable.prototype;
-	  IterablePrototype[IS_ITERABLE_SENTINEL] = true;
-	  IterablePrototype[ITERATOR_SYMBOL] = IterablePrototype.values;
-	  IterablePrototype.__toJS = IterablePrototype.toArray;
-	  IterablePrototype.__toStringMapper = quoteString;
-	  IterablePrototype.inspect =
-	  IterablePrototype.toSource = function() { return this.toString(); };
-	  IterablePrototype.chain = IterablePrototype.flatMap;
-
-	  // Temporary warning about using length
-	  (function () {
-	    try {
-	      Object.defineProperty(IterablePrototype, 'length', {
-	        get: function () {
-	          if (!Iterable.noLengthWarning) {
-	            var stack;
-	            try {
-	              throw new Error();
-	            } catch (error) {
-	              stack = error.stack;
-	            }
-	            if (stack.indexOf('_wrapObject') === -1) {
-	              console && console.warn && console.warn(
-	                'iterable.length has been deprecated, '+
-	                'use iterable.size or iterable.count(). '+
-	                'This warning will become a silent error in a future version. ' +
-	                stack
-	              );
-	              return this.size;
-	            }
-	          }
-	        }
-	      });
-	    } catch (e) {}
-	  })();
-
-
-
-	  mixin(KeyedIterable, {
-
-	    // ### More sequential methods
-
-	    flip: function() {
-	      return reify(this, flipFactory(this));
-	    },
-
-	    findKey: function(predicate, context) {
-	      var entry = this.findEntry(predicate, context);
-	      return entry && entry[0];
-	    },
-
-	    findLastKey: function(predicate, context) {
-	      return this.toSeq().reverse().findKey(predicate, context);
-	    },
-
-	    keyOf: function(searchValue) {
-	      return this.findKey(function(value ) {return is(value, searchValue)});
-	    },
-
-	    lastKeyOf: function(searchValue) {
-	      return this.findLastKey(function(value ) {return is(value, searchValue)});
-	    },
-
-	    mapEntries: function(mapper, context) {var this$0 = this;
-	      var iterations = 0;
-	      return reify(this,
-	        this.toSeq().map(
-	          function(v, k)  {return mapper.call(context, [k, v], iterations++, this$0)}
-	        ).fromEntrySeq()
-	      );
-	    },
-
-	    mapKeys: function(mapper, context) {var this$0 = this;
-	      return reify(this,
-	        this.toSeq().flip().map(
-	          function(k, v)  {return mapper.call(context, k, v, this$0)}
-	        ).flip()
-	      );
-	    },
-
-	  });
-
-	  var KeyedIterablePrototype = KeyedIterable.prototype;
-	  KeyedIterablePrototype[IS_KEYED_SENTINEL] = true;
-	  KeyedIterablePrototype[ITERATOR_SYMBOL] = IterablePrototype.entries;
-	  KeyedIterablePrototype.__toJS = IterablePrototype.toObject;
-	  KeyedIterablePrototype.__toStringMapper = function(v, k)  {return JSON.stringify(k) + ': ' + quoteString(v)};
-
-
-
-	  mixin(IndexedIterable, {
-
-	    // ### Conversion to other types
-
-	    toKeyedSeq: function() {
-	      return new ToKeyedSequence(this, false);
-	    },
-
-
-	    // ### ES6 Collection methods (ES6 Array and Map)
-
-	    filter: function(predicate, context) {
-	      return reify(this, filterFactory(this, predicate, context, false));
-	    },
-
-	    findIndex: function(predicate, context) {
-	      var entry = this.findEntry(predicate, context);
-	      return entry ? entry[0] : -1;
-	    },
-
-	    indexOf: function(searchValue) {
-	      var key = this.toKeyedSeq().keyOf(searchValue);
-	      return key === undefined ? -1 : key;
-	    },
-
-	    lastIndexOf: function(searchValue) {
-	      return this.toSeq().reverse().indexOf(searchValue);
-	    },
-
-	    reverse: function() {
-	      return reify(this, reverseFactory(this, false));
-	    },
-
-	    slice: function(begin, end) {
-	      return reify(this, sliceFactory(this, begin, end, false));
-	    },
-
-	    splice: function(index, removeNum /*, ...values*/) {
-	      var numArgs = arguments.length;
-	      removeNum = Math.max(removeNum | 0, 0);
-	      if (numArgs === 0 || (numArgs === 2 && !removeNum)) {
-	        return this;
-	      }
-	      index = resolveBegin(index, this.size);
-	      var spliced = this.slice(0, index);
-	      return reify(
-	        this,
-	        numArgs === 1 ?
-	          spliced :
-	          spliced.concat(arrCopy(arguments, 2), this.slice(index + removeNum))
-	      );
-	    },
-
-
-	    // ### More collection methods
-
-	    findLastIndex: function(predicate, context) {
-	      var key = this.toKeyedSeq().findLastKey(predicate, context);
-	      return key === undefined ? -1 : key;
-	    },
-
-	    first: function() {
-	      return this.get(0);
-	    },
-
-	    flatten: function(depth) {
-	      return reify(this, flattenFactory(this, depth, false));
-	    },
-
-	    get: function(index, notSetValue) {
-	      index = wrapIndex(this, index);
-	      return (index < 0 || (this.size === Infinity ||
-	          (this.size !== undefined && index > this.size))) ?
-	        notSetValue :
-	        this.find(function(_, key)  {return key === index}, undefined, notSetValue);
-	    },
-
-	    has: function(index) {
-	      index = wrapIndex(this, index);
-	      return index >= 0 && (this.size !== undefined ?
-	        this.size === Infinity || index < this.size :
-	        this.indexOf(index) !== -1
-	      );
-	    },
-
-	    interpose: function(separator) {
-	      return reify(this, interposeFactory(this, separator));
-	    },
-
-	    interleave: function(/*...iterables*/) {
-	      var iterables = [this].concat(arrCopy(arguments));
-	      var zipped = zipWithFactory(this.toSeq(), IndexedSeq.of, iterables);
-	      var interleaved = zipped.flatten(true);
-	      if (zipped.size) {
-	        interleaved.size = zipped.size * iterables.length;
-	      }
-	      return reify(this, interleaved);
-	    },
-
-	    last: function() {
-	      return this.get(-1);
-	    },
-
-	    skipWhile: function(predicate, context) {
-	      return reify(this, skipWhileFactory(this, predicate, context, false));
-	    },
-
-	    zip: function(/*, ...iterables */) {
-	      var iterables = [this].concat(arrCopy(arguments));
-	      return reify(this, zipWithFactory(this, defaultZipper, iterables));
-	    },
-
-	    zipWith: function(zipper/*, ...iterables */) {
-	      var iterables = arrCopy(arguments);
-	      iterables[0] = this;
-	      return reify(this, zipWithFactory(this, zipper, iterables));
-	    },
-
-	  });
-
-	  IndexedIterable.prototype[IS_INDEXED_SENTINEL] = true;
-	  IndexedIterable.prototype[IS_ORDERED_SENTINEL] = true;
-
-
-
-	  mixin(SetIterable, {
-
-	    // ### ES6 Collection methods (ES6 Array and Map)
-
-	    get: function(value, notSetValue) {
-	      return this.has(value) ? value : notSetValue;
-	    },
-
-	    includes: function(value) {
-	      return this.has(value);
-	    },
-
-
-	    // ### More sequential methods
-
-	    keySeq: function() {
-	      return this.valueSeq();
-	    },
-
-	  });
-
-	  SetIterable.prototype.has = IterablePrototype.includes;
-
-
-	  // Mixin subclasses
-
-	  mixin(KeyedSeq, KeyedIterable.prototype);
-	  mixin(IndexedSeq, IndexedIterable.prototype);
-	  mixin(SetSeq, SetIterable.prototype);
-
-	  mixin(KeyedCollection, KeyedIterable.prototype);
-	  mixin(IndexedCollection, IndexedIterable.prototype);
-	  mixin(SetCollection, SetIterable.prototype);
-
-
-	  // #pragma Helper functions
-
-	  function keyMapper(v, k) {
-	    return k;
-	  }
-
-	  function entryMapper(v, k) {
-	    return [k, v];
-	  }
-
-	  function not(predicate) {
-	    return function() {
-	      return !predicate.apply(this, arguments);
-	    }
-	  }
-
-	  function neg(predicate) {
-	    return function() {
-	      return -predicate.apply(this, arguments);
-	    }
-	  }
-
-	  function quoteString(value) {
-	    return typeof value === 'string' ? JSON.stringify(value) : value;
-	  }
-
-	  function defaultZipper() {
-	    return arrCopy(arguments);
-	  }
-
-	  function defaultNegComparator(a, b) {
-	    return a < b ? 1 : a > b ? -1 : 0;
-	  }
-
-	  function hashIterable(iterable) {
-	    if (iterable.size === Infinity) {
-	      return 0;
-	    }
-	    var ordered = isOrdered(iterable);
-	    var keyed = isKeyed(iterable);
-	    var h = ordered ? 1 : 0;
-	    var size = iterable.__iterate(
-	      keyed ?
-	        ordered ?
-	          function(v, k)  { h = 31 * h + hashMerge(hash(v), hash(k)) | 0; } :
-	          function(v, k)  { h = h + hashMerge(hash(v), hash(k)) | 0; } :
-	        ordered ?
-	          function(v ) { h = 31 * h + hash(v) | 0; } :
-	          function(v ) { h = h + hash(v) | 0; }
-	    );
-	    return murmurHashOfSize(size, h);
-	  }
-
-	  function murmurHashOfSize(size, h) {
-	    h = src_Math__imul(h, 0xCC9E2D51);
-	    h = src_Math__imul(h << 15 | h >>> -15, 0x1B873593);
-	    h = src_Math__imul(h << 13 | h >>> -13, 5);
-	    h = (h + 0xE6546B64 | 0) ^ size;
-	    h = src_Math__imul(h ^ h >>> 16, 0x85EBCA6B);
-	    h = src_Math__imul(h ^ h >>> 13, 0xC2B2AE35);
-	    h = smi(h ^ h >>> 16);
-	    return h;
-	  }
-
-	  function hashMerge(a, b) {
-	    return a ^ b + 0x9E3779B9 + (a << 6) + (a >> 2) | 0; // int
-	  }
-
-	  var Immutable = {
-
-	    Iterable: Iterable,
-
-	    Seq: Seq,
-	    Collection: Collection,
-	    Map: src_Map__Map,
-	    OrderedMap: OrderedMap,
-	    List: List,
-	    Stack: Stack,
-	    Set: src_Set__Set,
-	    OrderedSet: OrderedSet,
-
-	    Record: Record,
-	    Range: Range,
-	    Repeat: Repeat,
-
-	    is: is,
-	    fromJS: fromJS,
-
-	  };
-
-	  return Immutable;
-
-	}));
-
-/***/ },
-/* 208 */
-/***/ function(module, exports, __webpack_require__) {
-
-	if (typeof Object.create === 'function') {
-	  // implementation from standard node.js 'util' module
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor
-	    ctor.prototype = Object.create(superCtor.prototype, {
-	      constructor: {
-	        value: ctor,
-	        enumerable: false,
-	        writable: true,
-	        configurable: true
-	      }
-	    });
-	  };
-	} else {
-	  // old school shim for old browsers
-	  module.exports = function inherits(ctor, superCtor) {
-	    ctor.super_ = superCtor
-	    var TempCtor = function () {}
-	    TempCtor.prototype = superCtor.prototype
-	    ctor.prototype = new TempCtor()
-	    ctor.prototype.constructor = ctor
-	  }
+	  return true;
 	}
 
+	module.exports = shallowEqual;
+
 
 /***/ },
-/* 209 */
+/* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28393,7 +21039,7 @@
 
 
 /***/ },
-/* 210 */
+/* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28409,7 +21055,7 @@
 
 	'use strict';
 
-	var ExecutionEnvironment = __webpack_require__(134);
+	var ExecutionEnvironment = __webpack_require__(135);
 
 	var useHasFeature;
 	if (ExecutionEnvironment.canUseDOM) {
@@ -28459,54 +21105,6 @@
 	}
 
 	module.exports = isEventSupported;
-
-
-/***/ },
-/* 211 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule shallowEqual
-	 */
-
-	'use strict';
-
-	/**
-	 * Performs equality by iterating through keys on an object and returning
-	 * false when any key has values which are not strictly equal between
-	 * objA and objB. Returns true when the values of all keys are strictly equal.
-	 *
-	 * @return {boolean}
-	 */
-	function shallowEqual(objA, objB) {
-	  if (objA === objB) {
-	    return true;
-	  }
-	  var key;
-	  // Test for A's keys different from B.
-	  for (key in objA) {
-	    if (objA.hasOwnProperty(key) &&
-	        (!objB.hasOwnProperty(key) || objA[key] !== objB[key])) {
-	      return false;
-	    }
-	  }
-	  // Test for B's keys missing from A.
-	  for (key in objB) {
-	    if (objB.hasOwnProperty(key) && !objA.hasOwnProperty(key)) {
-	      return false;
-	    }
-	  }
-	  return true;
-	}
-
-	module.exports = shallowEqual;
 
 
 /***/ },
@@ -28619,7 +21217,7 @@
 
 	module.exports = EventListener;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 214 */
@@ -29025,7 +21623,7 @@
 
 	module.exports = ImmutableObject;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 217 */
@@ -29044,7 +21642,7 @@
 	 */
 
 	var ImmutableObject = __webpack_require__(216);
-	var React = __webpack_require__(151);
+	var React = __webpack_require__(153);
 
 	var cloneWithProps = __webpack_require__(162);
 	var cx = __webpack_require__(163);
@@ -29310,7 +21908,7 @@
 
 	module.exports = emptyObject;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(131)))
 
 /***/ },
 /* 220 */
@@ -29878,6 +22476,7101 @@
 	};
 
 	module.exports = keyMirror;
+
+
+/***/ },
+/* 226 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var c3 = __webpack_require__(227);
+	var _ = __webpack_require__(2);
+
+	module.exports = {
+	    createChart: function(container, props, state){},
+	    cleanChart: function(container, props, state){},
+	    update: function(container, nextProps, nextState){
+
+		var chart = c3.generate({
+		    bindto: container,
+		    size: {
+			height: nextProps.height,
+			width: nextProps.width
+		    },
+		    interaction: {enabled: false},
+		    data: {
+			type: "scatter",
+			json: nextProps.data,
+			keys: {x: 'x', value:['y']},
+			names: {x: nextProps.xColumn, y: nextProps.yColumn}
+		    },
+		    axis: {
+			x: {
+			    label: nextProps.xColumn,
+			    tick: {fit: false}
+			},
+			y: {
+			    label: nextProps.yColumn
+			}
+		    }
+		});
+	    }
+	};
+
+
+
+/***/ },
+/* 227 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (window) {
+	    'use strict';
+
+	    /*global define, module, exports, require */
+
+	    var c3 = { version: "0.4.10" };
+
+	    var c3_chart_fn,
+	        c3_chart_internal_fn,
+	        c3_chart_internal_axis_fn;
+
+	    function API(owner) {
+	        this.owner = owner;
+	    }
+
+	    function inherit(base, derived) {
+
+	        if (Object.create) {
+	            derived.prototype = Object.create(base.prototype);
+	        } else {
+	            var f = function f() {};
+	            f.prototype = base.prototype;
+	            derived.prototype = new f();
+	        }
+
+	        derived.prototype.constructor = derived;
+
+	        return derived;
+	    }
+
+	    function Chart(config) {
+	        var $$ = this.internal = new ChartInternal(this);
+	        $$.loadConfig(config);
+	        $$.init();
+
+	        // bind "this" to nested API
+	        (function bindThis(fn, target, argThis) {
+	            Object.keys(fn).forEach(function (key) {
+	                target[key] = fn[key].bind(argThis);
+	                if (Object.keys(fn[key]).length > 0) {
+	                    bindThis(fn[key], target[key], argThis);
+	                }
+	            });
+	        })(c3_chart_fn, this, this);
+	    }
+
+	    function ChartInternal(api) {
+	        var $$ = this;
+	        $$.d3 = window.d3 ? window.d3 : true ? __webpack_require__(21) : undefined;
+	        $$.api = api;
+	        $$.config = $$.getDefaultConfig();
+	        $$.data = {};
+	        $$.cache = {};
+	        $$.axes = {};
+	    }
+
+	    c3.generate = function (config) {
+	        return new Chart(config);
+	    };
+
+	    c3.chart = {
+	        fn: Chart.prototype,
+	        internal: {
+	            fn: ChartInternal.prototype,
+	            axis: {
+	                fn: Axis.prototype
+	            }
+	        }
+	    };
+	    c3_chart_fn = c3.chart.fn;
+	    c3_chart_internal_fn = c3.chart.internal.fn;
+	    c3_chart_internal_axis_fn = c3.chart.internal.axis.fn;
+
+	    c3_chart_internal_fn.init = function () {
+	        var $$ = this, config = $$.config;
+
+	        $$.initParams();
+
+	        if (config.data_url) {
+	            $$.convertUrlToData(config.data_url, config.data_mimeType, config.data_keys, $$.initWithData);
+	        }
+	        else if (config.data_json) {
+	            $$.initWithData($$.convertJsonToData(config.data_json, config.data_keys));
+	        }
+	        else if (config.data_rows) {
+	            $$.initWithData($$.convertRowsToData(config.data_rows));
+	        }
+	        else if (config.data_columns) {
+	            $$.initWithData($$.convertColumnsToData(config.data_columns));
+	        }
+	        else {
+	            throw Error('url or json or rows or columns is required.');
+	        }
+	    };
+
+	    c3_chart_internal_fn.initParams = function () {
+	        var $$ = this, d3 = $$.d3, config = $$.config;
+
+	        // MEMO: clipId needs to be unique because it conflicts when multiple charts exist
+	        $$.clipId = "c3-" + (+new Date()) + '-clip',
+	        $$.clipIdForXAxis = $$.clipId + '-xaxis',
+	        $$.clipIdForYAxis = $$.clipId + '-yaxis',
+	        $$.clipIdForGrid = $$.clipId + '-grid',
+	        $$.clipIdForSubchart = $$.clipId + '-subchart',
+	        $$.clipPath = $$.getClipPath($$.clipId),
+	        $$.clipPathForXAxis = $$.getClipPath($$.clipIdForXAxis),
+	        $$.clipPathForYAxis = $$.getClipPath($$.clipIdForYAxis);
+	        $$.clipPathForGrid = $$.getClipPath($$.clipIdForGrid),
+	        $$.clipPathForSubchart = $$.getClipPath($$.clipIdForSubchart),
+
+	        $$.dragStart = null;
+	        $$.dragging = false;
+	        $$.flowing = false;
+	        $$.cancelClick = false;
+	        $$.mouseover = false;
+	        $$.transiting = false;
+
+	        $$.color = $$.generateColor();
+	        $$.levelColor = $$.generateLevelColor();
+
+	        $$.dataTimeFormat = config.data_xLocaltime ? d3.time.format : d3.time.format.utc;
+	        $$.axisTimeFormat = config.axis_x_localtime ? d3.time.format : d3.time.format.utc;
+	        $$.defaultAxisTimeFormat = $$.axisTimeFormat.multi([
+	            [".%L", function (d) { return d.getMilliseconds(); }],
+	            [":%S", function (d) { return d.getSeconds(); }],
+	            ["%I:%M", function (d) { return d.getMinutes(); }],
+	            ["%I %p", function (d) { return d.getHours(); }],
+	            ["%-m/%-d", function (d) { return d.getDay() && d.getDate() !== 1; }],
+	            ["%-m/%-d", function (d) { return d.getDate() !== 1; }],
+	            ["%-m/%-d", function (d) { return d.getMonth(); }],
+	            ["%Y/%-m/%-d", function () { return true; }]
+	        ]);
+
+	        $$.hiddenTargetIds = [];
+	        $$.hiddenLegendIds = [];
+	        $$.focusedTargetIds = [];
+	        $$.defocusedTargetIds = [];
+
+	        $$.xOrient = config.axis_rotated ? "left" : "bottom";
+	        $$.yOrient = config.axis_rotated ? (config.axis_y_inner ? "top" : "bottom") : (config.axis_y_inner ? "right" : "left");
+	        $$.y2Orient = config.axis_rotated ? (config.axis_y2_inner ? "bottom" : "top") : (config.axis_y2_inner ? "left" : "right");
+	        $$.subXOrient = config.axis_rotated ? "left" : "bottom";
+
+	        $$.isLegendRight = config.legend_position === 'right';
+	        $$.isLegendInset = config.legend_position === 'inset';
+	        $$.isLegendTop = config.legend_inset_anchor === 'top-left' || config.legend_inset_anchor === 'top-right';
+	        $$.isLegendLeft = config.legend_inset_anchor === 'top-left' || config.legend_inset_anchor === 'bottom-left';
+	        $$.legendStep = 0;
+	        $$.legendItemWidth = 0;
+	        $$.legendItemHeight = 0;
+
+	        $$.currentMaxTickWidths = {
+	            x: 0,
+	            y: 0,
+	            y2: 0
+	        };
+
+	        $$.rotated_padding_left = 30;
+	        $$.rotated_padding_right = config.axis_rotated && !config.axis_x_show ? 0 : 30;
+	        $$.rotated_padding_top = 5;
+
+	        $$.withoutFadeIn = {};
+
+	        $$.intervalForObserveInserted = undefined;
+
+	        $$.axes.subx = d3.selectAll([]); // needs when excluding subchart.js
+	    };
+
+	    c3_chart_internal_fn.initChartElements = function () {
+	        if (this.initBar) { this.initBar(); }
+	        if (this.initLine) { this.initLine(); }
+	        if (this.initArc) { this.initArc(); }
+	        if (this.initGauge) { this.initGauge(); }
+	        if (this.initText) { this.initText(); }
+	    };
+
+	    c3_chart_internal_fn.initWithData = function (data) {
+	        var $$ = this, d3 = $$.d3, config = $$.config;
+	        var defs, main, binding = true;
+
+	        $$.axis = new Axis($$);
+
+	        if ($$.initPie) { $$.initPie(); }
+	        if ($$.initBrush) { $$.initBrush(); }
+	        if ($$.initZoom) { $$.initZoom(); }
+
+	        if (!config.bindto) {
+	            $$.selectChart = d3.selectAll([]);
+	        }
+	        else if (typeof config.bindto.node === 'function') {
+	            $$.selectChart = config.bindto;
+	        }
+	        else {
+	            $$.selectChart = d3.select(config.bindto);
+	        }
+	        if ($$.selectChart.empty()) {
+	            $$.selectChart = d3.select(document.createElement('div')).style('opacity', 0);
+	            $$.observeInserted($$.selectChart);
+	            binding = false;
+	        }
+	        $$.selectChart.html("").classed("c3", true);
+
+	        // Init data as targets
+	        $$.data.xs = {};
+	        $$.data.targets = $$.convertDataToTargets(data);
+
+	        if (config.data_filter) {
+	            $$.data.targets = $$.data.targets.filter(config.data_filter);
+	        }
+
+	        // Set targets to hide if needed
+	        if (config.data_hide) {
+	            $$.addHiddenTargetIds(config.data_hide === true ? $$.mapToIds($$.data.targets) : config.data_hide);
+	        }
+	        if (config.legend_hide) {
+	            $$.addHiddenLegendIds(config.legend_hide === true ? $$.mapToIds($$.data.targets) : config.legend_hide);
+	        }
+
+	        // when gauge, hide legend // TODO: fix
+	        if ($$.hasType('gauge')) {
+	            config.legend_show = false;
+	        }
+
+	        // Init sizes and scales
+	        $$.updateSizes();
+	        $$.updateScales();
+
+	        // Set domains for each scale
+	        $$.x.domain(d3.extent($$.getXDomain($$.data.targets)));
+	        $$.y.domain($$.getYDomain($$.data.targets, 'y'));
+	        $$.y2.domain($$.getYDomain($$.data.targets, 'y2'));
+	        $$.subX.domain($$.x.domain());
+	        $$.subY.domain($$.y.domain());
+	        $$.subY2.domain($$.y2.domain());
+
+	        // Save original x domain for zoom update
+	        $$.orgXDomain = $$.x.domain();
+
+	        // Set initialized scales to brush and zoom
+	        if ($$.brush) { $$.brush.scale($$.subX); }
+	        if (config.zoom_enabled) { $$.zoom.scale($$.x); }
+
+	        /*-- Basic Elements --*/
+
+	        // Define svgs
+	        $$.svg = $$.selectChart.append("svg")
+	            .style("overflow", "hidden")
+	            .on('mouseenter', function () { return config.onmouseover.call($$); })
+	            .on('mouseleave', function () { return config.onmouseout.call($$); });
+
+	        // Define defs
+	        defs = $$.svg.append("defs");
+	        $$.clipChart = $$.appendClip(defs, $$.clipId);
+	        $$.clipXAxis = $$.appendClip(defs, $$.clipIdForXAxis);
+	        $$.clipYAxis = $$.appendClip(defs, $$.clipIdForYAxis);
+	        $$.clipGrid = $$.appendClip(defs, $$.clipIdForGrid);
+	        $$.clipSubchart = $$.appendClip(defs, $$.clipIdForSubchart);
+	        $$.updateSvgSize();
+
+	        // Define regions
+	        main = $$.main = $$.svg.append("g").attr("transform", $$.getTranslate('main'));
+
+	        if ($$.initSubchart) { $$.initSubchart(); }
+	        if ($$.initTooltip) { $$.initTooltip(); }
+	        if ($$.initLegend) { $$.initLegend(); }
+
+	        /*-- Main Region --*/
+
+	        // text when empty
+	        main.append("text")
+	            .attr("class", CLASS.text + ' ' + CLASS.empty)
+	            .attr("text-anchor", "middle") // horizontal centering of text at x position in all browsers.
+	            .attr("dominant-baseline", "middle"); // vertical centering of text at y position in all browsers, except IE.
+
+	        // Regions
+	        $$.initRegion();
+
+	        // Grids
+	        $$.initGrid();
+
+	        // Define g for chart area
+	        main.append('g')
+	            .attr("clip-path", $$.clipPath)
+	            .attr('class', CLASS.chart);
+
+	        // Grid lines
+	        if (config.grid_lines_front) { $$.initGridLines(); }
+
+	        // Cover whole with rects for events
+	        $$.initEventRect();
+
+	        // Define g for chart
+	        $$.initChartElements();
+
+	        // if zoom privileged, insert rect to forefront
+	        // TODO: is this needed?
+	        main.insert('rect', config.zoom_privileged ? null : 'g.' + CLASS.regions)
+	            .attr('class', CLASS.zoomRect)
+	            .attr('width', $$.width)
+	            .attr('height', $$.height)
+	            .style('opacity', 0)
+	            .on("dblclick.zoom", null);
+
+	        // Set default extent if defined
+	        if (config.axis_x_extent) { $$.brush.extent($$.getDefaultExtent()); }
+
+	        // Add Axis
+	        $$.axis.init();
+
+	        // Set targets
+	        $$.updateTargets($$.data.targets);
+
+	        // Draw with targets
+	        if (binding) {
+	            $$.updateDimension();
+	            $$.config.oninit.call($$);
+	            $$.redraw({
+	                withTransition: false,
+	                withTransform: true,
+	                withUpdateXDomain: true,
+	                withUpdateOrgXDomain: true,
+	                withTransitionForAxis: false
+	            });
+	        }
+
+	        // Bind resize event
+	        if (window.onresize == null) {
+	            window.onresize = $$.generateResize();
+	        }
+	        if (window.onresize.add) {
+	            window.onresize.add(function () {
+	                config.onresize.call($$);
+	            });
+	            window.onresize.add(function () {
+	                $$.api.flush();
+	            });
+	            window.onresize.add(function () {
+	                config.onresized.call($$);
+	            });
+	        }
+
+	        // export element of the chart
+	        $$.api.element = $$.selectChart.node();
+	    };
+
+	    c3_chart_internal_fn.smoothLines = function (el, type) {
+	        var $$ = this;
+	        if (type === 'grid') {
+	            el.each(function () {
+	                var g = $$.d3.select(this),
+	                    x1 = g.attr('x1'),
+	                    x2 = g.attr('x2'),
+	                    y1 = g.attr('y1'),
+	                    y2 = g.attr('y2');
+	                g.attr({
+	                    'x1': Math.ceil(x1),
+	                    'x2': Math.ceil(x2),
+	                    'y1': Math.ceil(y1),
+	                    'y2': Math.ceil(y2)
+	                });
+	            });
+	        }
+	    };
+
+
+	    c3_chart_internal_fn.updateSizes = function () {
+	        var $$ = this, config = $$.config;
+	        var legendHeight = $$.legend ? $$.getLegendHeight() : 0,
+	            legendWidth = $$.legend ? $$.getLegendWidth() : 0,
+	            legendHeightForBottom = $$.isLegendRight || $$.isLegendInset ? 0 : legendHeight,
+	            hasArc = $$.hasArcType(),
+	            xAxisHeight = config.axis_rotated || hasArc ? 0 : $$.getHorizontalAxisHeight('x'),
+	            subchartHeight = config.subchart_show && !hasArc ? (config.subchart_size_height + xAxisHeight) : 0;
+
+	        $$.currentWidth = $$.getCurrentWidth();
+	        $$.currentHeight = $$.getCurrentHeight();
+
+	        // for main
+	        $$.margin = config.axis_rotated ? {
+	            top: $$.getHorizontalAxisHeight('y2') + $$.getCurrentPaddingTop(),
+	            right: hasArc ? 0 : $$.getCurrentPaddingRight(),
+	            bottom: $$.getHorizontalAxisHeight('y') + legendHeightForBottom + $$.getCurrentPaddingBottom(),
+	            left: subchartHeight + (hasArc ? 0 : $$.getCurrentPaddingLeft())
+	        } : {
+	            top: 4 + $$.getCurrentPaddingTop(), // for top tick text
+	            right: hasArc ? 0 : $$.getCurrentPaddingRight(),
+	            bottom: xAxisHeight + subchartHeight + legendHeightForBottom + $$.getCurrentPaddingBottom(),
+	            left: hasArc ? 0 : $$.getCurrentPaddingLeft()
+	        };
+
+	        // for subchart
+	        $$.margin2 = config.axis_rotated ? {
+	            top: $$.margin.top,
+	            right: NaN,
+	            bottom: 20 + legendHeightForBottom,
+	            left: $$.rotated_padding_left
+	        } : {
+	            top: $$.currentHeight - subchartHeight - legendHeightForBottom,
+	            right: NaN,
+	            bottom: xAxisHeight + legendHeightForBottom,
+	            left: $$.margin.left
+	        };
+
+	        // for legend
+	        $$.margin3 = {
+	            top: 0,
+	            right: NaN,
+	            bottom: 0,
+	            left: 0
+	        };
+	        if ($$.updateSizeForLegend) { $$.updateSizeForLegend(legendHeight, legendWidth); }
+
+	        $$.width = $$.currentWidth - $$.margin.left - $$.margin.right;
+	        $$.height = $$.currentHeight - $$.margin.top - $$.margin.bottom;
+	        if ($$.width < 0) { $$.width = 0; }
+	        if ($$.height < 0) { $$.height = 0; }
+
+	        $$.width2 = config.axis_rotated ? $$.margin.left - $$.rotated_padding_left - $$.rotated_padding_right : $$.width;
+	        $$.height2 = config.axis_rotated ? $$.height : $$.currentHeight - $$.margin2.top - $$.margin2.bottom;
+	        if ($$.width2 < 0) { $$.width2 = 0; }
+	        if ($$.height2 < 0) { $$.height2 = 0; }
+
+	        // for arc
+	        $$.arcWidth = $$.width - ($$.isLegendRight ? legendWidth + 10 : 0);
+	        $$.arcHeight = $$.height - ($$.isLegendRight ? 0 : 10);
+	        if ($$.hasType('gauge')) {
+	            $$.arcHeight += $$.height - $$.getGaugeLabelHeight();
+	        }
+	        if ($$.updateRadius) { $$.updateRadius(); }
+
+	        if ($$.isLegendRight && hasArc) {
+	            $$.margin3.left = $$.arcWidth / 2 + $$.radiusExpanded * 1.1;
+	        }
+	    };
+
+	    c3_chart_internal_fn.updateTargets = function (targets) {
+	        var $$ = this;
+
+	        /*-- Main --*/
+
+	        //-- Text --//
+	        $$.updateTargetsForText(targets);
+
+	        //-- Bar --//
+	        $$.updateTargetsForBar(targets);
+
+	        //-- Line --//
+	        $$.updateTargetsForLine(targets);
+
+	        //-- Arc --//
+	        if ($$.hasArcType() && $$.updateTargetsForArc) { $$.updateTargetsForArc(targets); }
+
+	        /*-- Sub --*/
+
+	        if ($$.updateTargetsForSubchart) { $$.updateTargetsForSubchart(targets); }
+
+	        // Fade-in each chart
+	        $$.showTargets();
+	    };
+	    c3_chart_internal_fn.showTargets = function () {
+	        var $$ = this;
+	        $$.svg.selectAll('.' + CLASS.target).filter(function (d) { return $$.isTargetToShow(d.id); })
+	          .transition().duration($$.config.transition_duration)
+	            .style("opacity", 1);
+	    };
+
+	    c3_chart_internal_fn.redraw = function (options, transitions) {
+	        var $$ = this, main = $$.main, d3 = $$.d3, config = $$.config;
+	        var areaIndices = $$.getShapeIndices($$.isAreaType), barIndices = $$.getShapeIndices($$.isBarType), lineIndices = $$.getShapeIndices($$.isLineType);
+	        var withY, withSubchart, withTransition, withTransitionForExit, withTransitionForAxis,
+	            withTransform, withUpdateXDomain, withUpdateOrgXDomain, withTrimXDomain, withLegend,
+	            withEventRect, withDimension, withUpdateXAxis;
+	        var hideAxis = $$.hasArcType();
+	        var drawArea, drawBar, drawLine, xForText, yForText;
+	        var duration, durationForExit, durationForAxis;
+	        var waitForDraw, flow;
+	        var targetsToShow = $$.filterTargetsToShow($$.data.targets), tickValues, i, intervalForCulling, xDomainForZoom;
+	        var xv = $$.xv.bind($$), cx, cy;
+
+	        options = options || {};
+	        withY = getOption(options, "withY", true);
+	        withSubchart = getOption(options, "withSubchart", true);
+	        withTransition = getOption(options, "withTransition", true);
+	        withTransform = getOption(options, "withTransform", false);
+	        withUpdateXDomain = getOption(options, "withUpdateXDomain", false);
+	        withUpdateOrgXDomain = getOption(options, "withUpdateOrgXDomain", false);
+	        withTrimXDomain = getOption(options, "withTrimXDomain", true);
+	        withUpdateXAxis = getOption(options, "withUpdateXAxis", withUpdateXDomain);
+	        withLegend = getOption(options, "withLegend", false);
+	        withEventRect = getOption(options, "withEventRect", true);
+	        withDimension = getOption(options, "withDimension", true);
+	        withTransitionForExit = getOption(options, "withTransitionForExit", withTransition);
+	        withTransitionForAxis = getOption(options, "withTransitionForAxis", withTransition);
+
+	        duration = withTransition ? config.transition_duration : 0;
+	        durationForExit = withTransitionForExit ? duration : 0;
+	        durationForAxis = withTransitionForAxis ? duration : 0;
+
+	        transitions = transitions || $$.axis.generateTransitions(durationForAxis);
+
+	        // update legend and transform each g
+	        if (withLegend && config.legend_show) {
+	            $$.updateLegend($$.mapToIds($$.data.targets), options, transitions);
+	        } else if (withDimension) {
+	            // need to update dimension (e.g. axis.y.tick.values) because y tick values should change
+	            // no need to update axis in it because they will be updated in redraw()
+	            $$.updateDimension(true);
+	        }
+
+	        // MEMO: needed for grids calculation
+	        if ($$.isCategorized() && targetsToShow.length === 0) {
+	            $$.x.domain([0, $$.axes.x.selectAll('.tick').size()]);
+	        }
+
+	        if (targetsToShow.length) {
+	            $$.updateXDomain(targetsToShow, withUpdateXDomain, withUpdateOrgXDomain, withTrimXDomain);
+	            if (!config.axis_x_tick_values) {
+	                tickValues = $$.axis.updateXAxisTickValues(targetsToShow);
+	            }
+	        } else {
+	            $$.xAxis.tickValues([]);
+	            $$.subXAxis.tickValues([]);
+	        }
+
+	        if (config.zoom_rescale && !options.flow) {
+	            xDomainForZoom = $$.x.orgDomain();
+	        }
+
+	        $$.y.domain($$.getYDomain(targetsToShow, 'y', xDomainForZoom));
+	        $$.y2.domain($$.getYDomain(targetsToShow, 'y2', xDomainForZoom));
+
+	        if (!config.axis_y_tick_values && config.axis_y_tick_count) {
+	            $$.yAxis.tickValues($$.axis.generateTickValues($$.y.domain(), config.axis_y_tick_count));
+	        }
+	        if (!config.axis_y2_tick_values && config.axis_y2_tick_count) {
+	            $$.y2Axis.tickValues($$.axis.generateTickValues($$.y2.domain(), config.axis_y2_tick_count));
+	        }
+
+	        // axes
+	        $$.axis.redraw(transitions, hideAxis);
+
+	        // Update axis label
+	        $$.axis.updateLabels(withTransition);
+
+	        // show/hide if manual culling needed
+	        if ((withUpdateXDomain || withUpdateXAxis) && targetsToShow.length) {
+	            if (config.axis_x_tick_culling && tickValues) {
+	                for (i = 1; i < tickValues.length; i++) {
+	                    if (tickValues.length / i < config.axis_x_tick_culling_max) {
+	                        intervalForCulling = i;
+	                        break;
+	                    }
+	                }
+	                $$.svg.selectAll('.' + CLASS.axisX + ' .tick text').each(function (e) {
+	                    var index = tickValues.indexOf(e);
+	                    if (index >= 0) {
+	                        d3.select(this).style('display', index % intervalForCulling ? 'none' : 'block');
+	                    }
+	                });
+	            } else {
+	                $$.svg.selectAll('.' + CLASS.axisX + ' .tick text').style('display', 'block');
+	            }
+	        }
+
+	        // setup drawer - MEMO: these must be called after axis updated
+	        drawArea = $$.generateDrawArea ? $$.generateDrawArea(areaIndices, false) : undefined;
+	        drawBar = $$.generateDrawBar ? $$.generateDrawBar(barIndices) : undefined;
+	        drawLine = $$.generateDrawLine ? $$.generateDrawLine(lineIndices, false) : undefined;
+	        xForText = $$.generateXYForText(areaIndices, barIndices, lineIndices, true);
+	        yForText = $$.generateXYForText(areaIndices, barIndices, lineIndices, false);
+
+	        // Update sub domain
+	        if (withY) {
+	            $$.subY.domain($$.getYDomain(targetsToShow, 'y'));
+	            $$.subY2.domain($$.getYDomain(targetsToShow, 'y2'));
+	        }
+
+	        // tooltip
+	        $$.tooltip.style("display", "none");
+
+	        // xgrid focus
+	        $$.updateXgridFocus();
+
+	        // Data empty label positioning and text.
+	        main.select("text." + CLASS.text + '.' + CLASS.empty)
+	            .attr("x", $$.width / 2)
+	            .attr("y", $$.height / 2)
+	            .text(config.data_empty_label_text)
+	          .transition()
+	            .style('opacity', targetsToShow.length ? 0 : 1);
+
+	        // grid
+	        $$.updateGrid(duration);
+
+	        // rect for regions
+	        $$.updateRegion(duration);
+
+	        // bars
+	        $$.updateBar(durationForExit);
+
+	        // lines, areas and cricles
+	        $$.updateLine(durationForExit);
+	        $$.updateArea(durationForExit);
+	        $$.updateCircle();
+
+	        // text
+	        if ($$.hasDataLabel()) {
+	            $$.updateText(durationForExit);
+	        }
+
+	        // arc
+	        if ($$.redrawArc) { $$.redrawArc(duration, durationForExit, withTransform); }
+
+	        // subchart
+	        if ($$.redrawSubchart) {
+	            $$.redrawSubchart(withSubchart, transitions, duration, durationForExit, areaIndices, barIndices, lineIndices);
+	        }
+
+	        // circles for select
+	        main.selectAll('.' + CLASS.selectedCircles)
+	            .filter($$.isBarType.bind($$))
+	            .selectAll('circle')
+	            .remove();
+
+	        // event rects will redrawn when flow called
+	        if (config.interaction_enabled && !options.flow && withEventRect) {
+	            $$.redrawEventRect();
+	            if ($$.updateZoom) { $$.updateZoom(); }
+	        }
+
+	        // update circleY based on updated parameters
+	        $$.updateCircleY();
+
+	        // generate circle x/y functions depending on updated params
+	        cx = ($$.config.axis_rotated ? $$.circleY : $$.circleX).bind($$);
+	        cy = ($$.config.axis_rotated ? $$.circleX : $$.circleY).bind($$);
+
+	        if (options.flow) {
+	            flow = $$.generateFlow({
+	                targets: targetsToShow,
+	                flow: options.flow,
+	                duration: options.flow.duration,
+	                drawBar: drawBar,
+	                drawLine: drawLine,
+	                drawArea: drawArea,
+	                cx: cx,
+	                cy: cy,
+	                xv: xv,
+	                xForText: xForText,
+	                yForText: yForText
+	            });
+	        }
+
+	        if ((duration || flow) && $$.isTabVisible()) { // Only use transition if tab visible. See #938.
+	            // transition should be derived from one transition
+	            d3.transition().duration(duration).each(function () {
+	                var transitionsToWait = [];
+
+	                // redraw and gather transitions
+	                [
+	                    $$.redrawBar(drawBar, true),
+	                    $$.redrawLine(drawLine, true),
+	                    $$.redrawArea(drawArea, true),
+	                    $$.redrawCircle(cx, cy, true),
+	                    $$.redrawText(xForText, yForText, options.flow, true),
+	                    $$.redrawRegion(true),
+	                    $$.redrawGrid(true),
+	                ].forEach(function (transitions) {
+	                    transitions.forEach(function (transition) {
+	                        transitionsToWait.push(transition);
+	                    });
+	                });
+
+	                // Wait for end of transitions to call flow and onrendered callback
+	                waitForDraw = $$.generateWait();
+	                transitionsToWait.forEach(function (t) {
+	                    waitForDraw.add(t);
+	                });
+	            })
+	            .call(waitForDraw, function () {
+	                if (flow) {
+	                    flow();
+	                }
+	                if (config.onrendered) {
+	                    config.onrendered.call($$);
+	                }
+	            });
+	        }
+	        else {
+	            $$.redrawBar(drawBar);
+	            $$.redrawLine(drawLine);
+	            $$.redrawArea(drawArea);
+	            $$.redrawCircle(cx, cy);
+	            $$.redrawText(xForText, yForText, options.flow);
+	            $$.redrawRegion();
+	            $$.redrawGrid();
+	            if (config.onrendered) {
+	                config.onrendered.call($$);
+	            }
+	        }
+
+	        // update fadein condition
+	        $$.mapToIds($$.data.targets).forEach(function (id) {
+	            $$.withoutFadeIn[id] = true;
+	        });
+	    };
+
+	    c3_chart_internal_fn.updateAndRedraw = function (options) {
+	        var $$ = this, config = $$.config, transitions;
+	        options = options || {};
+	        // same with redraw
+	        options.withTransition = getOption(options, "withTransition", true);
+	        options.withTransform = getOption(options, "withTransform", false);
+	        options.withLegend = getOption(options, "withLegend", false);
+	        // NOT same with redraw
+	        options.withUpdateXDomain = true;
+	        options.withUpdateOrgXDomain = true;
+	        options.withTransitionForExit = false;
+	        options.withTransitionForTransform = getOption(options, "withTransitionForTransform", options.withTransition);
+	        // MEMO: this needs to be called before updateLegend and it means this ALWAYS needs to be called)
+	        $$.updateSizes();
+	        // MEMO: called in updateLegend in redraw if withLegend
+	        if (!(options.withLegend && config.legend_show)) {
+	            transitions = $$.axis.generateTransitions(options.withTransitionForAxis ? config.transition_duration : 0);
+	            // Update scales
+	            $$.updateScales();
+	            $$.updateSvgSize();
+	            // Update g positions
+	            $$.transformAll(options.withTransitionForTransform, transitions);
+	        }
+	        // Draw with new sizes & scales
+	        $$.redraw(options, transitions);
+	    };
+	    c3_chart_internal_fn.redrawWithoutRescale = function () {
+	        this.redraw({
+	            withY: false,
+	            withSubchart: false,
+	            withEventRect: false,
+	            withTransitionForAxis: false
+	        });
+	    };
+
+	    c3_chart_internal_fn.isTimeSeries = function () {
+	        return this.config.axis_x_type === 'timeseries';
+	    };
+	    c3_chart_internal_fn.isCategorized = function () {
+	        return this.config.axis_x_type.indexOf('categor') >= 0;
+	    };
+	    c3_chart_internal_fn.isCustomX = function () {
+	        var $$ = this, config = $$.config;
+	        return !$$.isTimeSeries() && (config.data_x || notEmpty(config.data_xs));
+	    };
+
+	    c3_chart_internal_fn.isTimeSeriesY = function () {
+	        return this.config.axis_y_type === 'timeseries';
+	    };
+
+	    c3_chart_internal_fn.getTranslate = function (target) {
+	        var $$ = this, config = $$.config, x, y;
+	        if (target === 'main') {
+	            x = asHalfPixel($$.margin.left);
+	            y = asHalfPixel($$.margin.top);
+	        } else if (target === 'context') {
+	            x = asHalfPixel($$.margin2.left);
+	            y = asHalfPixel($$.margin2.top);
+	        } else if (target === 'legend') {
+	            x = $$.margin3.left;
+	            y = $$.margin3.top;
+	        } else if (target === 'x') {
+	            x = 0;
+	            y = config.axis_rotated ? 0 : $$.height;
+	        } else if (target === 'y') {
+	            x = 0;
+	            y = config.axis_rotated ? $$.height : 0;
+	        } else if (target === 'y2') {
+	            x = config.axis_rotated ? 0 : $$.width;
+	            y = config.axis_rotated ? 1 : 0;
+	        } else if (target === 'subx') {
+	            x = 0;
+	            y = config.axis_rotated ? 0 : $$.height2;
+	        } else if (target === 'arc') {
+	            x = $$.arcWidth / 2;
+	            y = $$.arcHeight / 2;
+	        }
+	        return "translate(" + x + "," + y + ")";
+	    };
+	    c3_chart_internal_fn.initialOpacity = function (d) {
+	        return d.value !== null && this.withoutFadeIn[d.id] ? 1 : 0;
+	    };
+	    c3_chart_internal_fn.initialOpacityForCircle = function (d) {
+	        return d.value !== null && this.withoutFadeIn[d.id] ? this.opacityForCircle(d) : 0;
+	    };
+	    c3_chart_internal_fn.opacityForCircle = function (d) {
+	        var opacity = this.config.point_show ? 1 : 0;
+	        return isValue(d.value) ? (this.isScatterType(d) ? 0.5 : opacity) : 0;
+	    };
+	    c3_chart_internal_fn.opacityForText = function () {
+	        return this.hasDataLabel() ? 1 : 0;
+	    };
+	    c3_chart_internal_fn.xx = function (d) {
+	        return d ? this.x(d.x) : null;
+	    };
+	    c3_chart_internal_fn.xv = function (d) {
+	        var $$ = this, value = d.value;
+	        if ($$.isTimeSeries()) {
+	            value = $$.parseDate(d.value);
+	        }
+	        else if ($$.isCategorized() && typeof d.value === 'string') {
+	            value = $$.config.axis_x_categories.indexOf(d.value);
+	        }
+	        return Math.ceil($$.x(value));
+	    };
+	    c3_chart_internal_fn.yv = function (d) {
+	        var $$ = this,
+	            yScale = d.axis && d.axis === 'y2' ? $$.y2 : $$.y;
+	        return Math.ceil(yScale(d.value));
+	    };
+	    c3_chart_internal_fn.subxx = function (d) {
+	        return d ? this.subX(d.x) : null;
+	    };
+
+	    c3_chart_internal_fn.transformMain = function (withTransition, transitions) {
+	        var $$ = this,
+	            xAxis, yAxis, y2Axis;
+	        if (transitions && transitions.axisX) {
+	            xAxis = transitions.axisX;
+	        } else {
+	            xAxis  = $$.main.select('.' + CLASS.axisX);
+	            if (withTransition) { xAxis = xAxis.transition(); }
+	        }
+	        if (transitions && transitions.axisY) {
+	            yAxis = transitions.axisY;
+	        } else {
+	            yAxis = $$.main.select('.' + CLASS.axisY);
+	            if (withTransition) { yAxis = yAxis.transition(); }
+	        }
+	        if (transitions && transitions.axisY2) {
+	            y2Axis = transitions.axisY2;
+	        } else {
+	            y2Axis = $$.main.select('.' + CLASS.axisY2);
+	            if (withTransition) { y2Axis = y2Axis.transition(); }
+	        }
+	        (withTransition ? $$.main.transition() : $$.main).attr("transform", $$.getTranslate('main'));
+	        xAxis.attr("transform", $$.getTranslate('x'));
+	        yAxis.attr("transform", $$.getTranslate('y'));
+	        y2Axis.attr("transform", $$.getTranslate('y2'));
+	        $$.main.select('.' + CLASS.chartArcs).attr("transform", $$.getTranslate('arc'));
+	    };
+	    c3_chart_internal_fn.transformAll = function (withTransition, transitions) {
+	        var $$ = this;
+	        $$.transformMain(withTransition, transitions);
+	        if ($$.config.subchart_show) { $$.transformContext(withTransition, transitions); }
+	        if ($$.legend) { $$.transformLegend(withTransition); }
+	    };
+
+	    c3_chart_internal_fn.updateSvgSize = function () {
+	        var $$ = this,
+	            brush = $$.svg.select(".c3-brush .background");
+	        $$.svg.attr('width', $$.currentWidth).attr('height', $$.currentHeight);
+	        $$.svg.selectAll(['#' + $$.clipId, '#' + $$.clipIdForGrid]).select('rect')
+	            .attr('width', $$.width)
+	            .attr('height', $$.height);
+	        $$.svg.select('#' + $$.clipIdForXAxis).select('rect')
+	            .attr('x', $$.getXAxisClipX.bind($$))
+	            .attr('y', $$.getXAxisClipY.bind($$))
+	            .attr('width', $$.getXAxisClipWidth.bind($$))
+	            .attr('height', $$.getXAxisClipHeight.bind($$));
+	        $$.svg.select('#' + $$.clipIdForYAxis).select('rect')
+	            .attr('x', $$.getYAxisClipX.bind($$))
+	            .attr('y', $$.getYAxisClipY.bind($$))
+	            .attr('width', $$.getYAxisClipWidth.bind($$))
+	            .attr('height', $$.getYAxisClipHeight.bind($$));
+	        $$.svg.select('#' + $$.clipIdForSubchart).select('rect')
+	            .attr('width', $$.width)
+	            .attr('height', brush.size() ? brush.attr('height') : 0);
+	        $$.svg.select('.' + CLASS.zoomRect)
+	            .attr('width', $$.width)
+	            .attr('height', $$.height);
+	        // MEMO: parent div's height will be bigger than svg when <!DOCTYPE html>
+	        $$.selectChart.style('max-height', $$.currentHeight + "px");
+	    };
+
+
+	    c3_chart_internal_fn.updateDimension = function (withoutAxis) {
+	        var $$ = this;
+	        if (!withoutAxis) {
+	            if ($$.config.axis_rotated) {
+	                $$.axes.x.call($$.xAxis);
+	                $$.axes.subx.call($$.subXAxis);
+	            } else {
+	                $$.axes.y.call($$.yAxis);
+	                $$.axes.y2.call($$.y2Axis);
+	            }
+	        }
+	        $$.updateSizes();
+	        $$.updateScales();
+	        $$.updateSvgSize();
+	        $$.transformAll(false);
+	    };
+
+	    c3_chart_internal_fn.observeInserted = function (selection) {
+	        var $$ = this, observer;
+	        if (typeof MutationObserver === 'undefined') {
+	            window.console.error("MutationObserver not defined.");
+	            return;
+	        }
+	        observer= new MutationObserver(function (mutations) {
+	            mutations.forEach(function (mutation) {
+	                if (mutation.type === 'childList' && mutation.previousSibling) {
+	                    observer.disconnect();
+	                    // need to wait for completion of load because size calculation requires the actual sizes determined after that completion
+	                    $$.intervalForObserveInserted = window.setInterval(function () {
+	                        // parentNode will NOT be null when completed
+	                        if (selection.node().parentNode) {
+	                            window.clearInterval($$.intervalForObserveInserted);
+	                            $$.updateDimension();
+	                            $$.config.oninit.call($$);
+	                            $$.redraw({
+	                                withTransform: true,
+	                                withUpdateXDomain: true,
+	                                withUpdateOrgXDomain: true,
+	                                withTransition: false,
+	                                withTransitionForTransform: false,
+	                                withLegend: true
+	                            });
+	                            selection.transition().style('opacity', 1);
+	                        }
+	                    }, 10);
+	                }
+	            });
+	        });
+	        observer.observe(selection.node(), {attributes: true, childList: true, characterData: true});
+	    };
+
+
+	    c3_chart_internal_fn.generateResize = function () {
+	        var resizeFunctions = [];
+	        function callResizeFunctions() {
+	            resizeFunctions.forEach(function (f) {
+	                f();
+	            });
+	        }
+	        callResizeFunctions.add = function (f) {
+	            resizeFunctions.push(f);
+	        };
+	        return callResizeFunctions;
+	    };
+
+	    c3_chart_internal_fn.endall = function (transition, callback) {
+	        var n = 0;
+	        transition
+	            .each(function () { ++n; })
+	            .each("end", function () {
+	                if (!--n) { callback.apply(this, arguments); }
+	            });
+	    };
+	    c3_chart_internal_fn.generateWait = function () {
+	        var transitionsToWait = [],
+	            f = function (transition, callback) {
+	                var timer = setInterval(function () {
+	                    var done = 0;
+	                    transitionsToWait.forEach(function (t) {
+	                        if (t.empty()) {
+	                            done += 1;
+	                            return;
+	                        }
+	                        try {
+	                            t.transition();
+	                        } catch (e) {
+	                            done += 1;
+	                        }
+	                    });
+	                    if (done === transitionsToWait.length) {
+	                        clearInterval(timer);
+	                        if (callback) { callback(); }
+	                    }
+	                }, 10);
+	            };
+	        f.add = function (transition) {
+	            transitionsToWait.push(transition);
+	        };
+	        return f;
+	    };
+
+	    c3_chart_internal_fn.parseDate = function (date) {
+	        var $$ = this, parsedDate;
+	        if (date instanceof Date) {
+	            parsedDate = date;
+	        } else if (typeof date === 'string') {
+	            parsedDate = $$.dataTimeFormat($$.config.data_xFormat).parse(date);
+	        } else if (typeof date === 'number' || !isNaN(date)) {
+	            parsedDate = new Date(+date);
+	        }
+	        if (!parsedDate || isNaN(+parsedDate)) {
+	            window.console.error("Failed to parse x '" + date + "' to Date object");
+	        }
+	        return parsedDate;
+	    };
+
+	    c3_chart_internal_fn.isTabVisible = function () {
+	        var hidden;
+	        if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support
+	            hidden = "hidden";
+	        } else if (typeof document.mozHidden !== "undefined") {
+	            hidden = "mozHidden";
+	        } else if (typeof document.msHidden !== "undefined") {
+	            hidden = "msHidden";
+	        } else if (typeof document.webkitHidden !== "undefined") {
+	            hidden = "webkitHidden";
+	        }
+
+	        return document[hidden] ? false : true;
+	    };
+
+	    c3_chart_internal_fn.getDefaultConfig = function () {
+	        var config = {
+	            bindto: '#chart',
+	            size_width: undefined,
+	            size_height: undefined,
+	            padding_left: undefined,
+	            padding_right: undefined,
+	            padding_top: undefined,
+	            padding_bottom: undefined,
+	            zoom_enabled: false,
+	            zoom_extent: undefined,
+	            zoom_privileged: false,
+	            zoom_rescale: false,
+	            zoom_onzoom: function () {},
+	            zoom_onzoomstart: function () {},
+	            zoom_onzoomend: function () {},
+	            interaction_enabled: true,
+	            onmouseover: function () {},
+	            onmouseout: function () {},
+	            onresize: function () {},
+	            onresized: function () {},
+	            oninit: function () {},
+	            onrendered: function () {},
+	            transition_duration: 350,
+	            data_x: undefined,
+	            data_xs: {},
+	            data_xFormat: '%Y-%m-%d',
+	            data_xLocaltime: true,
+	            data_xSort: true,
+	            data_idConverter: function (id) { return id; },
+	            data_names: {},
+	            data_classes: {},
+	            data_groups: [],
+	            data_axes: {},
+	            data_type: undefined,
+	            data_types: {},
+	            data_labels: {},
+	            data_order: 'desc',
+	            data_regions: {},
+	            data_color: undefined,
+	            data_colors: {},
+	            data_hide: false,
+	            data_filter: undefined,
+	            data_selection_enabled: false,
+	            data_selection_grouped: false,
+	            data_selection_isselectable: function () { return true; },
+	            data_selection_multiple: true,
+	            data_selection_draggable: false,
+	            data_onclick: function () {},
+	            data_onmouseover: function () {},
+	            data_onmouseout: function () {},
+	            data_onselected: function () {},
+	            data_onunselected: function () {},
+	            data_url: undefined,
+	            data_json: undefined,
+	            data_rows: undefined,
+	            data_columns: undefined,
+	            data_mimeType: undefined,
+	            data_keys: undefined,
+	            // configuration for no plot-able data supplied.
+	            data_empty_label_text: "",
+	            // subchart
+	            subchart_show: false,
+	            subchart_size_height: 60,
+	            subchart_onbrush: function () {},
+	            // color
+	            color_pattern: [],
+	            color_threshold: {},
+	            // legend
+	            legend_show: true,
+	            legend_hide: false,
+	            legend_position: 'bottom',
+	            legend_inset_anchor: 'top-left',
+	            legend_inset_x: 10,
+	            legend_inset_y: 0,
+	            legend_inset_step: undefined,
+	            legend_item_onclick: undefined,
+	            legend_item_onmouseover: undefined,
+	            legend_item_onmouseout: undefined,
+	            legend_equally: false,
+	            // axis
+	            axis_rotated: false,
+	            axis_x_show: true,
+	            axis_x_type: 'indexed',
+	            axis_x_localtime: true,
+	            axis_x_categories: [],
+	            axis_x_tick_centered: false,
+	            axis_x_tick_format: undefined,
+	            axis_x_tick_culling: {},
+	            axis_x_tick_culling_max: 10,
+	            axis_x_tick_count: undefined,
+	            axis_x_tick_fit: true,
+	            axis_x_tick_values: null,
+	            axis_x_tick_rotate: 0,
+	            axis_x_tick_outer: true,
+	            axis_x_tick_multiline: true,
+	            axis_x_tick_width: null,
+	            axis_x_max: undefined,
+	            axis_x_min: undefined,
+	            axis_x_padding: {},
+	            axis_x_height: undefined,
+	            axis_x_extent: undefined,
+	            axis_x_label: {},
+	            axis_y_show: true,
+	            axis_y_type: undefined,
+	            axis_y_max: undefined,
+	            axis_y_min: undefined,
+	            axis_y_inverted: false,
+	            axis_y_center: undefined,
+	            axis_y_inner: undefined,
+	            axis_y_label: {},
+	            axis_y_tick_format: undefined,
+	            axis_y_tick_outer: true,
+	            axis_y_tick_values: null,
+	            axis_y_tick_count: undefined,
+	            axis_y_tick_time_value: undefined,
+	            axis_y_tick_time_interval: undefined,
+	            axis_y_padding: {},
+	            axis_y_default: undefined,
+	            axis_y2_show: false,
+	            axis_y2_max: undefined,
+	            axis_y2_min: undefined,
+	            axis_y2_inverted: false,
+	            axis_y2_center: undefined,
+	            axis_y2_inner: undefined,
+	            axis_y2_label: {},
+	            axis_y2_tick_format: undefined,
+	            axis_y2_tick_outer: true,
+	            axis_y2_tick_values: null,
+	            axis_y2_tick_count: undefined,
+	            axis_y2_padding: {},
+	            axis_y2_default: undefined,
+	            // grid
+	            grid_x_show: false,
+	            grid_x_type: 'tick',
+	            grid_x_lines: [],
+	            grid_y_show: false,
+	            // not used
+	            // grid_y_type: 'tick',
+	            grid_y_lines: [],
+	            grid_y_ticks: 10,
+	            grid_focus_show: true,
+	            grid_lines_front: true,
+	            // point - point of each data
+	            point_show: true,
+	            point_r: 2.5,
+	            point_focus_expand_enabled: true,
+	            point_focus_expand_r: undefined,
+	            point_select_r: undefined,
+	            // line
+	            line_connectNull: false,
+	            line_step_type: 'step',
+	            // bar
+	            bar_width: undefined,
+	            bar_width_ratio: 0.6,
+	            bar_width_max: undefined,
+	            bar_zerobased: true,
+	            // area
+	            area_zerobased: true,
+	            // pie
+	            pie_label_show: true,
+	            pie_label_format: undefined,
+	            pie_label_threshold: 0.05,
+	            pie_expand: true,
+	            // gauge
+	            gauge_label_show: true,
+	            gauge_label_format: undefined,
+	            gauge_expand: true,
+	            gauge_min: 0,
+	            gauge_max: 100,
+	            gauge_units: undefined,
+	            gauge_width: undefined,
+	            // donut
+	            donut_label_show: true,
+	            donut_label_format: undefined,
+	            donut_label_threshold: 0.05,
+	            donut_width: undefined,
+	            donut_expand: true,
+	            donut_title: "",
+	            // region - region to change style
+	            regions: [],
+	            // tooltip - show when mouseover on each data
+	            tooltip_show: true,
+	            tooltip_grouped: true,
+	            tooltip_format_title: undefined,
+	            tooltip_format_name: undefined,
+	            tooltip_format_value: undefined,
+	            tooltip_position: undefined,
+	            tooltip_contents: function (d, defaultTitleFormat, defaultValueFormat, color) {
+	                return this.getTooltipContent ? this.getTooltipContent(d, defaultTitleFormat, defaultValueFormat, color) : '';
+	            },
+	            tooltip_init_show: false,
+	            tooltip_init_x: 0,
+	            tooltip_init_position: {top: '0px', left: '50px'}
+	        };
+
+	        Object.keys(this.additionalConfig).forEach(function (key) {
+	            config[key] = this.additionalConfig[key];
+	        }, this);
+
+	        return config;
+	    };
+	    c3_chart_internal_fn.additionalConfig = {};
+
+	    c3_chart_internal_fn.loadConfig = function (config) {
+	        var this_config = this.config, target, keys, read;
+	        function find() {
+	            var key = keys.shift();
+	    //        console.log("key =>", key, ", target =>", target);
+	            if (key && target && typeof target === 'object' && key in target) {
+	                target = target[key];
+	                return find();
+	            }
+	            else if (!key) {
+	                return target;
+	            }
+	            else {
+	                return undefined;
+	            }
+	        }
+	        Object.keys(this_config).forEach(function (key) {
+	            target = config;
+	            keys = key.split('_');
+	            read = find();
+	    //        console.log("CONFIG : ", key, read);
+	            if (isDefined(read)) {
+	                this_config[key] = read;
+	            }
+	        });
+	    };
+
+	    c3_chart_internal_fn.getScale = function (min, max, forTimeseries) {
+	        return (forTimeseries ? this.d3.time.scale() : this.d3.scale.linear()).range([min, max]);
+	    };
+	    c3_chart_internal_fn.getX = function (min, max, domain, offset) {
+	        var $$ = this,
+	            scale = $$.getScale(min, max, $$.isTimeSeries()),
+	            _scale = domain ? scale.domain(domain) : scale, key;
+	        // Define customized scale if categorized axis
+	        if ($$.isCategorized()) {
+	            offset = offset || function () { return 0; };
+	            scale = function (d, raw) {
+	                var v = _scale(d) + offset(d);
+	                return raw ? v : Math.ceil(v);
+	            };
+	        } else {
+	            scale = function (d, raw) {
+	                var v = _scale(d);
+	                return raw ? v : Math.ceil(v);
+	            };
+	        }
+	        // define functions
+	        for (key in _scale) {
+	            scale[key] = _scale[key];
+	        }
+	        scale.orgDomain = function () {
+	            return _scale.domain();
+	        };
+	        // define custom domain() for categorized axis
+	        if ($$.isCategorized()) {
+	            scale.domain = function (domain) {
+	                if (!arguments.length) {
+	                    domain = this.orgDomain();
+	                    return [domain[0], domain[1] + 1];
+	                }
+	                _scale.domain(domain);
+	                return scale;
+	            };
+	        }
+	        return scale;
+	    };
+	    c3_chart_internal_fn.getY = function (min, max, domain) {
+	        var scale = this.getScale(min, max, this.isTimeSeriesY());
+	        if (domain) { scale.domain(domain); }
+	        return scale;
+	    };
+	    c3_chart_internal_fn.getYScale = function (id) {
+	        return this.axis.getId(id) === 'y2' ? this.y2 : this.y;
+	    };
+	    c3_chart_internal_fn.getSubYScale = function (id) {
+	        return this.axis.getId(id) === 'y2' ? this.subY2 : this.subY;
+	    };
+	    c3_chart_internal_fn.updateScales = function () {
+	        var $$ = this, config = $$.config,
+	            forInit = !$$.x;
+	        // update edges
+	        $$.xMin = config.axis_rotated ? 1 : 0;
+	        $$.xMax = config.axis_rotated ? $$.height : $$.width;
+	        $$.yMin = config.axis_rotated ? 0 : $$.height;
+	        $$.yMax = config.axis_rotated ? $$.width : 1;
+	        $$.subXMin = $$.xMin;
+	        $$.subXMax = $$.xMax;
+	        $$.subYMin = config.axis_rotated ? 0 : $$.height2;
+	        $$.subYMax = config.axis_rotated ? $$.width2 : 1;
+	        // update scales
+	        $$.x = $$.getX($$.xMin, $$.xMax, forInit ? undefined : $$.x.orgDomain(), function () { return $$.xAxis.tickOffset(); });
+	        $$.y = $$.getY($$.yMin, $$.yMax, forInit ? config.axis_y_default : $$.y.domain());
+	        $$.y2 = $$.getY($$.yMin, $$.yMax, forInit ? config.axis_y2_default : $$.y2.domain());
+	        $$.subX = $$.getX($$.xMin, $$.xMax, $$.orgXDomain, function (d) { return d % 1 ? 0 : $$.subXAxis.tickOffset(); });
+	        $$.subY = $$.getY($$.subYMin, $$.subYMax, forInit ? config.axis_y_default : $$.subY.domain());
+	        $$.subY2 = $$.getY($$.subYMin, $$.subYMax, forInit ? config.axis_y2_default : $$.subY2.domain());
+	        // update axes
+	        $$.xAxisTickFormat = $$.axis.getXAxisTickFormat();
+	        $$.xAxisTickValues = $$.axis.getXAxisTickValues();
+	        $$.yAxisTickValues = $$.axis.getYAxisTickValues();
+	        $$.y2AxisTickValues = $$.axis.getY2AxisTickValues();
+
+	        $$.xAxis = $$.axis.getXAxis($$.x, $$.xOrient, $$.xAxisTickFormat, $$.xAxisTickValues, config.axis_x_tick_outer);
+	        $$.subXAxis = $$.axis.getXAxis($$.subX, $$.subXOrient, $$.xAxisTickFormat, $$.xAxisTickValues, config.axis_x_tick_outer);
+	        $$.yAxis = $$.axis.getYAxis($$.y, $$.yOrient, config.axis_y_tick_format, $$.yAxisTickValues, config.axis_y_tick_outer);
+	        $$.y2Axis = $$.axis.getYAxis($$.y2, $$.y2Orient, config.axis_y2_tick_format, $$.y2AxisTickValues, config.axis_y2_tick_outer);
+
+	        // Set initialized scales to brush and zoom
+	        if (!forInit) {
+	            if ($$.brush) { $$.brush.scale($$.subX); }
+	            if (config.zoom_enabled) { $$.zoom.scale($$.x); }
+	        }
+	        // update for arc
+	        if ($$.updateArc) { $$.updateArc(); }
+	    };
+
+	    c3_chart_internal_fn.getYDomainMin = function (targets) {
+	        var $$ = this, config = $$.config,
+	            ids = $$.mapToIds(targets), ys = $$.getValuesAsIdKeyed(targets),
+	            j, k, baseId, idsInGroup, id, hasNegativeValue;
+	        if (config.data_groups.length > 0) {
+	            hasNegativeValue = $$.hasNegativeValueInTargets(targets);
+	            for (j = 0; j < config.data_groups.length; j++) {
+	                // Determine baseId
+	                idsInGroup = config.data_groups[j].filter(function (id) { return ids.indexOf(id) >= 0; });
+	                if (idsInGroup.length === 0) { continue; }
+	                baseId = idsInGroup[0];
+	                // Consider negative values
+	                if (hasNegativeValue && ys[baseId]) {
+	                    ys[baseId].forEach(function (v, i) {
+	                        ys[baseId][i] = v < 0 ? v : 0;
+	                    });
+	                }
+	                // Compute min
+	                for (k = 1; k < idsInGroup.length; k++) {
+	                    id = idsInGroup[k];
+	                    if (! ys[id]) { continue; }
+	                    ys[id].forEach(function (v, i) {
+	                        if ($$.axis.getId(id) === $$.axis.getId(baseId) && ys[baseId] && !(hasNegativeValue && +v > 0)) {
+	                            ys[baseId][i] += +v;
+	                        }
+	                    });
+	                }
+	            }
+	        }
+	        return $$.d3.min(Object.keys(ys).map(function (key) { return $$.d3.min(ys[key]); }));
+	    };
+	    c3_chart_internal_fn.getYDomainMax = function (targets) {
+	        var $$ = this, config = $$.config,
+	            ids = $$.mapToIds(targets), ys = $$.getValuesAsIdKeyed(targets),
+	            j, k, baseId, idsInGroup, id, hasPositiveValue;
+	        if (config.data_groups.length > 0) {
+	            hasPositiveValue = $$.hasPositiveValueInTargets(targets);
+	            for (j = 0; j < config.data_groups.length; j++) {
+	                // Determine baseId
+	                idsInGroup = config.data_groups[j].filter(function (id) { return ids.indexOf(id) >= 0; });
+	                if (idsInGroup.length === 0) { continue; }
+	                baseId = idsInGroup[0];
+	                // Consider positive values
+	                if (hasPositiveValue && ys[baseId]) {
+	                    ys[baseId].forEach(function (v, i) {
+	                        ys[baseId][i] = v > 0 ? v : 0;
+	                    });
+	                }
+	                // Compute max
+	                for (k = 1; k < idsInGroup.length; k++) {
+	                    id = idsInGroup[k];
+	                    if (! ys[id]) { continue; }
+	                    ys[id].forEach(function (v, i) {
+	                        if ($$.axis.getId(id) === $$.axis.getId(baseId) && ys[baseId] && !(hasPositiveValue && +v < 0)) {
+	                            ys[baseId][i] += +v;
+	                        }
+	                    });
+	                }
+	            }
+	        }
+	        return $$.d3.max(Object.keys(ys).map(function (key) { return $$.d3.max(ys[key]); }));
+	    };
+	    c3_chart_internal_fn.getYDomain = function (targets, axisId, xDomain) {
+	        var $$ = this, config = $$.config,
+	            targetsByAxisId = targets.filter(function (t) { return $$.axis.getId(t.id) === axisId; }),
+	            yTargets = xDomain ? $$.filterByXDomain(targetsByAxisId, xDomain) : targetsByAxisId,
+	            yMin = axisId === 'y2' ? config.axis_y2_min : config.axis_y_min,
+	            yMax = axisId === 'y2' ? config.axis_y2_max : config.axis_y_max,
+	            yDomainMin = $$.getYDomainMin(yTargets),
+	            yDomainMax = $$.getYDomainMax(yTargets),
+	            domain, domainLength, padding, padding_top, padding_bottom,
+	            center = axisId === 'y2' ? config.axis_y2_center : config.axis_y_center,
+	            yDomainAbs, lengths, diff, ratio, isAllPositive, isAllNegative,
+	            isZeroBased = ($$.hasType('bar', yTargets) && config.bar_zerobased) || ($$.hasType('area', yTargets) && config.area_zerobased),
+	            isInverted = axisId === 'y2' ? config.axis_y2_inverted : config.axis_y_inverted,
+	            showHorizontalDataLabel = $$.hasDataLabel() && config.axis_rotated,
+	            showVerticalDataLabel = $$.hasDataLabel() && !config.axis_rotated;
+
+	        // MEMO: avoid inverting domain unexpectedly
+	        yDomainMin = isValue(yMin) ? yMin : isValue(yMax) ? (yDomainMin < yMax ? yDomainMin : yMax - 10) : yDomainMin;
+	        yDomainMax = isValue(yMax) ? yMax : isValue(yMin) ? (yMin < yDomainMax ? yDomainMax : yMin + 10) : yDomainMax;
+
+	        if (yTargets.length === 0) { // use current domain if target of axisId is none
+	            return axisId === 'y2' ? $$.y2.domain() : $$.y.domain();
+	        }
+	        if (isNaN(yDomainMin)) { // set minimum to zero when not number
+	            yDomainMin = 0;
+	        }
+	        if (isNaN(yDomainMax)) { // set maximum to have same value as yDomainMin
+	            yDomainMax = yDomainMin;
+	        }
+	        if (yDomainMin === yDomainMax) {
+	            yDomainMin < 0 ? yDomainMax = 0 : yDomainMin = 0;
+	        }
+	        isAllPositive = yDomainMin >= 0 && yDomainMax >= 0;
+	        isAllNegative = yDomainMin <= 0 && yDomainMax <= 0;
+
+	        // Cancel zerobased if axis_*_min / axis_*_max specified
+	        if ((isValue(yMin) && isAllPositive) || (isValue(yMax) && isAllNegative)) {
+	            isZeroBased = false;
+	        }
+
+	        // Bar/Area chart should be 0-based if all positive|negative
+	        if (isZeroBased) {
+	            if (isAllPositive) { yDomainMin = 0; }
+	            if (isAllNegative) { yDomainMax = 0; }
+	        }
+
+	        domainLength = Math.abs(yDomainMax - yDomainMin);
+	        padding = padding_top = padding_bottom = domainLength * 0.1;
+
+	        if (typeof center !== 'undefined') {
+	            yDomainAbs = Math.max(Math.abs(yDomainMin), Math.abs(yDomainMax));
+	            yDomainMax = center + yDomainAbs;
+	            yDomainMin = center - yDomainAbs;
+	        }
+	        // add padding for data label
+	        if (showHorizontalDataLabel) {
+	            lengths = $$.getDataLabelLength(yDomainMin, yDomainMax, 'width');
+	            diff = diffDomain($$.y.range());
+	            ratio = [lengths[0] / diff, lengths[1] / diff];
+	            padding_top += domainLength * (ratio[1] / (1 - ratio[0] - ratio[1]));
+	            padding_bottom += domainLength * (ratio[0] / (1 - ratio[0] - ratio[1]));
+	        } else if (showVerticalDataLabel) {
+	            lengths = $$.getDataLabelLength(yDomainMin, yDomainMax, 'height');
+	            padding_top += $$.axis.convertPixelsToAxisPadding(lengths[1], domainLength);
+	            padding_bottom += $$.axis.convertPixelsToAxisPadding(lengths[0], domainLength);
+	        }
+	        if (axisId === 'y' && notEmpty(config.axis_y_padding)) {
+	            padding_top = $$.axis.getPadding(config.axis_y_padding, 'top', padding_top, domainLength);
+	            padding_bottom = $$.axis.getPadding(config.axis_y_padding, 'bottom', padding_bottom, domainLength);
+	        }
+	        if (axisId === 'y2' && notEmpty(config.axis_y2_padding)) {
+	            padding_top = $$.axis.getPadding(config.axis_y2_padding, 'top', padding_top, domainLength);
+	            padding_bottom = $$.axis.getPadding(config.axis_y2_padding, 'bottom', padding_bottom, domainLength);
+	        }
+	        // Bar/Area chart should be 0-based if all positive|negative
+	        if (isZeroBased) {
+	            if (isAllPositive) { padding_bottom = yDomainMin; }
+	            if (isAllNegative) { padding_top = -yDomainMax; }
+	        }
+	        domain = [yDomainMin - padding_bottom, yDomainMax + padding_top];
+	        return isInverted ? domain.reverse() : domain;
+	    };
+	    c3_chart_internal_fn.getXDomainMin = function (targets) {
+	        var $$ = this, config = $$.config;
+	        return isDefined(config.axis_x_min) ?
+	            ($$.isTimeSeries() ? this.parseDate(config.axis_x_min) : config.axis_x_min) :
+	        $$.d3.min(targets, function (t) { return $$.d3.min(t.values, function (v) { return v.x; }); });
+	    };
+	    c3_chart_internal_fn.getXDomainMax = function (targets) {
+	        var $$ = this, config = $$.config;
+	        return isDefined(config.axis_x_max) ?
+	            ($$.isTimeSeries() ? this.parseDate(config.axis_x_max) : config.axis_x_max) :
+	        $$.d3.max(targets, function (t) { return $$.d3.max(t.values, function (v) { return v.x; }); });
+	    };
+	    c3_chart_internal_fn.getXDomainPadding = function (domain) {
+	        var $$ = this, config = $$.config,
+	            diff = domain[1] - domain[0],
+	            maxDataCount, padding, paddingLeft, paddingRight;
+	        if ($$.isCategorized()) {
+	            padding = 0;
+	        } else if ($$.hasType('bar')) {
+	            maxDataCount = $$.getMaxDataCount();
+	            padding = maxDataCount > 1 ? (diff / (maxDataCount - 1)) / 2 : 0.5;
+	        } else {
+	            padding = diff * 0.01;
+	        }
+	        if (typeof config.axis_x_padding === 'object' && notEmpty(config.axis_x_padding)) {
+	            paddingLeft = isValue(config.axis_x_padding.left) ? config.axis_x_padding.left : padding;
+	            paddingRight = isValue(config.axis_x_padding.right) ? config.axis_x_padding.right : padding;
+	        } else if (typeof config.axis_x_padding === 'number') {
+	            paddingLeft = paddingRight = config.axis_x_padding;
+	        } else {
+	            paddingLeft = paddingRight = padding;
+	        }
+	        return {left: paddingLeft, right: paddingRight};
+	    };
+	    c3_chart_internal_fn.getXDomain = function (targets) {
+	        var $$ = this,
+	            xDomain = [$$.getXDomainMin(targets), $$.getXDomainMax(targets)],
+	            firstX = xDomain[0], lastX = xDomain[1],
+	            padding = $$.getXDomainPadding(xDomain),
+	            min = 0, max = 0;
+	        // show center of x domain if min and max are the same
+	        if ((firstX - lastX) === 0 && !$$.isCategorized()) {
+	            if ($$.isTimeSeries()) {
+	                firstX = new Date(firstX.getTime() * 0.5);
+	                lastX = new Date(lastX.getTime() * 1.5);
+	            } else {
+	                firstX = firstX === 0 ? 1 : (firstX * 0.5);
+	                lastX = lastX === 0 ? -1 : (lastX * 1.5);
+	            }
+	        }
+	        if (firstX || firstX === 0) {
+	            min = $$.isTimeSeries() ? new Date(firstX.getTime() - padding.left) : firstX - padding.left;
+	        }
+	        if (lastX || lastX === 0) {
+	            max = $$.isTimeSeries() ? new Date(lastX.getTime() + padding.right) : lastX + padding.right;
+	        }
+	        return [min, max];
+	    };
+	    c3_chart_internal_fn.updateXDomain = function (targets, withUpdateXDomain, withUpdateOrgXDomain, withTrim, domain) {
+	        var $$ = this, config = $$.config;
+
+	        if (withUpdateOrgXDomain) {
+	            $$.x.domain(domain ? domain : $$.d3.extent($$.getXDomain(targets)));
+	            $$.orgXDomain = $$.x.domain();
+	            if (config.zoom_enabled) { $$.zoom.scale($$.x).updateScaleExtent(); }
+	            $$.subX.domain($$.x.domain());
+	            if ($$.brush) { $$.brush.scale($$.subX); }
+	        }
+	        if (withUpdateXDomain) {
+	            $$.x.domain(domain ? domain : (!$$.brush || $$.brush.empty()) ? $$.orgXDomain : $$.brush.extent());
+	            if (config.zoom_enabled) { $$.zoom.scale($$.x).updateScaleExtent(); }
+	        }
+
+	        // Trim domain when too big by zoom mousemove event
+	        if (withTrim) { $$.x.domain($$.trimXDomain($$.x.orgDomain())); }
+
+	        return $$.x.domain();
+	    };
+	    c3_chart_internal_fn.trimXDomain = function (domain) {
+	        var $$ = this;
+	        if (domain[0] <= $$.orgXDomain[0]) {
+	            domain[1] = +domain[1] + ($$.orgXDomain[0] - domain[0]);
+	            domain[0] = $$.orgXDomain[0];
+	        }
+	        if ($$.orgXDomain[1] <= domain[1]) {
+	            domain[0] = +domain[0] - (domain[1] - $$.orgXDomain[1]);
+	            domain[1] = $$.orgXDomain[1];
+	        }
+	        return domain;
+	    };
+
+	    c3_chart_internal_fn.isX = function (key) {
+	        var $$ = this, config = $$.config;
+	        return (config.data_x && key === config.data_x) || (notEmpty(config.data_xs) && hasValue(config.data_xs, key));
+	    };
+	    c3_chart_internal_fn.isNotX = function (key) {
+	        return !this.isX(key);
+	    };
+	    c3_chart_internal_fn.getXKey = function (id) {
+	        var $$ = this, config = $$.config;
+	        return config.data_x ? config.data_x : notEmpty(config.data_xs) ? config.data_xs[id] : null;
+	    };
+	    c3_chart_internal_fn.getXValuesOfXKey = function (key, targets) {
+	        var $$ = this,
+	            xValues, ids = targets && notEmpty(targets) ? $$.mapToIds(targets) : [];
+	        ids.forEach(function (id) {
+	            if ($$.getXKey(id) === key) {
+	                xValues = $$.data.xs[id];
+	            }
+	        });
+	        return xValues;
+	    };
+	    c3_chart_internal_fn.getIndexByX = function (x) {
+	        var $$ = this,
+	            data = $$.filterByX($$.data.targets, x);
+	        return data.length ? data[0].index : null;
+	    };
+	    c3_chart_internal_fn.getXValue = function (id, i) {
+	        var $$ = this;
+	        return id in $$.data.xs && $$.data.xs[id] && isValue($$.data.xs[id][i]) ? $$.data.xs[id][i] : i;
+	    };
+	    c3_chart_internal_fn.getOtherTargetXs = function () {
+	        var $$ = this,
+	            idsForX = Object.keys($$.data.xs);
+	        return idsForX.length ? $$.data.xs[idsForX[0]] : null;
+	    };
+	    c3_chart_internal_fn.getOtherTargetX = function (index) {
+	        var xs = this.getOtherTargetXs();
+	        return xs && index < xs.length ? xs[index] : null;
+	    };
+	    c3_chart_internal_fn.addXs = function (xs) {
+	        var $$ = this;
+	        Object.keys(xs).forEach(function (id) {
+	            $$.config.data_xs[id] = xs[id];
+	        });
+	    };
+	    c3_chart_internal_fn.hasMultipleX = function (xs) {
+	        return this.d3.set(Object.keys(xs).map(function (id) { return xs[id]; })).size() > 1;
+	    };
+	    c3_chart_internal_fn.isMultipleX = function () {
+	        return notEmpty(this.config.data_xs) || !this.config.data_xSort || this.hasType('scatter');
+	    };
+	    c3_chart_internal_fn.addName = function (data) {
+	        var $$ = this, name;
+	        if (data) {
+	            name = $$.config.data_names[data.id];
+	            data.name = name ? name : data.id;
+	        }
+	        return data;
+	    };
+	    c3_chart_internal_fn.getValueOnIndex = function (values, index) {
+	        var valueOnIndex = values.filter(function (v) { return v.index === index; });
+	        return valueOnIndex.length ? valueOnIndex[0] : null;
+	    };
+	    c3_chart_internal_fn.updateTargetX = function (targets, x) {
+	        var $$ = this;
+	        targets.forEach(function (t) {
+	            t.values.forEach(function (v, i) {
+	                v.x = $$.generateTargetX(x[i], t.id, i);
+	            });
+	            $$.data.xs[t.id] = x;
+	        });
+	    };
+	    c3_chart_internal_fn.updateTargetXs = function (targets, xs) {
+	        var $$ = this;
+	        targets.forEach(function (t) {
+	            if (xs[t.id]) {
+	                $$.updateTargetX([t], xs[t.id]);
+	            }
+	        });
+	    };
+	    c3_chart_internal_fn.generateTargetX = function (rawX, id, index) {
+	        var $$ = this, x;
+	        if ($$.isTimeSeries()) {
+	            x = rawX ? $$.parseDate(rawX) : $$.parseDate($$.getXValue(id, index));
+	        }
+	        else if ($$.isCustomX() && !$$.isCategorized()) {
+	            x = isValue(rawX) ? +rawX : $$.getXValue(id, index);
+	        }
+	        else {
+	            x = index;
+	        }
+	        return x;
+	    };
+	    c3_chart_internal_fn.cloneTarget = function (target) {
+	        return {
+	            id : target.id,
+	            id_org : target.id_org,
+	            values : target.values.map(function (d) {
+	                return {x: d.x, value: d.value, id: d.id};
+	            })
+	        };
+	    };
+	    c3_chart_internal_fn.updateXs = function () {
+	        var $$ = this;
+	        if ($$.data.targets.length) {
+	            $$.xs = [];
+	            $$.data.targets[0].values.forEach(function (v) {
+	                $$.xs[v.index] = v.x;
+	            });
+	        }
+	    };
+	    c3_chart_internal_fn.getPrevX = function (i) {
+	        var x = this.xs[i - 1];
+	        return typeof x !== 'undefined' ? x : null;
+	    };
+	    c3_chart_internal_fn.getNextX = function (i) {
+	        var x = this.xs[i + 1];
+	        return typeof x !== 'undefined' ? x : null;
+	    };
+	    c3_chart_internal_fn.getMaxDataCount = function () {
+	        var $$ = this;
+	        return $$.d3.max($$.data.targets, function (t) { return t.values.length; });
+	    };
+	    c3_chart_internal_fn.getMaxDataCountTarget = function (targets) {
+	        var length = targets.length, max = 0, maxTarget;
+	        if (length > 1) {
+	            targets.forEach(function (t) {
+	                if (t.values.length > max) {
+	                    maxTarget = t;
+	                    max = t.values.length;
+	                }
+	            });
+	        } else {
+	            maxTarget = length ? targets[0] : null;
+	        }
+	        return maxTarget;
+	    };
+	    c3_chart_internal_fn.getEdgeX = function (targets) {
+	        var $$ = this;
+	        return !targets.length ? [0, 0] : [
+	            $$.d3.min(targets, function (t) { return t.values[0].x; }),
+	            $$.d3.max(targets, function (t) { return t.values[t.values.length - 1].x; })
+	        ];
+	    };
+	    c3_chart_internal_fn.mapToIds = function (targets) {
+	        return targets.map(function (d) { return d.id; });
+	    };
+	    c3_chart_internal_fn.mapToTargetIds = function (ids) {
+	        var $$ = this;
+	        return ids ? (isString(ids) ? [ids] : ids) : $$.mapToIds($$.data.targets);
+	    };
+	    c3_chart_internal_fn.hasTarget = function (targets, id) {
+	        var ids = this.mapToIds(targets), i;
+	        for (i = 0; i < ids.length; i++) {
+	            if (ids[i] === id) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    };
+	    c3_chart_internal_fn.isTargetToShow = function (targetId) {
+	        return this.hiddenTargetIds.indexOf(targetId) < 0;
+	    };
+	    c3_chart_internal_fn.isLegendToShow = function (targetId) {
+	        return this.hiddenLegendIds.indexOf(targetId) < 0;
+	    };
+	    c3_chart_internal_fn.filterTargetsToShow = function (targets) {
+	        var $$ = this;
+	        return targets.filter(function (t) { return $$.isTargetToShow(t.id); });
+	    };
+	    c3_chart_internal_fn.mapTargetsToUniqueXs = function (targets) {
+	        var $$ = this;
+	        var xs = $$.d3.set($$.d3.merge(targets.map(function (t) { return t.values.map(function (v) { return +v.x; }); }))).values();
+	        return $$.isTimeSeries() ? xs.map(function (x) { return new Date(+x); }) : xs.map(function (x) { return +x; });
+	    };
+	    c3_chart_internal_fn.addHiddenTargetIds = function (targetIds) {
+	        this.hiddenTargetIds = this.hiddenTargetIds.concat(targetIds);
+	    };
+	    c3_chart_internal_fn.removeHiddenTargetIds = function (targetIds) {
+	        this.hiddenTargetIds = this.hiddenTargetIds.filter(function (id) { return targetIds.indexOf(id) < 0; });
+	    };
+	    c3_chart_internal_fn.addHiddenLegendIds = function (targetIds) {
+	        this.hiddenLegendIds = this.hiddenLegendIds.concat(targetIds);
+	    };
+	    c3_chart_internal_fn.removeHiddenLegendIds = function (targetIds) {
+	        this.hiddenLegendIds = this.hiddenLegendIds.filter(function (id) { return targetIds.indexOf(id) < 0; });
+	    };
+	    c3_chart_internal_fn.getValuesAsIdKeyed = function (targets) {
+	        var ys = {};
+	        targets.forEach(function (t) {
+	            ys[t.id] = [];
+	            t.values.forEach(function (v) {
+	                ys[t.id].push(v.value);
+	            });
+	        });
+	        return ys;
+	    };
+	    c3_chart_internal_fn.checkValueInTargets = function (targets, checker) {
+	        var ids = Object.keys(targets), i, j, values;
+	        for (i = 0; i < ids.length; i++) {
+	            values = targets[ids[i]].values;
+	            for (j = 0; j < values.length; j++) {
+	                if (checker(values[j].value)) {
+	                    return true;
+	                }
+	            }
+	        }
+	        return false;
+	    };
+	    c3_chart_internal_fn.hasNegativeValueInTargets = function (targets) {
+	        return this.checkValueInTargets(targets, function (v) { return v < 0; });
+	    };
+	    c3_chart_internal_fn.hasPositiveValueInTargets = function (targets) {
+	        return this.checkValueInTargets(targets, function (v) { return v > 0; });
+	    };
+	    c3_chart_internal_fn.isOrderDesc = function () {
+	        var config = this.config;
+	        return typeof(config.data_order) === 'string' && config.data_order.toLowerCase() === 'desc';
+	    };
+	    c3_chart_internal_fn.isOrderAsc = function () {
+	        var config = this.config;
+	        return typeof(config.data_order) === 'string' && config.data_order.toLowerCase() === 'asc';
+	    };
+	    c3_chart_internal_fn.orderTargets = function (targets) {
+	        var $$ = this, config = $$.config, orderAsc = $$.isOrderAsc(), orderDesc = $$.isOrderDesc();
+	        if (orderAsc || orderDesc) {
+	            targets.sort(function (t1, t2) {
+	                var reducer = function (p, c) { return p + Math.abs(c.value); };
+	                var t1Sum = t1.values.reduce(reducer, 0),
+	                    t2Sum = t2.values.reduce(reducer, 0);
+	                return orderAsc ? t2Sum - t1Sum : t1Sum - t2Sum;
+	            });
+	        } else if (isFunction(config.data_order)) {
+	            targets.sort(config.data_order);
+	        } // TODO: accept name array for order
+	        return targets;
+	    };
+	    c3_chart_internal_fn.filterByX = function (targets, x) {
+	        return this.d3.merge(targets.map(function (t) { return t.values; })).filter(function (v) { return v.x - x === 0; });
+	    };
+	    c3_chart_internal_fn.filterRemoveNull = function (data) {
+	        return data.filter(function (d) { return isValue(d.value); });
+	    };
+	    c3_chart_internal_fn.filterByXDomain = function (targets, xDomain) {
+	        return targets.map(function (t) {
+	            return {
+	                id: t.id,
+	                id_org: t.id_org,
+	                values: t.values.filter(function (v) {
+	                    return xDomain[0] <= v.x && v.x <= xDomain[1];
+	                })
+	            };
+	        });
+	    };
+	    c3_chart_internal_fn.hasDataLabel = function () {
+	        var config = this.config;
+	        if (typeof config.data_labels === 'boolean' && config.data_labels) {
+	            return true;
+	        } else if (typeof config.data_labels === 'object' && notEmpty(config.data_labels)) {
+	            return true;
+	        }
+	        return false;
+	    };
+	    c3_chart_internal_fn.getDataLabelLength = function (min, max, key) {
+	        var $$ = this,
+	            lengths = [0, 0], paddingCoef = 1.3;
+	        $$.selectChart.select('svg').selectAll('.dummy')
+	            .data([min, max])
+	            .enter().append('text')
+	            .text(function (d) { return $$.dataLabelFormat(d.id)(d); })
+	            .each(function (d, i) {
+	                lengths[i] = this.getBoundingClientRect()[key] * paddingCoef;
+	            })
+	            .remove();
+	        return lengths;
+	    };
+	    c3_chart_internal_fn.isNoneArc = function (d) {
+	        return this.hasTarget(this.data.targets, d.id);
+	    },
+	    c3_chart_internal_fn.isArc = function (d) {
+	        return 'data' in d && this.hasTarget(this.data.targets, d.data.id);
+	    };
+	    c3_chart_internal_fn.findSameXOfValues = function (values, index) {
+	        var i, targetX = values[index].x, sames = [];
+	        for (i = index - 1; i >= 0; i--) {
+	            if (targetX !== values[i].x) { break; }
+	            sames.push(values[i]);
+	        }
+	        for (i = index; i < values.length; i++) {
+	            if (targetX !== values[i].x) { break; }
+	            sames.push(values[i]);
+	        }
+	        return sames;
+	    };
+
+	    c3_chart_internal_fn.findClosestFromTargets = function (targets, pos) {
+	        var $$ = this, candidates;
+
+	        // map to array of closest points of each target
+	        candidates = targets.map(function (target) {
+	            return $$.findClosest(target.values, pos);
+	        });
+
+	        // decide closest point and return
+	        return $$.findClosest(candidates, pos);
+	    };
+	    c3_chart_internal_fn.findClosest = function (values, pos) {
+	        var $$ = this, minDist = 100, closest;
+
+	        // find mouseovering bar
+	        values.filter(function (v) { return v && $$.isBarType(v.id); }).forEach(function (v) {
+	            var shape = $$.main.select('.' + CLASS.bars + $$.getTargetSelectorSuffix(v.id) + ' .' + CLASS.bar + '-' + v.index).node();
+	            if (!closest && $$.isWithinBar(shape)) {
+	                closest = v;
+	            }
+	        });
+
+	        // find closest point from non-bar
+	        values.filter(function (v) { return v && !$$.isBarType(v.id); }).forEach(function (v) {
+	            var d = $$.dist(v, pos);
+	            if (d < minDist) {
+	                minDist = d;
+	                closest = v;
+	            }
+	        });
+
+	        return closest;
+	    };
+	    c3_chart_internal_fn.dist = function (data, pos) {
+	        var $$ = this, config = $$.config,
+	            xIndex = config.axis_rotated ? 1 : 0,
+	            yIndex = config.axis_rotated ? 0 : 1,
+	            y = $$.circleY(data, data.index),
+	            x = $$.x(data.x);
+	        return Math.pow(x - pos[xIndex], 2) + Math.pow(y - pos[yIndex], 2);
+	    };
+	    c3_chart_internal_fn.convertValuesToStep = function (values) {
+	        var converted = [].concat(values), i;
+
+	        if (!this.isCategorized()) {
+	            return values;
+	        }
+
+	        for (i = values.length + 1; 0 < i; i--) {
+	            converted[i] = converted[i - 1];
+	        }
+
+	        converted[0] = {
+	            x: converted[0].x - 1,
+	            value: converted[0].value,
+	            id: converted[0].id
+	        };
+	        converted[values.length + 1] = {
+	            x: converted[values.length].x + 1,
+	            value: converted[values.length].value,
+	            id: converted[values.length].id
+	        };
+
+	        return converted;
+	    };
+	    c3_chart_internal_fn.updateDataAttributes = function (name, attrs) {
+	        var $$ = this, config = $$.config, current = config['data_' + name];
+	        if (typeof attrs === 'undefined') { return current; }
+	        Object.keys(attrs).forEach(function (id) {
+	            current[id] = attrs[id];
+	        });
+	        $$.redraw({withLegend: true});
+	        return current;
+	    };
+
+	    c3_chart_internal_fn.convertUrlToData = function (url, mimeType, keys, done) {
+	        var $$ = this, type = mimeType ? mimeType : 'csv';
+	        $$.d3.xhr(url, function (error, data) {
+	            var d;
+	            if (!data) {
+	                throw new Error(error.responseURL + ' ' + error.status + ' (' + error.statusText + ')');
+	            }
+	            if (type === 'json') {
+	                d = $$.convertJsonToData(JSON.parse(data.response), keys);
+	            } else if (type === 'tsv') {
+	                d = $$.convertTsvToData(data.response);
+	            } else {
+	                d = $$.convertCsvToData(data.response);
+	            }
+	            done.call($$, d);
+	        });
+	    };
+	    c3_chart_internal_fn.convertXsvToData = function (xsv, parser) {
+	        var rows = parser.parseRows(xsv), d;
+	        if (rows.length === 1) {
+	            d = [{}];
+	            rows[0].forEach(function (id) {
+	                d[0][id] = null;
+	            });
+	        } else {
+	            d = parser.parse(xsv);
+	        }
+	        return d;
+	    };
+	    c3_chart_internal_fn.convertCsvToData = function (csv) {
+	        return this.convertXsvToData(csv, this.d3.csv);
+	    };
+	    c3_chart_internal_fn.convertTsvToData = function (tsv) {
+	        return this.convertXsvToData(tsv, this.d3.tsv);
+	    };
+	    c3_chart_internal_fn.convertJsonToData = function (json, keys) {
+	        var $$ = this,
+	            new_rows = [], targetKeys, data;
+	        if (keys) { // when keys specified, json would be an array that includes objects
+	            if (keys.x) {
+	                targetKeys = keys.value.concat(keys.x);
+	                $$.config.data_x = keys.x;
+	            } else {
+	                targetKeys = keys.value;
+	            }
+	            new_rows.push(targetKeys);
+	            json.forEach(function (o) {
+	                var new_row = [];
+	                targetKeys.forEach(function (key) {
+	                    // convert undefined to null because undefined data will be removed in convertDataToTargets()
+	                    var v = isUndefined(o[key]) ? null : o[key];
+	                    new_row.push(v);
+	                });
+	                new_rows.push(new_row);
+	            });
+	            data = $$.convertRowsToData(new_rows);
+	        } else {
+	            Object.keys(json).forEach(function (key) {
+	                new_rows.push([key].concat(json[key]));
+	            });
+	            data = $$.convertColumnsToData(new_rows);
+	        }
+	        return data;
+	    };
+	    c3_chart_internal_fn.convertRowsToData = function (rows) {
+	        var keys = rows[0], new_row = {}, new_rows = [], i, j;
+	        for (i = 1; i < rows.length; i++) {
+	            new_row = {};
+	            for (j = 0; j < rows[i].length; j++) {
+	                if (isUndefined(rows[i][j])) {
+	                    throw new Error("Source data is missing a component at (" + i + "," + j + ")!");
+	                }
+	                new_row[keys[j]] = rows[i][j];
+	            }
+	            new_rows.push(new_row);
+	        }
+	        return new_rows;
+	    };
+	    c3_chart_internal_fn.convertColumnsToData = function (columns) {
+	        var new_rows = [], i, j, key;
+	        for (i = 0; i < columns.length; i++) {
+	            key = columns[i][0];
+	            for (j = 1; j < columns[i].length; j++) {
+	                if (isUndefined(new_rows[j - 1])) {
+	                    new_rows[j - 1] = {};
+	                }
+	                if (isUndefined(columns[i][j])) {
+	                    throw new Error("Source data is missing a component at (" + i + "," + j + ")!");
+	                }
+	                new_rows[j - 1][key] = columns[i][j];
+	            }
+	        }
+	        return new_rows;
+	    };
+	    c3_chart_internal_fn.convertDataToTargets = function (data, appendXs) {
+	        var $$ = this, config = $$.config,
+	            ids = $$.d3.keys(data[0]).filter($$.isNotX, $$),
+	            xs = $$.d3.keys(data[0]).filter($$.isX, $$),
+	            targets;
+
+	        // save x for update data by load when custom x and c3.x API
+	        ids.forEach(function (id) {
+	            var xKey = $$.getXKey(id);
+
+	            if ($$.isCustomX() || $$.isTimeSeries()) {
+	                // if included in input data
+	                if (xs.indexOf(xKey) >= 0) {
+	                    $$.data.xs[id] = (appendXs && $$.data.xs[id] ? $$.data.xs[id] : []).concat(
+	                        data.map(function (d) { return d[xKey]; })
+	                            .filter(isValue)
+	                            .map(function (rawX, i) { return $$.generateTargetX(rawX, id, i); })
+	                    );
+	                }
+	                // if not included in input data, find from preloaded data of other id's x
+	                else if (config.data_x) {
+	                    $$.data.xs[id] = $$.getOtherTargetXs();
+	                }
+	                // if not included in input data, find from preloaded data
+	                else if (notEmpty(config.data_xs)) {
+	                    $$.data.xs[id] = $$.getXValuesOfXKey(xKey, $$.data.targets);
+	                }
+	                // MEMO: if no x included, use same x of current will be used
+	            } else {
+	                $$.data.xs[id] = data.map(function (d, i) { return i; });
+	            }
+	        });
+
+
+	        // check x is defined
+	        ids.forEach(function (id) {
+	            if (!$$.data.xs[id]) {
+	                throw new Error('x is not defined for id = "' + id + '".');
+	            }
+	        });
+
+	        // convert to target
+	        targets = ids.map(function (id, index) {
+	            var convertedId = config.data_idConverter(id);
+	            return {
+	                id: convertedId,
+	                id_org: id,
+	                values: data.map(function (d, i) {
+	                    var xKey = $$.getXKey(id), rawX = d[xKey], x = $$.generateTargetX(rawX, id, i);
+	                    // use x as categories if custom x and categorized
+	                    if ($$.isCustomX() && $$.isCategorized() && index === 0 && rawX) {
+	                        if (i === 0) { config.axis_x_categories = []; }
+	                        config.axis_x_categories.push(rawX);
+	                    }
+	                    // mark as x = undefined if value is undefined and filter to remove after mapped
+	                    if (isUndefined(d[id]) || $$.data.xs[id].length <= i) {
+	                        x = undefined;
+	                    }
+	                    return {x: x, value: d[id] !== null && !isNaN(d[id]) ? +d[id] : null, id: convertedId};
+	                }).filter(function (v) { return isDefined(v.x); })
+	            };
+	        });
+
+	        // finish targets
+	        targets.forEach(function (t) {
+	            var i;
+	            // sort values by its x
+	            if (config.data_xSort) {
+	                t.values = t.values.sort(function (v1, v2) {
+	                    var x1 = v1.x || v1.x === 0 ? v1.x : Infinity,
+	                        x2 = v2.x || v2.x === 0 ? v2.x : Infinity;
+	                    return x1 - x2;
+	                });
+	            }
+	            // indexing each value
+	            i = 0;
+	            t.values.forEach(function (v) {
+	                v.index = i++;
+	            });
+	            // this needs to be sorted because its index and value.index is identical
+	            $$.data.xs[t.id].sort(function (v1, v2) {
+	                return v1 - v2;
+	            });
+	        });
+
+	        // set target types
+	        if (config.data_type) {
+	            $$.setTargetType($$.mapToIds(targets).filter(function (id) { return ! (id in config.data_types); }), config.data_type);
+	        }
+
+	        // cache as original id keyed
+	        targets.forEach(function (d) {
+	            $$.addCache(d.id_org, d);
+	        });
+
+	        return targets;
+	    };
+
+	    c3_chart_internal_fn.load = function (targets, args) {
+	        var $$ = this;
+	        if (targets) {
+	            // filter loading targets if needed
+	            if (args.filter) {
+	                targets = targets.filter(args.filter);
+	            }
+	            // set type if args.types || args.type specified
+	            if (args.type || args.types) {
+	                targets.forEach(function (t) {
+	                    var type = args.types && args.types[t.id] ? args.types[t.id] : args.type;
+	                    $$.setTargetType(t.id, type);
+	                });
+	            }
+	            // Update/Add data
+	            $$.data.targets.forEach(function (d) {
+	                for (var i = 0; i < targets.length; i++) {
+	                    if (d.id === targets[i].id) {
+	                        d.values = targets[i].values;
+	                        targets.splice(i, 1);
+	                        break;
+	                    }
+	                }
+	            });
+	            $$.data.targets = $$.data.targets.concat(targets); // add remained
+	        }
+
+	        // Set targets
+	        $$.updateTargets($$.data.targets);
+
+	        // Redraw with new targets
+	        $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true, withLegend: true});
+
+	        if (args.done) { args.done(); }
+	    };
+	    c3_chart_internal_fn.loadFromArgs = function (args) {
+	        var $$ = this;
+	        if (args.data) {
+	            $$.load($$.convertDataToTargets(args.data), args);
+	        }
+	        else if (args.url) {
+	            $$.convertUrlToData(args.url, args.mimeType, args.keys, function (data) {
+	                $$.load($$.convertDataToTargets(data), args);
+	            });
+	        }
+	        else if (args.json) {
+	            $$.load($$.convertDataToTargets($$.convertJsonToData(args.json, args.keys)), args);
+	        }
+	        else if (args.rows) {
+	            $$.load($$.convertDataToTargets($$.convertRowsToData(args.rows)), args);
+	        }
+	        else if (args.columns) {
+	            $$.load($$.convertDataToTargets($$.convertColumnsToData(args.columns)), args);
+	        }
+	        else {
+	            $$.load(null, args);
+	        }
+	    };
+	    c3_chart_internal_fn.unload = function (targetIds, done) {
+	        var $$ = this;
+	        if (!done) {
+	            done = function () {};
+	        }
+	        // filter existing target
+	        targetIds = targetIds.filter(function (id) { return $$.hasTarget($$.data.targets, id); });
+	        // If no target, call done and return
+	        if (!targetIds || targetIds.length === 0) {
+	            done();
+	            return;
+	        }
+	        $$.svg.selectAll(targetIds.map(function (id) { return $$.selectorTarget(id); }))
+	            .transition()
+	            .style('opacity', 0)
+	            .remove()
+	            .call($$.endall, done);
+	        targetIds.forEach(function (id) {
+	            // Reset fadein for future load
+	            $$.withoutFadeIn[id] = false;
+	            // Remove target's elements
+	            if ($$.legend) {
+	                $$.legend.selectAll('.' + CLASS.legendItem + $$.getTargetSelectorSuffix(id)).remove();
+	            }
+	            // Remove target
+	            $$.data.targets = $$.data.targets.filter(function (t) {
+	                return t.id !== id;
+	            });
+	        });
+	    };
+
+	    c3_chart_internal_fn.categoryName = function (i) {
+	        var config = this.config;
+	        return i < config.axis_x_categories.length ? config.axis_x_categories[i] : i;
+	    };
+
+	    c3_chart_internal_fn.initEventRect = function () {
+	        var $$ = this;
+	        $$.main.select('.' + CLASS.chart).append("g")
+	            .attr("class", CLASS.eventRects)
+	            .style('fill-opacity', 0);
+	    };
+	    c3_chart_internal_fn.redrawEventRect = function () {
+	        var $$ = this, config = $$.config,
+	            eventRectUpdate, maxDataCountTarget,
+	            isMultipleX = $$.isMultipleX();
+
+	        // rects for mouseover
+	        var eventRects = $$.main.select('.' + CLASS.eventRects)
+	                .style('cursor', config.zoom_enabled ? config.axis_rotated ? 'ns-resize' : 'ew-resize' : null)
+	                .classed(CLASS.eventRectsMultiple, isMultipleX)
+	                .classed(CLASS.eventRectsSingle, !isMultipleX);
+
+	        // clear old rects
+	        eventRects.selectAll('.' + CLASS.eventRect).remove();
+
+	        // open as public variable
+	        $$.eventRect = eventRects.selectAll('.' + CLASS.eventRect);
+
+	        if (isMultipleX) {
+	            eventRectUpdate = $$.eventRect.data([0]);
+	            // enter : only one rect will be added
+	            $$.generateEventRectsForMultipleXs(eventRectUpdate.enter());
+	            // update
+	            $$.updateEventRect(eventRectUpdate);
+	            // exit : not needed because always only one rect exists
+	        }
+	        else {
+	            // Set data and update $$.eventRect
+	            maxDataCountTarget = $$.getMaxDataCountTarget($$.data.targets);
+	            eventRects.datum(maxDataCountTarget ? maxDataCountTarget.values : []);
+	            $$.eventRect = eventRects.selectAll('.' + CLASS.eventRect);
+	            eventRectUpdate = $$.eventRect.data(function (d) { return d; });
+	            // enter
+	            $$.generateEventRectsForSingleX(eventRectUpdate.enter());
+	            // update
+	            $$.updateEventRect(eventRectUpdate);
+	            // exit
+	            eventRectUpdate.exit().remove();
+	        }
+	    };
+	    c3_chart_internal_fn.updateEventRect = function (eventRectUpdate) {
+	        var $$ = this, config = $$.config,
+	            x, y, w, h, rectW, rectX;
+
+	        // set update selection if null
+	        eventRectUpdate = eventRectUpdate || $$.eventRect.data(function (d) { return d; });
+
+	        if ($$.isMultipleX()) {
+	            // TODO: rotated not supported yet
+	            x = 0;
+	            y = 0;
+	            w = $$.width;
+	            h = $$.height;
+	        }
+	        else {
+	            if (($$.isCustomX() || $$.isTimeSeries()) && !$$.isCategorized()) {
+
+	                // update index for x that is used by prevX and nextX
+	                $$.updateXs();
+
+	                rectW = function (d) {
+	                    var prevX = $$.getPrevX(d.index), nextX = $$.getNextX(d.index);
+
+	                    // if there this is a single data point make the eventRect full width (or height)
+	                    if (prevX === null && nextX === null) {
+	                        return config.axis_rotated ? $$.height : $$.width;
+	                    }
+
+	                    if (prevX === null) { prevX = $$.x.domain()[0]; }
+	                    if (nextX === null) { nextX = $$.x.domain()[1]; }
+
+	                    return Math.max(0, ($$.x(nextX) - $$.x(prevX)) / 2);
+	                };
+	                rectX = function (d) {
+	                    var prevX = $$.getPrevX(d.index), nextX = $$.getNextX(d.index),
+	                        thisX = $$.data.xs[d.id][d.index];
+
+	                    // if there this is a single data point position the eventRect at 0
+	                    if (prevX === null && nextX === null) {
+	                        return 0;
+	                    }
+
+	                    if (prevX === null) { prevX = $$.x.domain()[0]; }
+
+	                    return ($$.x(thisX) + $$.x(prevX)) / 2;
+	                };
+	            } else {
+	                rectW = $$.getEventRectWidth();
+	                rectX = function (d) {
+	                    return $$.x(d.x) - (rectW / 2);
+	                };
+	            }
+	            x = config.axis_rotated ? 0 : rectX;
+	            y = config.axis_rotated ? rectX : 0;
+	            w = config.axis_rotated ? $$.width : rectW;
+	            h = config.axis_rotated ? rectW : $$.height;
+	        }
+
+	        eventRectUpdate
+	            .attr('class', $$.classEvent.bind($$))
+	            .attr("x", x)
+	            .attr("y", y)
+	            .attr("width", w)
+	            .attr("height", h);
+	    };
+	    c3_chart_internal_fn.generateEventRectsForSingleX = function (eventRectEnter) {
+	        var $$ = this, d3 = $$.d3, config = $$.config;
+	        eventRectEnter.append("rect")
+	            .attr("class", $$.classEvent.bind($$))
+	            .style("cursor", config.data_selection_enabled && config.data_selection_grouped ? "pointer" : null)
+	            .on('mouseover', function (d) {
+	                var index = d.index;
+
+	                if ($$.dragging || $$.flowing) { return; } // do nothing while dragging/flowing
+	                if ($$.hasArcType()) { return; }
+
+	                // Expand shapes for selection
+	                if (config.point_focus_expand_enabled) { $$.expandCircles(index, null, true); }
+	                $$.expandBars(index, null, true);
+
+	                // Call event handler
+	                $$.main.selectAll('.' + CLASS.shape + '-' + index).each(function (d) {
+	                    config.data_onmouseover.call($$.api, d);
+	                });
+	            })
+	            .on('mouseout', function (d) {
+	                var index = d.index;
+	                if (!$$.config) { return; } // chart is destroyed
+	                if ($$.hasArcType()) { return; }
+	                $$.hideXGridFocus();
+	                $$.hideTooltip();
+	                // Undo expanded shapes
+	                $$.unexpandCircles();
+	                $$.unexpandBars();
+	                // Call event handler
+	                $$.main.selectAll('.' + CLASS.shape + '-' + index).each(function (d) {
+	                    config.data_onmouseout.call($$.api, d);
+	                });
+	            })
+	            .on('mousemove', function (d) {
+	                var selectedData, index = d.index,
+	                    eventRect = $$.svg.select('.' + CLASS.eventRect + '-' + index);
+
+	                if ($$.dragging || $$.flowing) { return; } // do nothing while dragging/flowing
+	                if ($$.hasArcType()) { return; }
+
+	                if ($$.isStepType(d) && $$.config.line_step_type === 'step-after' && d3.mouse(this)[0] < $$.x($$.getXValue(d.id, index))) {
+	                    index -= 1;
+	                }
+
+	                // Show tooltip
+	                selectedData = $$.filterTargetsToShow($$.data.targets).map(function (t) {
+	                    return $$.addName($$.getValueOnIndex(t.values, index));
+	                });
+
+	                if (config.tooltip_grouped) {
+	                    $$.showTooltip(selectedData, this);
+	                    $$.showXGridFocus(selectedData);
+	                }
+
+	                if (config.tooltip_grouped && (!config.data_selection_enabled || config.data_selection_grouped)) {
+	                    return;
+	                }
+
+	                $$.main.selectAll('.' + CLASS.shape + '-' + index)
+	                    .each(function () {
+	                        d3.select(this).classed(CLASS.EXPANDED, true);
+	                        if (config.data_selection_enabled) {
+	                            eventRect.style('cursor', config.data_selection_grouped ? 'pointer' : null);
+	                        }
+	                        if (!config.tooltip_grouped) {
+	                            $$.hideXGridFocus();
+	                            $$.hideTooltip();
+	                            if (!config.data_selection_grouped) {
+	                                $$.unexpandCircles(index);
+	                                $$.unexpandBars(index);
+	                            }
+	                        }
+	                    })
+	                    .filter(function (d) {
+	                        return $$.isWithinShape(this, d);
+	                    })
+	                    .each(function (d) {
+	                        if (config.data_selection_enabled && (config.data_selection_grouped || config.data_selection_isselectable(d))) {
+	                            eventRect.style('cursor', 'pointer');
+	                        }
+	                        if (!config.tooltip_grouped) {
+	                            $$.showTooltip([d], this);
+	                            $$.showXGridFocus([d]);
+	                            if (config.point_focus_expand_enabled) { $$.expandCircles(index, d.id, true); }
+	                            $$.expandBars(index, d.id, true);
+	                        }
+	                    });
+	            })
+	            .on('click', function (d) {
+	                var index = d.index;
+	                if ($$.hasArcType() || !$$.toggleShape) { return; }
+	                if ($$.cancelClick) {
+	                    $$.cancelClick = false;
+	                    return;
+	                }
+	                if ($$.isStepType(d) && config.line_step_type === 'step-after' && d3.mouse(this)[0] < $$.x($$.getXValue(d.id, index))) {
+	                    index -= 1;
+	                }
+	                $$.main.selectAll('.' + CLASS.shape + '-' + index).each(function (d) {
+	                    if (config.data_selection_grouped || $$.isWithinShape(this, d)) {
+	                        $$.toggleShape(this, d, index);
+	                        $$.config.data_onclick.call($$.api, d, this);
+	                    }
+	                });
+	            })
+	            .call(
+	                config.data_selection_draggable && $$.drag ? (
+	                    d3.behavior.drag().origin(Object)
+	                        .on('drag', function () { $$.drag(d3.mouse(this)); })
+	                        .on('dragstart', function () { $$.dragstart(d3.mouse(this)); })
+	                        .on('dragend', function () { $$.dragend(); })
+	                ) : function () {}
+	            );
+	    };
+
+	    c3_chart_internal_fn.generateEventRectsForMultipleXs = function (eventRectEnter) {
+	        var $$ = this, d3 = $$.d3, config = $$.config;
+
+	        function mouseout() {
+	            $$.svg.select('.' + CLASS.eventRect).style('cursor', null);
+	            $$.hideXGridFocus();
+	            $$.hideTooltip();
+	            $$.unexpandCircles();
+	            $$.unexpandBars();
+	        }
+
+	        eventRectEnter.append('rect')
+	            .attr('x', 0)
+	            .attr('y', 0)
+	            .attr('width', $$.width)
+	            .attr('height', $$.height)
+	            .attr('class', CLASS.eventRect)
+	            .on('mouseout', function () {
+	                if (!$$.config) { return; } // chart is destroyed
+	                if ($$.hasArcType()) { return; }
+	                mouseout();
+	            })
+	            .on('mousemove', function () {
+	                var targetsToShow = $$.filterTargetsToShow($$.data.targets);
+	                var mouse, closest, sameXData, selectedData;
+
+	                if ($$.dragging) { return; } // do nothing when dragging
+	                if ($$.hasArcType(targetsToShow)) { return; }
+
+	                mouse = d3.mouse(this);
+	                closest = $$.findClosestFromTargets(targetsToShow, mouse);
+
+	                if ($$.mouseover && (!closest || closest.id !== $$.mouseover.id)) {
+	                    config.data_onmouseout.call($$.api, $$.mouseover);
+	                    $$.mouseover = undefined;
+	                }
+
+	                if (! closest) {
+	                    mouseout();
+	                    return;
+	                }
+
+	                if ($$.isScatterType(closest) || !config.tooltip_grouped) {
+	                    sameXData = [closest];
+	                } else {
+	                    sameXData = $$.filterByX(targetsToShow, closest.x);
+	                }
+
+	                // show tooltip when cursor is close to some point
+	                selectedData = sameXData.map(function (d) {
+	                    return $$.addName(d);
+	                });
+	                $$.showTooltip(selectedData, this);
+
+	                // expand points
+	                if (config.point_focus_expand_enabled) {
+	                    $$.expandCircles(closest.index, closest.id, true);
+	                }
+	                $$.expandBars(closest.index, closest.id, true);
+
+	                // Show xgrid focus line
+	                $$.showXGridFocus(selectedData);
+
+	                // Show cursor as pointer if point is close to mouse position
+	                if ($$.isBarType(closest.id) || $$.dist(closest, mouse) < 100) {
+	                    $$.svg.select('.' + CLASS.eventRect).style('cursor', 'pointer');
+	                    if (!$$.mouseover) {
+	                        config.data_onmouseover.call($$.api, closest);
+	                        $$.mouseover = closest;
+	                    }
+	                }
+	            })
+	            .on('click', function () {
+	                var targetsToShow = $$.filterTargetsToShow($$.data.targets);
+	                var mouse, closest;
+
+	                if ($$.hasArcType(targetsToShow)) { return; }
+
+	                mouse = d3.mouse(this);
+	                closest = $$.findClosestFromTargets(targetsToShow, mouse);
+
+	                if (! closest) { return; }
+
+	                // select if selection enabled
+	                if ($$.isBarType(closest.id) || $$.dist(closest, mouse) < 100) {
+	                    $$.main.selectAll('.' + CLASS.shapes + $$.getTargetSelectorSuffix(closest.id)).selectAll('.' + CLASS.shape + '-' + closest.index).each(function () {
+	                        if (config.data_selection_grouped || $$.isWithinShape(this, closest)) {
+	                            $$.toggleShape(this, closest, closest.index);
+	                            $$.config.data_onclick.call($$.api, closest, this);
+	                        }
+	                    });
+	                }
+	            })
+	            .call(
+	                config.data_selection_draggable && $$.drag ? (
+	                    d3.behavior.drag().origin(Object)
+	                        .on('drag', function () { $$.drag(d3.mouse(this)); })
+	                        .on('dragstart', function () { $$.dragstart(d3.mouse(this)); })
+	                        .on('dragend', function () { $$.dragend(); })
+	                ) : function () {}
+	            );
+	    };
+	    c3_chart_internal_fn.dispatchEvent = function (type, index, mouse) {
+	        var $$ = this,
+	            selector = '.' + CLASS.eventRect + (!$$.isMultipleX() ? '-' + index : ''),
+	            eventRect = $$.main.select(selector).node(),
+	            box = eventRect.getBoundingClientRect(),
+	            x = box.left + (mouse ? mouse[0] : 0),
+	            y = box.top + (mouse ? mouse[1] : 0),
+	            event = document.createEvent("MouseEvents");
+
+	        event.initMouseEvent(type, true, true, window, 0, x, y, x, y,
+	                             false, false, false, false, 0, null);
+	        eventRect.dispatchEvent(event);
+	    };
+
+	    c3_chart_internal_fn.getCurrentWidth = function () {
+	        var $$ = this, config = $$.config;
+	        return config.size_width ? config.size_width : $$.getParentWidth();
+	    };
+	    c3_chart_internal_fn.getCurrentHeight = function () {
+	        var $$ = this, config = $$.config,
+	            h = config.size_height ? config.size_height : $$.getParentHeight();
+	        return h > 0 ? h : 320 / ($$.hasType('gauge') ? 2 : 1);
+	    };
+	    c3_chart_internal_fn.getCurrentPaddingTop = function () {
+	        var config = this.config;
+	        return isValue(config.padding_top) ? config.padding_top : 0;
+	    };
+	    c3_chart_internal_fn.getCurrentPaddingBottom = function () {
+	        var config = this.config;
+	        return isValue(config.padding_bottom) ? config.padding_bottom : 0;
+	    };
+	    c3_chart_internal_fn.getCurrentPaddingLeft = function (withoutRecompute) {
+	        var $$ = this, config = $$.config;
+	        if (isValue(config.padding_left)) {
+	            return config.padding_left;
+	        } else if (config.axis_rotated) {
+	            return !config.axis_x_show ? 1 : Math.max(ceil10($$.getAxisWidthByAxisId('x', withoutRecompute)), 40);
+	        } else if (!config.axis_y_show || config.axis_y_inner) { // && !config.axis_rotated
+	            return $$.axis.getYAxisLabelPosition().isOuter ? 30 : 1;
+	        } else {
+	            return ceil10($$.getAxisWidthByAxisId('y', withoutRecompute));
+	        }
+	    };
+	    c3_chart_internal_fn.getCurrentPaddingRight = function () {
+	        var $$ = this, config = $$.config,
+	            defaultPadding = 10, legendWidthOnRight = $$.isLegendRight ? $$.getLegendWidth() + 20 : 0;
+	        if (isValue(config.padding_right)) {
+	            return config.padding_right + 1; // 1 is needed not to hide tick line
+	        } else if (config.axis_rotated) {
+	            return defaultPadding + legendWidthOnRight;
+	        } else if (!config.axis_y2_show || config.axis_y2_inner) { // && !config.axis_rotated
+	            return 2 + legendWidthOnRight + ($$.axis.getY2AxisLabelPosition().isOuter ? 20 : 0);
+	        } else {
+	            return ceil10($$.getAxisWidthByAxisId('y2')) + legendWidthOnRight;
+	        }
+	    };
+
+	    c3_chart_internal_fn.getParentRectValue = function (key) {
+	        var parent = this.selectChart.node(), v;
+	        while (parent && parent.tagName !== 'BODY') {
+	            try {
+	                v = parent.getBoundingClientRect()[key];
+	            } catch(e) {
+	                if (key === 'width') {
+	                    // In IE in certain cases getBoundingClientRect
+	                    // will cause an "unspecified error"
+	                    v = parent.offsetWidth;
+	                }
+	            }
+	            if (v) {
+	                break;
+	            }
+	            parent = parent.parentNode;
+	        }
+	        return v;
+	    };
+	    c3_chart_internal_fn.getParentWidth = function () {
+	        return this.getParentRectValue('width');
+	    };
+	    c3_chart_internal_fn.getParentHeight = function () {
+	        var h = this.selectChart.style('height');
+	        return h.indexOf('px') > 0 ? +h.replace('px', '') : 0;
+	    };
+
+
+	    c3_chart_internal_fn.getSvgLeft = function (withoutRecompute) {
+	        var $$ = this, config = $$.config,
+	            hasLeftAxisRect = config.axis_rotated || (!config.axis_rotated && !config.axis_y_inner),
+	            leftAxisClass = config.axis_rotated ? CLASS.axisX : CLASS.axisY,
+	            leftAxis = $$.main.select('.' + leftAxisClass).node(),
+	            svgRect = leftAxis && hasLeftAxisRect ? leftAxis.getBoundingClientRect() : {right: 0},
+	            chartRect = $$.selectChart.node().getBoundingClientRect(),
+	            hasArc = $$.hasArcType(),
+	            svgLeft = svgRect.right - chartRect.left - (hasArc ? 0 : $$.getCurrentPaddingLeft(withoutRecompute));
+	        return svgLeft > 0 ? svgLeft : 0;
+	    };
+
+
+	    c3_chart_internal_fn.getAxisWidthByAxisId = function (id, withoutRecompute) {
+	        var $$ = this, position = $$.axis.getLabelPositionById(id);
+	        return $$.axis.getMaxTickWidth(id, withoutRecompute) + (position.isInner ? 20 : 40);
+	    };
+	    c3_chart_internal_fn.getHorizontalAxisHeight = function (axisId) {
+	        var $$ = this, config = $$.config, h = 30;
+	        if (axisId === 'x' && !config.axis_x_show) { return 8; }
+	        if (axisId === 'x' && config.axis_x_height) { return config.axis_x_height; }
+	        if (axisId === 'y' && !config.axis_y_show) { return config.legend_show && !$$.isLegendRight && !$$.isLegendInset ? 10 : 1; }
+	        if (axisId === 'y2' && !config.axis_y2_show) { return $$.rotated_padding_top; }
+	        // Calculate x axis height when tick rotated
+	        if (axisId === 'x' && !config.axis_rotated && config.axis_x_tick_rotate) {
+	            h = 30 + $$.axis.getMaxTickWidth(axisId) * Math.cos(Math.PI * (90 - config.axis_x_tick_rotate) / 180);
+	        }
+	        return h + ($$.axis.getLabelPositionById(axisId).isInner ? 0 : 10) + (axisId === 'y2' ? -10 : 0);
+	    };
+
+	    c3_chart_internal_fn.getEventRectWidth = function () {
+	        return Math.max(0, this.xAxis.tickInterval());
+	    };
+
+	    c3_chart_internal_fn.getShapeIndices = function (typeFilter) {
+	        var $$ = this, config = $$.config,
+	            indices = {}, i = 0, j, k;
+	        $$.filterTargetsToShow($$.data.targets.filter(typeFilter, $$)).forEach(function (d) {
+	            for (j = 0; j < config.data_groups.length; j++) {
+	                if (config.data_groups[j].indexOf(d.id) < 0) { continue; }
+	                for (k = 0; k < config.data_groups[j].length; k++) {
+	                    if (config.data_groups[j][k] in indices) {
+	                        indices[d.id] = indices[config.data_groups[j][k]];
+	                        break;
+	                    }
+	                }
+	            }
+	            if (isUndefined(indices[d.id])) { indices[d.id] = i++; }
+	        });
+	        indices.__max__ = i - 1;
+	        return indices;
+	    };
+	    c3_chart_internal_fn.getShapeX = function (offset, targetsNum, indices, isSub) {
+	        var $$ = this, scale = isSub ? $$.subX : $$.x;
+	        return function (d) {
+	            var index = d.id in indices ? indices[d.id] : 0;
+	            return d.x || d.x === 0 ? scale(d.x) - offset * (targetsNum / 2 - index) : 0;
+	        };
+	    };
+	    c3_chart_internal_fn.getShapeY = function (isSub) {
+	        var $$ = this;
+	        return function (d) {
+	            var scale = isSub ? $$.getSubYScale(d.id) : $$.getYScale(d.id);
+	            return scale(d.value);
+	        };
+	    };
+	    c3_chart_internal_fn.getShapeOffset = function (typeFilter, indices, isSub) {
+	        var $$ = this,
+	            targets = $$.orderTargets($$.filterTargetsToShow($$.data.targets.filter(typeFilter, $$))),
+	            targetIds = targets.map(function (t) { return t.id; });
+	        return function (d, i) {
+	            var scale = isSub ? $$.getSubYScale(d.id) : $$.getYScale(d.id),
+	                y0 = scale(0), offset = y0;
+	            targets.forEach(function (t) {
+	                var values = $$.isStepType(d) ? $$.convertValuesToStep(t.values) : t.values;
+	                if (t.id === d.id || indices[t.id] !== indices[d.id]) { return; }
+	                if (targetIds.indexOf(t.id) < targetIds.indexOf(d.id)) {
+	                    if (values[i].value * d.value >= 0) {
+	                        offset += scale(values[i].value) - y0;
+	                    }
+	                }
+	            });
+	            return offset;
+	        };
+	    };
+	    c3_chart_internal_fn.isWithinShape = function (that, d) {
+	        var $$ = this,
+	            shape = $$.d3.select(that), isWithin;
+	        if (!$$.isTargetToShow(d.id)) {
+	            isWithin = false;
+	        }
+	        else if (that.nodeName === 'circle') {
+	            isWithin = $$.isStepType(d) ? $$.isWithinStep(that, $$.getYScale(d.id)(d.value)) : $$.isWithinCircle(that, $$.pointSelectR(d) * 1.5);
+	        }
+	        else if (that.nodeName === 'path') {
+	            isWithin = shape.classed(CLASS.bar) ? $$.isWithinBar(that) : true;
+	        }
+	        return isWithin;
+	    };
+
+
+	    c3_chart_internal_fn.getInterpolate = function (d) {
+	        var $$ = this;
+	        return $$.isSplineType(d) ? "cardinal" : $$.isStepType(d) ? $$.config.line_step_type : "linear";
+	    };
+
+	    c3_chart_internal_fn.initLine = function () {
+	        var $$ = this;
+	        $$.main.select('.' + CLASS.chart).append("g")
+	            .attr("class", CLASS.chartLines);
+	    };
+	    c3_chart_internal_fn.updateTargetsForLine = function (targets) {
+	        var $$ = this, config = $$.config,
+	            mainLineUpdate, mainLineEnter,
+	            classChartLine = $$.classChartLine.bind($$),
+	            classLines = $$.classLines.bind($$),
+	            classAreas = $$.classAreas.bind($$),
+	            classCircles = $$.classCircles.bind($$),
+	            classFocus = $$.classFocus.bind($$);
+	        mainLineUpdate = $$.main.select('.' + CLASS.chartLines).selectAll('.' + CLASS.chartLine)
+	            .data(targets)
+	            .attr('class', function (d) { return classChartLine(d) + classFocus(d); });
+	        mainLineEnter = mainLineUpdate.enter().append('g')
+	            .attr('class', classChartLine)
+	            .style('opacity', 0)
+	            .style("pointer-events", "none");
+	        // Lines for each data
+	        mainLineEnter.append('g')
+	            .attr("class", classLines);
+	        // Areas
+	        mainLineEnter.append('g')
+	            .attr('class', classAreas);
+	        // Circles for each data point on lines
+	        mainLineEnter.append('g')
+	            .attr("class", function (d) { return $$.generateClass(CLASS.selectedCircles, d.id); });
+	        mainLineEnter.append('g')
+	            .attr("class", classCircles)
+	            .style("cursor", function (d) { return config.data_selection_isselectable(d) ? "pointer" : null; });
+	        // Update date for selected circles
+	        targets.forEach(function (t) {
+	            $$.main.selectAll('.' + CLASS.selectedCircles + $$.getTargetSelectorSuffix(t.id)).selectAll('.' + CLASS.selectedCircle).each(function (d) {
+	                d.value = t.values[d.index].value;
+	            });
+	        });
+	        // MEMO: can not keep same color...
+	        //mainLineUpdate.exit().remove();
+	    };
+	    c3_chart_internal_fn.updateLine = function (durationForExit) {
+	        var $$ = this;
+	        $$.mainLine = $$.main.selectAll('.' + CLASS.lines).selectAll('.' + CLASS.line)
+	            .data($$.lineData.bind($$));
+	        $$.mainLine.enter().append('path')
+	            .attr('class', $$.classLine.bind($$))
+	            .style("stroke", $$.color);
+	        $$.mainLine
+	            .style("opacity", $$.initialOpacity.bind($$))
+	            .style('shape-rendering', function (d) { return $$.isStepType(d) ? 'crispEdges' : ''; })
+	            .attr('transform', null);
+	        $$.mainLine.exit().transition().duration(durationForExit)
+	            .style('opacity', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawLine = function (drawLine, withTransition) {
+	        return [
+	            (withTransition ? this.mainLine.transition() : this.mainLine)
+	                .attr("d", drawLine)
+	                .style("stroke", this.color)
+	                .style("opacity", 1)
+	        ];
+	    };
+	    c3_chart_internal_fn.generateDrawLine = function (lineIndices, isSub) {
+	        var $$ = this, config = $$.config,
+	            line = $$.d3.svg.line(),
+	            getPoints = $$.generateGetLinePoints(lineIndices, isSub),
+	            yScaleGetter = isSub ? $$.getSubYScale : $$.getYScale,
+	            xValue = function (d) { return (isSub ? $$.subxx : $$.xx).call($$, d); },
+	            yValue = function (d, i) {
+	                return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)(d.value);
+	            };
+
+	        line = config.axis_rotated ? line.x(yValue).y(xValue) : line.x(xValue).y(yValue);
+	        if (!config.line_connectNull) { line = line.defined(function (d) { return d.value != null; }); }
+	        return function (d) {
+	            var values = config.line_connectNull ? $$.filterRemoveNull(d.values) : d.values,
+	                x = isSub ? $$.x : $$.subX, y = yScaleGetter.call($$, d.id), x0 = 0, y0 = 0, path;
+	            if ($$.isLineType(d)) {
+	                if (config.data_regions[d.id]) {
+	                    path = $$.lineWithRegions(values, x, y, config.data_regions[d.id]);
+	                } else {
+	                    if ($$.isStepType(d)) { values = $$.convertValuesToStep(values); }
+	                    path = line.interpolate($$.getInterpolate(d))(values);
+	                }
+	            } else {
+	                if (values[0]) {
+	                    x0 = x(values[0].x);
+	                    y0 = y(values[0].value);
+	                }
+	                path = config.axis_rotated ? "M " + y0 + " " + x0 : "M " + x0 + " " + y0;
+	            }
+	            return path ? path : "M 0 0";
+	        };
+	    };
+	    c3_chart_internal_fn.generateGetLinePoints = function (lineIndices, isSub) { // partial duplication of generateGetBarPoints
+	        var $$ = this, config = $$.config,
+	            lineTargetsNum = lineIndices.__max__ + 1,
+	            x = $$.getShapeX(0, lineTargetsNum, lineIndices, !!isSub),
+	            y = $$.getShapeY(!!isSub),
+	            lineOffset = $$.getShapeOffset($$.isLineType, lineIndices, !!isSub),
+	            yScale = isSub ? $$.getSubYScale : $$.getYScale;
+	        return function (d, i) {
+	            var y0 = yScale.call($$, d.id)(0),
+	                offset = lineOffset(d, i) || y0, // offset is for stacked area chart
+	                posX = x(d), posY = y(d);
+	            // fix posY not to overflow opposite quadrant
+	            if (config.axis_rotated) {
+	                if ((0 < d.value && posY < y0) || (d.value < 0 && y0 < posY)) { posY = y0; }
+	            }
+	            // 1 point that marks the line position
+	            return [
+	                [posX, posY - (y0 - offset)],
+	                [posX, posY - (y0 - offset)], // needed for compatibility
+	                [posX, posY - (y0 - offset)], // needed for compatibility
+	                [posX, posY - (y0 - offset)]  // needed for compatibility
+	            ];
+	        };
+	    };
+
+
+	    c3_chart_internal_fn.lineWithRegions = function (d, x, y, _regions) {
+	        var $$ = this, config = $$.config,
+	            prev = -1, i, j,
+	            s = "M", sWithRegion,
+	            xp, yp, dx, dy, dd, diff, diffx2,
+	            xOffset = $$.isCategorized() ? 0.5 : 0,
+	            xValue, yValue,
+	            regions = [];
+
+	        function isWithinRegions(x, regions) {
+	            var i;
+	            for (i = 0; i < regions.length; i++) {
+	                if (regions[i].start < x && x <= regions[i].end) { return true; }
+	            }
+	            return false;
+	        }
+
+	        // Check start/end of regions
+	        if (isDefined(_regions)) {
+	            for (i = 0; i < _regions.length; i++) {
+	                regions[i] = {};
+	                if (isUndefined(_regions[i].start)) {
+	                    regions[i].start = d[0].x;
+	                } else {
+	                    regions[i].start = $$.isTimeSeries() ? $$.parseDate(_regions[i].start) : _regions[i].start;
+	                }
+	                if (isUndefined(_regions[i].end)) {
+	                    regions[i].end = d[d.length - 1].x;
+	                } else {
+	                    regions[i].end = $$.isTimeSeries() ? $$.parseDate(_regions[i].end) : _regions[i].end;
+	                }
+	            }
+	        }
+
+	        // Set scales
+	        xValue = config.axis_rotated ? function (d) { return y(d.value); } : function (d) { return x(d.x); };
+	        yValue = config.axis_rotated ? function (d) { return x(d.x); } : function (d) { return y(d.value); };
+
+	        // Define svg generator function for region
+	        function generateM(points) {
+	            return 'M' + points[0][0] + ' ' + points[0][1] + ' ' + points[1][0] + ' ' + points[1][1];
+	        }
+	        if ($$.isTimeSeries()) {
+	            sWithRegion = function (d0, d1, j, diff) {
+	                var x0 = d0.x.getTime(), x_diff = d1.x - d0.x,
+	                    xv0 = new Date(x0 + x_diff * j),
+	                    xv1 = new Date(x0 + x_diff * (j + diff)),
+	                    points;
+	                if (config.axis_rotated) {
+	                    points = [[y(yp(j)), x(xv0)], [y(yp(j + diff)), x(xv1)]];
+	                } else {
+	                    points = [[x(xv0), y(yp(j))], [x(xv1), y(yp(j + diff))]];
+	                }
+	                return generateM(points);
+	            };
+	        } else {
+	            sWithRegion = function (d0, d1, j, diff) {
+	                var points;
+	                if (config.axis_rotated) {
+	                    points = [[y(yp(j), true), x(xp(j))], [y(yp(j + diff), true), x(xp(j + diff))]];
+	                } else {
+	                    points = [[x(xp(j), true), y(yp(j))], [x(xp(j + diff), true), y(yp(j + diff))]];
+	                }
+	                return generateM(points);
+	            };
+	        }
+
+	        // Generate
+	        for (i = 0; i < d.length; i++) {
+
+	            // Draw as normal
+	            if (isUndefined(regions) || ! isWithinRegions(d[i].x, regions)) {
+	                s += " " + xValue(d[i]) + " " + yValue(d[i]);
+	            }
+	            // Draw with region // TODO: Fix for horizotal charts
+	            else {
+	                xp = $$.getScale(d[i - 1].x + xOffset, d[i].x + xOffset, $$.isTimeSeries());
+	                yp = $$.getScale(d[i - 1].value, d[i].value);
+
+	                dx = x(d[i].x) - x(d[i - 1].x);
+	                dy = y(d[i].value) - y(d[i - 1].value);
+	                dd = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+	                diff = 2 / dd;
+	                diffx2 = diff * 2;
+
+	                for (j = diff; j <= 1; j += diffx2) {
+	                    s += sWithRegion(d[i - 1], d[i], j, diff);
+	                }
+	            }
+	            prev = d[i].x;
+	        }
+
+	        return s;
+	    };
+
+
+	    c3_chart_internal_fn.updateArea = function (durationForExit) {
+	        var $$ = this, d3 = $$.d3;
+	        $$.mainArea = $$.main.selectAll('.' + CLASS.areas).selectAll('.' + CLASS.area)
+	            .data($$.lineData.bind($$));
+	        $$.mainArea.enter().append('path')
+	            .attr("class", $$.classArea.bind($$))
+	            .style("fill", $$.color)
+	            .style("opacity", function () { $$.orgAreaOpacity = +d3.select(this).style('opacity'); return 0; });
+	        $$.mainArea
+	            .style("opacity", $$.orgAreaOpacity);
+	        $$.mainArea.exit().transition().duration(durationForExit)
+	            .style('opacity', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawArea = function (drawArea, withTransition) {
+	        return [
+	            (withTransition ? this.mainArea.transition() : this.mainArea)
+	                .attr("d", drawArea)
+	                .style("fill", this.color)
+	                .style("opacity", this.orgAreaOpacity)
+	        ];
+	    };
+	    c3_chart_internal_fn.generateDrawArea = function (areaIndices, isSub) {
+	        var $$ = this, config = $$.config, area = $$.d3.svg.area(),
+	            getPoints = $$.generateGetAreaPoints(areaIndices, isSub),
+	            yScaleGetter = isSub ? $$.getSubYScale : $$.getYScale,
+	            xValue = function (d) { return (isSub ? $$.subxx : $$.xx).call($$, d); },
+	            value0 = function (d, i) {
+	                return config.data_groups.length > 0 ? getPoints(d, i)[0][1] : yScaleGetter.call($$, d.id)($$.getAreaBaseValue(d.id));
+	            },
+	            value1 = function (d, i) {
+	                return config.data_groups.length > 0 ? getPoints(d, i)[1][1] : yScaleGetter.call($$, d.id)(d.value);
+	            };
+
+	        area = config.axis_rotated ? area.x0(value0).x1(value1).y(xValue) : area.x(xValue).y0(value0).y1(value1);
+	        if (!config.line_connectNull) {
+	            area = area.defined(function (d) { return d.value !== null; });
+	        }
+
+	        return function (d) {
+	            var values = config.line_connectNull ? $$.filterRemoveNull(d.values) : d.values,
+	                x0 = 0, y0 = 0, path;
+	            if ($$.isAreaType(d)) {
+	                if ($$.isStepType(d)) { values = $$.convertValuesToStep(values); }
+	                path = area.interpolate($$.getInterpolate(d))(values);
+	            } else {
+	                if (values[0]) {
+	                    x0 = $$.x(values[0].x);
+	                    y0 = $$.getYScale(d.id)(values[0].value);
+	                }
+	                path = config.axis_rotated ? "M " + y0 + " " + x0 : "M " + x0 + " " + y0;
+	            }
+	            return path ? path : "M 0 0";
+	        };
+	    };
+	    c3_chart_internal_fn.getAreaBaseValue = function () {
+	        return 0;
+	    };
+	    c3_chart_internal_fn.generateGetAreaPoints = function (areaIndices, isSub) { // partial duplication of generateGetBarPoints
+	        var $$ = this, config = $$.config,
+	            areaTargetsNum = areaIndices.__max__ + 1,
+	            x = $$.getShapeX(0, areaTargetsNum, areaIndices, !!isSub),
+	            y = $$.getShapeY(!!isSub),
+	            areaOffset = $$.getShapeOffset($$.isAreaType, areaIndices, !!isSub),
+	            yScale = isSub ? $$.getSubYScale : $$.getYScale;
+	        return function (d, i) {
+	            var y0 = yScale.call($$, d.id)(0),
+	                offset = areaOffset(d, i) || y0, // offset is for stacked area chart
+	                posX = x(d), posY = y(d);
+	            // fix posY not to overflow opposite quadrant
+	            if (config.axis_rotated) {
+	                if ((0 < d.value && posY < y0) || (d.value < 0 && y0 < posY)) { posY = y0; }
+	            }
+	            // 1 point that marks the area position
+	            return [
+	                [posX, offset],
+	                [posX, posY - (y0 - offset)],
+	                [posX, posY - (y0 - offset)], // needed for compatibility
+	                [posX, offset] // needed for compatibility
+	            ];
+	        };
+	    };
+
+
+	    c3_chart_internal_fn.updateCircle = function () {
+	        var $$ = this;
+	        $$.mainCircle = $$.main.selectAll('.' + CLASS.circles).selectAll('.' + CLASS.circle)
+	            .data($$.lineOrScatterData.bind($$));
+	        $$.mainCircle.enter().append("circle")
+	            .attr("class", $$.classCircle.bind($$))
+	            .attr("r", $$.pointR.bind($$))
+	            .style("fill", $$.color);
+	        $$.mainCircle
+	            .style("opacity", $$.initialOpacityForCircle.bind($$));
+	        $$.mainCircle.exit().remove();
+	    };
+	    c3_chart_internal_fn.redrawCircle = function (cx, cy, withTransition) {
+	        var selectedCircles = this.main.selectAll('.' + CLASS.selectedCircle);
+	        return [
+	            (withTransition ? this.mainCircle.transition() : this.mainCircle)
+	                .style('opacity', this.opacityForCircle.bind(this))
+	                .style("fill", this.color)
+	                .attr("cx", cx)
+	                .attr("cy", cy),
+	            (withTransition ? selectedCircles.transition() : selectedCircles)
+	                .attr("cx", cx)
+	                .attr("cy", cy)
+	        ];
+	    };
+	    c3_chart_internal_fn.circleX = function (d) {
+	        return d.x || d.x === 0 ? this.x(d.x) : null;
+	    };
+	    c3_chart_internal_fn.updateCircleY = function () {
+	        var $$ = this, lineIndices, getPoints;
+	        if ($$.config.data_groups.length > 0) {
+	            lineIndices = $$.getShapeIndices($$.isLineType),
+	            getPoints = $$.generateGetLinePoints(lineIndices);
+	            $$.circleY = function (d, i) {
+	                return getPoints(d, i)[0][1];
+	            };
+	        } else {
+	            $$.circleY = function (d) {
+	                return $$.getYScale(d.id)(d.value);
+	            };
+	        }
+	    };
+	    c3_chart_internal_fn.getCircles = function (i, id) {
+	        var $$ = this;
+	        return (id ? $$.main.selectAll('.' + CLASS.circles + $$.getTargetSelectorSuffix(id)) : $$.main).selectAll('.' + CLASS.circle + (isValue(i) ? '-' + i : ''));
+	    };
+	    c3_chart_internal_fn.expandCircles = function (i, id, reset) {
+	        var $$ = this,
+	            r = $$.pointExpandedR.bind($$);
+	        if (reset) { $$.unexpandCircles(); }
+	        $$.getCircles(i, id)
+	            .classed(CLASS.EXPANDED, true)
+	            .attr('r', r);
+	    };
+	    c3_chart_internal_fn.unexpandCircles = function (i) {
+	        var $$ = this,
+	            r = $$.pointR.bind($$);
+	        $$.getCircles(i)
+	            .filter(function () { return $$.d3.select(this).classed(CLASS.EXPANDED); })
+	            .classed(CLASS.EXPANDED, false)
+	            .attr('r', r);
+	    };
+	    c3_chart_internal_fn.pointR = function (d) {
+	        var $$ = this, config = $$.config;
+	        return $$.isStepType(d) ? 0 : (isFunction(config.point_r) ? config.point_r(d) : config.point_r);
+	    };
+	    c3_chart_internal_fn.pointExpandedR = function (d) {
+	        var $$ = this, config = $$.config;
+	        return config.point_focus_expand_enabled ? (config.point_focus_expand_r ? config.point_focus_expand_r : $$.pointR(d) * 1.75) : $$.pointR(d);
+	    };
+	    c3_chart_internal_fn.pointSelectR = function (d) {
+	        var $$ = this, config = $$.config;
+	        return config.point_select_r ? config.point_select_r : $$.pointR(d) * 4;
+	    };
+	    c3_chart_internal_fn.isWithinCircle = function (that, r) {
+	        var d3 = this.d3,
+	            mouse = d3.mouse(that), d3_this = d3.select(that),
+	            cx = +d3_this.attr("cx"), cy = +d3_this.attr("cy");
+	        return Math.sqrt(Math.pow(cx - mouse[0], 2) + Math.pow(cy - mouse[1], 2)) < r;
+	    };
+	    c3_chart_internal_fn.isWithinStep = function (that, y) {
+	        return Math.abs(y - this.d3.mouse(that)[1]) < 30;
+	    };
+
+	    c3_chart_internal_fn.initBar = function () {
+	        var $$ = this;
+	        $$.main.select('.' + CLASS.chart).append("g")
+	            .attr("class", CLASS.chartBars);
+	    };
+	    c3_chart_internal_fn.updateTargetsForBar = function (targets) {
+	        var $$ = this, config = $$.config,
+	            mainBarUpdate, mainBarEnter,
+	            classChartBar = $$.classChartBar.bind($$),
+	            classBars = $$.classBars.bind($$),
+	            classFocus = $$.classFocus.bind($$);
+	        mainBarUpdate = $$.main.select('.' + CLASS.chartBars).selectAll('.' + CLASS.chartBar)
+	            .data(targets)
+	            .attr('class', function (d) { return classChartBar(d) + classFocus(d); });
+	        mainBarEnter = mainBarUpdate.enter().append('g')
+	            .attr('class', classChartBar)
+	            .style('opacity', 0)
+	            .style("pointer-events", "none");
+	        // Bars for each data
+	        mainBarEnter.append('g')
+	            .attr("class", classBars)
+	            .style("cursor", function (d) { return config.data_selection_isselectable(d) ? "pointer" : null; });
+
+	    };
+	    c3_chart_internal_fn.updateBar = function (durationForExit) {
+	        var $$ = this,
+	            barData = $$.barData.bind($$),
+	            classBar = $$.classBar.bind($$),
+	            initialOpacity = $$.initialOpacity.bind($$),
+	            color = function (d) { return $$.color(d.id); };
+	        $$.mainBar = $$.main.selectAll('.' + CLASS.bars).selectAll('.' + CLASS.bar)
+	            .data(barData);
+	        $$.mainBar.enter().append('path')
+	            .attr("class", classBar)
+	            .style("stroke", color)
+	            .style("fill", color);
+	        $$.mainBar
+	            .style("opacity", initialOpacity);
+	        $$.mainBar.exit().transition().duration(durationForExit)
+	            .style('opacity', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawBar = function (drawBar, withTransition) {
+	        return [
+	            (withTransition ? this.mainBar.transition() : this.mainBar)
+	                .attr('d', drawBar)
+	                .style("fill", this.color)
+	                .style("opacity", 1)
+	        ];
+	    };
+	    c3_chart_internal_fn.getBarW = function (axis, barTargetsNum) {
+	        var $$ = this, config = $$.config,
+	            w = typeof config.bar_width === 'number' ? config.bar_width : barTargetsNum ? (axis.tickInterval() * config.bar_width_ratio) / barTargetsNum : 0;
+	        return config.bar_width_max && w > config.bar_width_max ? config.bar_width_max : w;
+	    };
+	    c3_chart_internal_fn.getBars = function (i, id) {
+	        var $$ = this;
+	        return (id ? $$.main.selectAll('.' + CLASS.bars + $$.getTargetSelectorSuffix(id)) : $$.main).selectAll('.' + CLASS.bar + (isValue(i) ? '-' + i : ''));
+	    };
+	    c3_chart_internal_fn.expandBars = function (i, id, reset) {
+	        var $$ = this;
+	        if (reset) { $$.unexpandBars(); }
+	        $$.getBars(i, id).classed(CLASS.EXPANDED, true);
+	    };
+	    c3_chart_internal_fn.unexpandBars = function (i) {
+	        var $$ = this;
+	        $$.getBars(i).classed(CLASS.EXPANDED, false);
+	    };
+	    c3_chart_internal_fn.generateDrawBar = function (barIndices, isSub) {
+	        var $$ = this, config = $$.config,
+	            getPoints = $$.generateGetBarPoints(barIndices, isSub);
+	        return function (d, i) {
+	            // 4 points that make a bar
+	            var points = getPoints(d, i);
+
+	            // switch points if axis is rotated, not applicable for sub chart
+	            var indexX = config.axis_rotated ? 1 : 0;
+	            var indexY = config.axis_rotated ? 0 : 1;
+
+	            var path = 'M ' + points[0][indexX] + ',' + points[0][indexY] + ' ' +
+	                    'L' + points[1][indexX] + ',' + points[1][indexY] + ' ' +
+	                    'L' + points[2][indexX] + ',' + points[2][indexY] + ' ' +
+	                    'L' + points[3][indexX] + ',' + points[3][indexY] + ' ' +
+	                    'z';
+
+	            return path;
+	        };
+	    };
+	    c3_chart_internal_fn.generateGetBarPoints = function (barIndices, isSub) {
+	        var $$ = this,
+	            axis = isSub ? $$.subXAxis : $$.xAxis,
+	            barTargetsNum = barIndices.__max__ + 1,
+	            barW = $$.getBarW(axis, barTargetsNum),
+	            barX = $$.getShapeX(barW, barTargetsNum, barIndices, !!isSub),
+	            barY = $$.getShapeY(!!isSub),
+	            barOffset = $$.getShapeOffset($$.isBarType, barIndices, !!isSub),
+	            yScale = isSub ? $$.getSubYScale : $$.getYScale;
+	        return function (d, i) {
+	            var y0 = yScale.call($$, d.id)(0),
+	                offset = barOffset(d, i) || y0, // offset is for stacked bar chart
+	                posX = barX(d), posY = barY(d);
+	            // fix posY not to overflow opposite quadrant
+	            if ($$.config.axis_rotated) {
+	                if ((0 < d.value && posY < y0) || (d.value < 0 && y0 < posY)) { posY = y0; }
+	            }
+	            // 4 points that make a bar
+	            return [
+	                [posX, offset],
+	                [posX, posY - (y0 - offset)],
+	                [posX + barW, posY - (y0 - offset)],
+	                [posX + barW, offset]
+	            ];
+	        };
+	    };
+	    c3_chart_internal_fn.isWithinBar = function (that) {
+	        var mouse = this.d3.mouse(that), box = that.getBoundingClientRect(),
+	            seg0 = that.pathSegList.getItem(0), seg1 = that.pathSegList.getItem(1),
+	            x = Math.min(seg0.x, seg1.x), y = Math.min(seg0.y, seg1.y),
+	            w = box.width, h = box.height, offset = 2,
+	            sx = x - offset, ex = x + w + offset, sy = y + h + offset, ey = y - offset;
+	        return sx < mouse[0] && mouse[0] < ex && ey < mouse[1] && mouse[1] < sy;
+	    };
+
+	    c3_chart_internal_fn.initText = function () {
+	        var $$ = this;
+	        $$.main.select('.' + CLASS.chart).append("g")
+	            .attr("class", CLASS.chartTexts);
+	        $$.mainText = $$.d3.selectAll([]);
+	    };
+	    c3_chart_internal_fn.updateTargetsForText = function (targets) {
+	        var $$ = this, mainTextUpdate, mainTextEnter,
+	            classChartText = $$.classChartText.bind($$),
+	            classTexts = $$.classTexts.bind($$),
+	            classFocus = $$.classFocus.bind($$);
+	        mainTextUpdate = $$.main.select('.' + CLASS.chartTexts).selectAll('.' + CLASS.chartText)
+	            .data(targets)
+	            .attr('class', function (d) { return classChartText(d) + classFocus(d); });
+	        mainTextEnter = mainTextUpdate.enter().append('g')
+	            .attr('class', classChartText)
+	            .style('opacity', 0)
+	            .style("pointer-events", "none");
+	        mainTextEnter.append('g')
+	            .attr('class', classTexts);
+	    };
+	    c3_chart_internal_fn.updateText = function (durationForExit) {
+	        var $$ = this, config = $$.config,
+	            barOrLineData = $$.barOrLineData.bind($$),
+	            classText = $$.classText.bind($$);
+	        $$.mainText = $$.main.selectAll('.' + CLASS.texts).selectAll('.' + CLASS.text)
+	            .data(barOrLineData);
+	        $$.mainText.enter().append('text')
+	            .attr("class", classText)
+	            .attr('text-anchor', function (d) { return config.axis_rotated ? (d.value < 0 ? 'end' : 'start') : 'middle'; })
+	            .style("stroke", 'none')
+	            .style("fill", function (d) { return $$.color(d); })
+	            .style("fill-opacity", 0);
+	        $$.mainText
+	            .text(function (d, i, j) { return $$.dataLabelFormat(d.id)(d.value, d.id, i, j); });
+	        $$.mainText.exit()
+	            .transition().duration(durationForExit)
+	            .style('fill-opacity', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawText = function (xForText, yForText, forFlow, withTransition) {
+	        return [
+	            (withTransition ? this.mainText.transition() : this.mainText)
+	                .attr('x', xForText)
+	                .attr('y', yForText)
+	                .style("fill", this.color)
+	                .style("fill-opacity", forFlow ? 0 : this.opacityForText.bind(this))
+	        ];
+	    };
+	    c3_chart_internal_fn.getTextRect = function (text, cls) {
+	        var dummy = this.d3.select('body').append('div').classed('c3', true),
+	            svg = dummy.append("svg").style('visibility', 'hidden').style('position', 'fixed').style('top', 0).style('left', 0),
+	            rect;
+	        svg.selectAll('.dummy')
+	            .data([text])
+	          .enter().append('text')
+	            .classed(cls ? cls : "", true)
+	            .text(text)
+	          .each(function () { rect = this.getBoundingClientRect(); });
+	        dummy.remove();
+	        return rect;
+	    };
+	    c3_chart_internal_fn.generateXYForText = function (areaIndices, barIndices, lineIndices, forX) {
+	        var $$ = this,
+	            getAreaPoints = $$.generateGetAreaPoints(areaIndices, false),
+	            getBarPoints = $$.generateGetBarPoints(barIndices, false),
+	            getLinePoints = $$.generateGetLinePoints(lineIndices, false),
+	            getter = forX ? $$.getXForText : $$.getYForText;
+	        return function (d, i) {
+	            var getPoints = $$.isAreaType(d) ? getAreaPoints : $$.isBarType(d) ? getBarPoints : getLinePoints;
+	            return getter.call($$, getPoints(d, i), d, this);
+	        };
+	    };
+	    c3_chart_internal_fn.getXForText = function (points, d, textElement) {
+	        var $$ = this,
+	            box = textElement.getBoundingClientRect(), xPos, padding;
+	        if ($$.config.axis_rotated) {
+	            padding = $$.isBarType(d) ? 4 : 6;
+	            xPos = points[2][1] + padding * (d.value < 0 ? -1 : 1);
+	        } else {
+	            xPos = $$.hasType('bar') ? (points[2][0] + points[0][0]) / 2 : points[0][0];
+	        }
+	        // show labels regardless of the domain if value is null
+	        if (d.value === null) {
+	            if (xPos > $$.width) {
+	                xPos = $$.width - box.width;
+	            } else if (xPos < 0) {
+	                xPos = 4;
+	            }
+	        }
+	        return xPos;
+	    };
+	    c3_chart_internal_fn.getYForText = function (points, d, textElement) {
+	        var $$ = this,
+	            box = textElement.getBoundingClientRect(),
+	            yPos;
+	        if ($$.config.axis_rotated) {
+	            yPos = (points[0][0] + points[2][0] + box.height * 0.6) / 2;
+	        } else {
+	            yPos = points[2][1];
+	            if (d.value < 0) {
+	                yPos += box.height;
+	                if ($$.isBarType(d) && $$.isSafari()) {
+	                    yPos -= 3;
+	                }
+	                else if (!$$.isBarType(d) && $$.isChrome()) {
+	                    yPos += 3;
+	                }
+	            } else {
+	                yPos += $$.isBarType(d) ? -3 : -6;
+	            }
+	        }
+	        // show labels regardless of the domain if value is null
+	        if (d.value === null && !$$.config.axis_rotated) {
+	            if (yPos < box.height) {
+	                yPos = box.height;
+	            } else if (yPos > this.height) {
+	                yPos = this.height - 4;
+	            }
+	        }
+	        return yPos;
+	    };
+
+	    c3_chart_internal_fn.setTargetType = function (targetIds, type) {
+	        var $$ = this, config = $$.config;
+	        $$.mapToTargetIds(targetIds).forEach(function (id) {
+	            $$.withoutFadeIn[id] = (type === config.data_types[id]);
+	            config.data_types[id] = type;
+	        });
+	        if (!targetIds) {
+	            config.data_type = type;
+	        }
+	    };
+	    c3_chart_internal_fn.hasType = function (type, targets) {
+	        var $$ = this, types = $$.config.data_types, has = false;
+	        targets = targets || $$.data.targets;
+	        if (targets && targets.length) {
+	            targets.forEach(function (target) {
+	                var t = types[target.id];
+	                if ((t && t.indexOf(type) >= 0) || (!t && type === 'line')) {
+	                    has = true;
+	                }
+	            });
+	        } else if (Object.keys(types).length) {
+	            Object.keys(types).forEach(function (id) {
+	                if (types[id] === type) { has = true; }
+	            });
+	        } else {
+	            has = $$.config.data_type === type;
+	        }
+	        return has;
+	    };
+	    c3_chart_internal_fn.hasArcType = function (targets) {
+	        return this.hasType('pie', targets) || this.hasType('donut', targets) || this.hasType('gauge', targets);
+	    };
+	    c3_chart_internal_fn.isLineType = function (d) {
+	        var config = this.config, id = isString(d) ? d : d.id;
+	        return !config.data_types[id] || ['line', 'spline', 'area', 'area-spline', 'step', 'area-step'].indexOf(config.data_types[id]) >= 0;
+	    };
+	    c3_chart_internal_fn.isStepType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return ['step', 'area-step'].indexOf(this.config.data_types[id]) >= 0;
+	    };
+	    c3_chart_internal_fn.isSplineType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return ['spline', 'area-spline'].indexOf(this.config.data_types[id]) >= 0;
+	    };
+	    c3_chart_internal_fn.isAreaType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return ['area', 'area-spline', 'area-step'].indexOf(this.config.data_types[id]) >= 0;
+	    };
+	    c3_chart_internal_fn.isBarType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return this.config.data_types[id] === 'bar';
+	    };
+	    c3_chart_internal_fn.isScatterType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return this.config.data_types[id] === 'scatter';
+	    };
+	    c3_chart_internal_fn.isPieType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return this.config.data_types[id] === 'pie';
+	    };
+	    c3_chart_internal_fn.isGaugeType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return this.config.data_types[id] === 'gauge';
+	    };
+	    c3_chart_internal_fn.isDonutType = function (d) {
+	        var id = isString(d) ? d : d.id;
+	        return this.config.data_types[id] === 'donut';
+	    };
+	    c3_chart_internal_fn.isArcType = function (d) {
+	        return this.isPieType(d) || this.isDonutType(d) || this.isGaugeType(d);
+	    };
+	    c3_chart_internal_fn.lineData = function (d) {
+	        return this.isLineType(d) ? [d] : [];
+	    };
+	    c3_chart_internal_fn.arcData = function (d) {
+	        return this.isArcType(d.data) ? [d] : [];
+	    };
+	    /* not used
+	     function scatterData(d) {
+	     return isScatterType(d) ? d.values : [];
+	     }
+	     */
+	    c3_chart_internal_fn.barData = function (d) {
+	        return this.isBarType(d) ? d.values : [];
+	    };
+	    c3_chart_internal_fn.lineOrScatterData = function (d) {
+	        return this.isLineType(d) || this.isScatterType(d) ? d.values : [];
+	    };
+	    c3_chart_internal_fn.barOrLineData = function (d) {
+	        return this.isBarType(d) || this.isLineType(d) ? d.values : [];
+	    };
+
+	    c3_chart_internal_fn.initGrid = function () {
+	        var $$ = this, config = $$.config, d3 = $$.d3;
+	        $$.grid = $$.main.append('g')
+	            .attr("clip-path", $$.clipPathForGrid)
+	            .attr('class', CLASS.grid);
+	        if (config.grid_x_show) {
+	            $$.grid.append("g").attr("class", CLASS.xgrids);
+	        }
+	        if (config.grid_y_show) {
+	            $$.grid.append('g').attr('class', CLASS.ygrids);
+	        }
+	        if (config.grid_focus_show) {
+	            $$.grid.append('g')
+	                .attr("class", CLASS.xgridFocus)
+	                .append('line')
+	                .attr('class', CLASS.xgridFocus);
+	        }
+	        $$.xgrid = d3.selectAll([]);
+	        if (!config.grid_lines_front) { $$.initGridLines(); }
+	    };
+	    c3_chart_internal_fn.initGridLines = function () {
+	        var $$ = this, d3 = $$.d3;
+	        $$.gridLines = $$.main.append('g')
+	            .attr("clip-path", $$.clipPathForGrid)
+	            .attr('class', CLASS.grid + ' ' + CLASS.gridLines);
+	        $$.gridLines.append('g').attr("class", CLASS.xgridLines);
+	        $$.gridLines.append('g').attr('class', CLASS.ygridLines);
+	        $$.xgridLines = d3.selectAll([]);
+	    };
+	    c3_chart_internal_fn.updateXGrid = function (withoutUpdate) {
+	        var $$ = this, config = $$.config, d3 = $$.d3,
+	            xgridData = $$.generateGridData(config.grid_x_type, $$.x),
+	            tickOffset = $$.isCategorized() ? $$.xAxis.tickOffset() : 0;
+
+	        $$.xgridAttr = config.axis_rotated ? {
+	            'x1': 0,
+	            'x2': $$.width,
+	            'y1': function (d) { return $$.x(d) - tickOffset; },
+	            'y2': function (d) { return $$.x(d) - tickOffset; }
+	        } : {
+	            'x1': function (d) { return $$.x(d) + tickOffset; },
+	            'x2': function (d) { return $$.x(d) + tickOffset; },
+	            'y1': 0,
+	            'y2': $$.height
+	        };
+
+	        $$.xgrid = $$.main.select('.' + CLASS.xgrids).selectAll('.' + CLASS.xgrid)
+	            .data(xgridData);
+	        $$.xgrid.enter().append('line').attr("class", CLASS.xgrid);
+	        if (!withoutUpdate) {
+	            $$.xgrid.attr($$.xgridAttr)
+	                .style("opacity", function () { return +d3.select(this).attr(config.axis_rotated ? 'y1' : 'x1') === (config.axis_rotated ? $$.height : 0) ? 0 : 1; });
+	        }
+	        $$.xgrid.exit().remove();
+	    };
+
+	    c3_chart_internal_fn.updateYGrid = function () {
+	        var $$ = this, config = $$.config,
+	            gridValues = $$.yAxis.tickValues() || $$.y.ticks(config.grid_y_ticks);
+	        $$.ygrid = $$.main.select('.' + CLASS.ygrids).selectAll('.' + CLASS.ygrid)
+	            .data(gridValues);
+	        $$.ygrid.enter().append('line')
+	            .attr('class', CLASS.ygrid);
+	        $$.ygrid.attr("x1", config.axis_rotated ? $$.y : 0)
+	            .attr("x2", config.axis_rotated ? $$.y : $$.width)
+	            .attr("y1", config.axis_rotated ? 0 : $$.y)
+	            .attr("y2", config.axis_rotated ? $$.height : $$.y);
+	        $$.ygrid.exit().remove();
+	        $$.smoothLines($$.ygrid, 'grid');
+	    };
+
+	    c3_chart_internal_fn.gridTextAnchor = function (d) {
+	        return d.position ? d.position : "end";
+	    };
+	    c3_chart_internal_fn.gridTextDx = function (d) {
+	        return d.position === 'start' ? 4 : d.position === 'middle' ? 0 : -4;
+	    };
+	    c3_chart_internal_fn.xGridTextX = function (d) {
+	        return d.position === 'start' ? -this.height : d.position === 'middle' ? -this.height / 2 : 0;
+	    };
+	    c3_chart_internal_fn.yGridTextX = function (d) {
+	        return d.position === 'start' ? 0 : d.position === 'middle' ? this.width / 2 : this.width;
+	    };
+	    c3_chart_internal_fn.updateGrid = function (duration) {
+	        var $$ = this, main = $$.main, config = $$.config,
+	            xgridLine, ygridLine, yv;
+
+	        // hide if arc type
+	        $$.grid.style('visibility', $$.hasArcType() ? 'hidden' : 'visible');
+
+	        main.select('line.' + CLASS.xgridFocus).style("visibility", "hidden");
+	        if (config.grid_x_show) {
+	            $$.updateXGrid();
+	        }
+	        $$.xgridLines = main.select('.' + CLASS.xgridLines).selectAll('.' + CLASS.xgridLine)
+	            .data(config.grid_x_lines);
+	        // enter
+	        xgridLine = $$.xgridLines.enter().append('g')
+	            .attr("class", function (d) { return CLASS.xgridLine + (d['class'] ? ' ' + d['class'] : ''); });
+	        xgridLine.append('line')
+	            .style("opacity", 0);
+	        xgridLine.append('text')
+	            .attr("text-anchor", $$.gridTextAnchor)
+	            .attr("transform", config.axis_rotated ? "" : "rotate(-90)")
+	            .attr('dx', $$.gridTextDx)
+	            .attr('dy', -5)
+	            .style("opacity", 0);
+	        // udpate
+	        // done in d3.transition() of the end of this function
+	        // exit
+	        $$.xgridLines.exit().transition().duration(duration)
+	            .style("opacity", 0)
+	            .remove();
+
+	        // Y-Grid
+	        if (config.grid_y_show) {
+	            $$.updateYGrid();
+	        }
+	        $$.ygridLines = main.select('.' + CLASS.ygridLines).selectAll('.' + CLASS.ygridLine)
+	            .data(config.grid_y_lines);
+	        // enter
+	        ygridLine = $$.ygridLines.enter().append('g')
+	            .attr("class", function (d) { return CLASS.ygridLine + (d['class'] ? ' ' + d['class'] : ''); });
+	        ygridLine.append('line')
+	            .style("opacity", 0);
+	        ygridLine.append('text')
+	            .attr("text-anchor", $$.gridTextAnchor)
+	            .attr("transform", config.axis_rotated ? "rotate(-90)" : "")
+	            .attr('dx', $$.gridTextDx)
+	            .attr('dy', -5)
+	            .style("opacity", 0);
+	        // update
+	        yv = $$.yv.bind($$);
+	        $$.ygridLines.select('line')
+	          .transition().duration(duration)
+	            .attr("x1", config.axis_rotated ? yv : 0)
+	            .attr("x2", config.axis_rotated ? yv : $$.width)
+	            .attr("y1", config.axis_rotated ? 0 : yv)
+	            .attr("y2", config.axis_rotated ? $$.height : yv)
+	            .style("opacity", 1);
+	        $$.ygridLines.select('text')
+	          .transition().duration(duration)
+	            .attr("x", config.axis_rotated ? $$.xGridTextX.bind($$) : $$.yGridTextX.bind($$))
+	            .attr("y", yv)
+	            .text(function (d) { return d.text; })
+	            .style("opacity", 1);
+	        // exit
+	        $$.ygridLines.exit().transition().duration(duration)
+	            .style("opacity", 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawGrid = function (withTransition) {
+	        var $$ = this, config = $$.config, xv = $$.xv.bind($$),
+	            lines = $$.xgridLines.select('line'),
+	            texts = $$.xgridLines.select('text');
+	        return [
+	            (withTransition ? lines.transition() : lines)
+	                .attr("x1", config.axis_rotated ? 0 : xv)
+	                .attr("x2", config.axis_rotated ? $$.width : xv)
+	                .attr("y1", config.axis_rotated ? xv : 0)
+	                .attr("y2", config.axis_rotated ? xv : $$.height)
+	                .style("opacity", 1),
+	            (withTransition ? texts.transition() : texts)
+	                .attr("x", config.axis_rotated ? $$.yGridTextX.bind($$) : $$.xGridTextX.bind($$))
+	                .attr("y", xv)
+	                .text(function (d) { return d.text; })
+	                .style("opacity", 1)
+	        ];
+	    };
+	    c3_chart_internal_fn.showXGridFocus = function (selectedData) {
+	        var $$ = this, config = $$.config,
+	            dataToShow = selectedData.filter(function (d) { return d && isValue(d.value); }),
+	            focusEl = $$.main.selectAll('line.' + CLASS.xgridFocus),
+	            xx = $$.xx.bind($$);
+	        if (! config.tooltip_show) { return; }
+	        // Hide when scatter plot exists
+	        if ($$.hasType('scatter') || $$.hasArcType()) { return; }
+	        focusEl
+	            .style("visibility", "visible")
+	            .data([dataToShow[0]])
+	            .attr(config.axis_rotated ? 'y1' : 'x1', xx)
+	            .attr(config.axis_rotated ? 'y2' : 'x2', xx);
+	        $$.smoothLines(focusEl, 'grid');
+	    };
+	    c3_chart_internal_fn.hideXGridFocus = function () {
+	        this.main.select('line.' + CLASS.xgridFocus).style("visibility", "hidden");
+	    };
+	    c3_chart_internal_fn.updateXgridFocus = function () {
+	        var $$ = this, config = $$.config;
+	        $$.main.select('line.' + CLASS.xgridFocus)
+	            .attr("x1", config.axis_rotated ? 0 : -10)
+	            .attr("x2", config.axis_rotated ? $$.width : -10)
+	            .attr("y1", config.axis_rotated ? -10 : 0)
+	            .attr("y2", config.axis_rotated ? -10 : $$.height);
+	    };
+	    c3_chart_internal_fn.generateGridData = function (type, scale) {
+	        var $$ = this,
+	            gridData = [], xDomain, firstYear, lastYear, i,
+	            tickNum = $$.main.select("." + CLASS.axisX).selectAll('.tick').size();
+	        if (type === 'year') {
+	            xDomain = $$.getXDomain();
+	            firstYear = xDomain[0].getFullYear();
+	            lastYear = xDomain[1].getFullYear();
+	            for (i = firstYear; i <= lastYear; i++) {
+	                gridData.push(new Date(i + '-01-01 00:00:00'));
+	            }
+	        } else {
+	            gridData = scale.ticks(10);
+	            if (gridData.length > tickNum) { // use only int
+	                gridData = gridData.filter(function (d) { return ("" + d).indexOf('.') < 0; });
+	            }
+	        }
+	        return gridData;
+	    };
+	    c3_chart_internal_fn.getGridFilterToRemove = function (params) {
+	        return params ? function (line) {
+	            var found = false;
+	            [].concat(params).forEach(function (param) {
+	                if ((('value' in param && line.value === param.value) || ('class' in param && line['class'] === param['class']))) {
+	                    found = true;
+	                }
+	            });
+	            return found;
+	        } : function () { return true; };
+	    };
+	    c3_chart_internal_fn.removeGridLines = function (params, forX) {
+	        var $$ = this, config = $$.config,
+	            toRemove = $$.getGridFilterToRemove(params),
+	            toShow = function (line) { return !toRemove(line); },
+	            classLines = forX ? CLASS.xgridLines : CLASS.ygridLines,
+	            classLine = forX ? CLASS.xgridLine : CLASS.ygridLine;
+	        $$.main.select('.' + classLines).selectAll('.' + classLine).filter(toRemove)
+	            .transition().duration(config.transition_duration)
+	            .style('opacity', 0).remove();
+	        if (forX) {
+	            config.grid_x_lines = config.grid_x_lines.filter(toShow);
+	        } else {
+	            config.grid_y_lines = config.grid_y_lines.filter(toShow);
+	        }
+	    };
+
+	    c3_chart_internal_fn.initTooltip = function () {
+	        var $$ = this, config = $$.config, i;
+	        $$.tooltip = $$.selectChart
+	            .style("position", "relative")
+	          .append("div")
+	            .attr('class', CLASS.tooltipContainer)
+	            .style("position", "absolute")
+	            .style("pointer-events", "none")
+	            .style("display", "none");
+	        // Show tooltip if needed
+	        if (config.tooltip_init_show) {
+	            if ($$.isTimeSeries() && isString(config.tooltip_init_x)) {
+	                config.tooltip_init_x = $$.parseDate(config.tooltip_init_x);
+	                for (i = 0; i < $$.data.targets[0].values.length; i++) {
+	                    if (($$.data.targets[0].values[i].x - config.tooltip_init_x) === 0) { break; }
+	                }
+	                config.tooltip_init_x = i;
+	            }
+	            $$.tooltip.html(config.tooltip_contents.call($$, $$.data.targets.map(function (d) {
+	                return $$.addName(d.values[config.tooltip_init_x]);
+	            }), $$.axis.getXAxisTickFormat(), $$.getYFormat($$.hasArcType()), $$.color));
+	            $$.tooltip.style("top", config.tooltip_init_position.top)
+	                .style("left", config.tooltip_init_position.left)
+	                .style("display", "block");
+	        }
+	    };
+	    c3_chart_internal_fn.getTooltipContent = function (d, defaultTitleFormat, defaultValueFormat, color) {
+	        var $$ = this, config = $$.config,
+	            titleFormat = config.tooltip_format_title || defaultTitleFormat,
+	            nameFormat = config.tooltip_format_name || function (name) { return name; },
+	            valueFormat = config.tooltip_format_value || defaultValueFormat,
+	            text, i, title, value, name, bgcolor;
+	        for (i = 0; i < d.length; i++) {
+	            if (! (d[i] && (d[i].value || d[i].value === 0))) { continue; }
+
+	            if (! text) {
+	                title = titleFormat ? titleFormat(d[i].x) : d[i].x;
+	                text = "<table class='" + CLASS.tooltip + "'>" + (title || title === 0 ? "<tr><th colspan='2'>" + title + "</th></tr>" : "");
+	            }
+
+	            value = valueFormat(d[i].value, d[i].ratio, d[i].id, d[i].index);
+	            if (value !== undefined) {
+	                name = nameFormat(d[i].name, d[i].ratio, d[i].id, d[i].index);
+	                bgcolor = $$.levelColor ? $$.levelColor(d[i].value) : color(d[i].id);
+
+	                text += "<tr class='" + CLASS.tooltipName + "-" + d[i].id + "'>";
+	                text += "<td class='name'><span style='background-color:" + bgcolor + "'></span>" + name + "</td>";
+	                text += "<td class='value'>" + value + "</td>";
+	                text += "</tr>";
+	            }
+	        }
+	        return text + "</table>";
+	    };
+	    c3_chart_internal_fn.tooltipPosition = function (dataToShow, tWidth, tHeight, element) {
+	        var $$ = this, config = $$.config, d3 = $$.d3;
+	        var svgLeft, tooltipLeft, tooltipRight, tooltipTop, chartRight;
+	        var forArc = $$.hasArcType(),
+	            mouse = d3.mouse(element);
+	      // Determin tooltip position
+	        if (forArc) {
+	            tooltipLeft = (($$.width - ($$.isLegendRight ? $$.getLegendWidth() : 0)) / 2) + mouse[0];
+	            tooltipTop = ($$.height / 2) + mouse[1] + 20;
+	        } else {
+	            svgLeft = $$.getSvgLeft(true);
+	            if (config.axis_rotated) {
+	                tooltipLeft = svgLeft + mouse[0] + 100;
+	                tooltipRight = tooltipLeft + tWidth;
+	                chartRight = $$.currentWidth - $$.getCurrentPaddingRight();
+	                tooltipTop = $$.x(dataToShow[0].x) + 20;
+	            } else {
+	                tooltipLeft = svgLeft + $$.getCurrentPaddingLeft(true) + $$.x(dataToShow[0].x) + 20;
+	                tooltipRight = tooltipLeft + tWidth;
+	                chartRight = svgLeft + $$.currentWidth - $$.getCurrentPaddingRight();
+	                tooltipTop = mouse[1] + 15;
+	            }
+
+	            if (tooltipRight > chartRight) {
+	                // 20 is needed for Firefox to keep tooletip width
+	                tooltipLeft -= tooltipRight - chartRight + 20;
+	            }
+	            if (tooltipTop + tHeight > $$.currentHeight) {
+	                tooltipTop -= tHeight + 30;
+	            }
+	        }
+	        if (tooltipTop < 0) {
+	            tooltipTop = 0;
+	        }
+	        return {top: tooltipTop, left: tooltipLeft};
+	    };
+	    c3_chart_internal_fn.showTooltip = function (selectedData, element) {
+	        var $$ = this, config = $$.config;
+	        var tWidth, tHeight, position;
+	        var forArc = $$.hasArcType(),
+	            dataToShow = selectedData.filter(function (d) { return d && isValue(d.value); }),
+	            positionFunction = config.tooltip_position || c3_chart_internal_fn.tooltipPosition;
+	        if (dataToShow.length === 0 || !config.tooltip_show) {
+	            return;
+	        }
+	        $$.tooltip.html(config.tooltip_contents.call($$, selectedData, $$.axis.getXAxisTickFormat(), $$.getYFormat(forArc), $$.color)).style("display", "block");
+
+	        // Get tooltip dimensions
+	        tWidth = $$.tooltip.property('offsetWidth');
+	        tHeight = $$.tooltip.property('offsetHeight');
+
+	        position = positionFunction.call(this, dataToShow, tWidth, tHeight, element);
+	        // Set tooltip
+	        $$.tooltip
+	            .style("top", position.top + "px")
+	            .style("left", position.left + 'px');
+	    };
+	    c3_chart_internal_fn.hideTooltip = function () {
+	        this.tooltip.style("display", "none");
+	    };
+
+	    c3_chart_internal_fn.initLegend = function () {
+	        var $$ = this;
+	        $$.legendItemTextBox = {};
+	        $$.legendHasRendered = false;
+	        $$.legend = $$.svg.append("g").attr("transform", $$.getTranslate('legend'));
+	        if (!$$.config.legend_show) {
+	            $$.legend.style('visibility', 'hidden');
+	            $$.hiddenLegendIds = $$.mapToIds($$.data.targets);
+	            return;
+	        }
+	        // MEMO: call here to update legend box and tranlate for all
+	        // MEMO: translate will be upated by this, so transform not needed in updateLegend()
+	        $$.updateLegendWithDefaults();
+	    };
+	    c3_chart_internal_fn.updateLegendWithDefaults = function () {
+	        var $$ = this;
+	        $$.updateLegend($$.mapToIds($$.data.targets), {withTransform: false, withTransitionForTransform: false, withTransition: false});
+	    };
+	    c3_chart_internal_fn.updateSizeForLegend = function (legendHeight, legendWidth) {
+	        var $$ = this, config = $$.config, insetLegendPosition = {
+	            top: $$.isLegendTop ? $$.getCurrentPaddingTop() + config.legend_inset_y + 5.5 : $$.currentHeight - legendHeight - $$.getCurrentPaddingBottom() - config.legend_inset_y,
+	            left: $$.isLegendLeft ? $$.getCurrentPaddingLeft() + config.legend_inset_x + 0.5 : $$.currentWidth - legendWidth - $$.getCurrentPaddingRight() - config.legend_inset_x + 0.5
+	        };
+
+	        $$.margin3 = {
+	            top: $$.isLegendRight ? 0 : $$.isLegendInset ? insetLegendPosition.top : $$.currentHeight - legendHeight,
+	            right: NaN,
+	            bottom: 0,
+	            left: $$.isLegendRight ? $$.currentWidth - legendWidth : $$.isLegendInset ? insetLegendPosition.left : 0
+	        };
+	    };
+	    c3_chart_internal_fn.transformLegend = function (withTransition) {
+	        var $$ = this;
+	        (withTransition ? $$.legend.transition() : $$.legend).attr("transform", $$.getTranslate('legend'));
+	    };
+	    c3_chart_internal_fn.updateLegendStep = function (step) {
+	        this.legendStep = step;
+	    };
+	    c3_chart_internal_fn.updateLegendItemWidth = function (w) {
+	        this.legendItemWidth = w;
+	    };
+	    c3_chart_internal_fn.updateLegendItemHeight = function (h) {
+	        this.legendItemHeight = h;
+	    };
+	    c3_chart_internal_fn.getLegendWidth = function () {
+	        var $$ = this;
+	        return $$.config.legend_show ? $$.isLegendRight || $$.isLegendInset ? $$.legendItemWidth * ($$.legendStep + 1) : $$.currentWidth : 0;
+	    };
+	    c3_chart_internal_fn.getLegendHeight = function () {
+	        var $$ = this, h = 0;
+	        if ($$.config.legend_show) {
+	            if ($$.isLegendRight) {
+	                h = $$.currentHeight;
+	            } else {
+	                h = Math.max(20, $$.legendItemHeight) * ($$.legendStep + 1);
+	            }
+	        }
+	        return h;
+	    };
+	    c3_chart_internal_fn.opacityForLegend = function (legendItem) {
+	        return legendItem.classed(CLASS.legendItemHidden) ? null : 1;
+	    };
+	    c3_chart_internal_fn.opacityForUnfocusedLegend = function (legendItem) {
+	        return legendItem.classed(CLASS.legendItemHidden) ? null : 0.3;
+	    };
+	    c3_chart_internal_fn.toggleFocusLegend = function (targetIds, focus) {
+	        var $$ = this;
+	        targetIds = $$.mapToTargetIds(targetIds);
+	        $$.legend.selectAll('.' + CLASS.legendItem)
+	            .filter(function (id) { return targetIds.indexOf(id) >= 0; })
+	            .classed(CLASS.legendItemFocused, focus)
+	          .transition().duration(100)
+	            .style('opacity', function () {
+	                var opacity = focus ? $$.opacityForLegend : $$.opacityForUnfocusedLegend;
+	                return opacity.call($$, $$.d3.select(this));
+	            });
+	    };
+	    c3_chart_internal_fn.revertLegend = function () {
+	        var $$ = this, d3 = $$.d3;
+	        $$.legend.selectAll('.' + CLASS.legendItem)
+	            .classed(CLASS.legendItemFocused, false)
+	            .transition().duration(100)
+	            .style('opacity', function () { return $$.opacityForLegend(d3.select(this)); });
+	    };
+	    c3_chart_internal_fn.showLegend = function (targetIds) {
+	        var $$ = this, config = $$.config;
+	        if (!config.legend_show) {
+	            config.legend_show = true;
+	            $$.legend.style('visibility', 'visible');
+	            if (!$$.legendHasRendered) {
+	                $$.updateLegendWithDefaults();
+	            }
+	        }
+	        $$.removeHiddenLegendIds(targetIds);
+	        $$.legend.selectAll($$.selectorLegends(targetIds))
+	            .style('visibility', 'visible')
+	            .transition()
+	            .style('opacity', function () { return $$.opacityForLegend($$.d3.select(this)); });
+	    };
+	    c3_chart_internal_fn.hideLegend = function (targetIds) {
+	        var $$ = this, config = $$.config;
+	        if (config.legend_show && isEmpty(targetIds)) {
+	            config.legend_show = false;
+	            $$.legend.style('visibility', 'hidden');
+	        }
+	        $$.addHiddenLegendIds(targetIds);
+	        $$.legend.selectAll($$.selectorLegends(targetIds))
+	            .style('opacity', 0)
+	            .style('visibility', 'hidden');
+	    };
+	    c3_chart_internal_fn.clearLegendItemTextBoxCache = function () {
+	        this.legendItemTextBox = {};
+	    };
+	    c3_chart_internal_fn.updateLegend = function (targetIds, options, transitions) {
+	        var $$ = this, config = $$.config;
+	        var xForLegend, xForLegendText, xForLegendRect, yForLegend, yForLegendText, yForLegendRect;
+	        var paddingTop = 4, paddingRight = 10, maxWidth = 0, maxHeight = 0, posMin = 10, tileWidth = 15;
+	        var l, totalLength = 0, offsets = {}, widths = {}, heights = {}, margins = [0], steps = {}, step = 0;
+	        var withTransition, withTransitionForTransform;
+	        var texts, rects, tiles, background;
+
+	        options = options || {};
+	        withTransition = getOption(options, "withTransition", true);
+	        withTransitionForTransform = getOption(options, "withTransitionForTransform", true);
+
+	        function getTextBox(textElement, id) {
+	            if (!$$.legendItemTextBox[id]) {
+	                $$.legendItemTextBox[id] = $$.getTextRect(textElement.textContent, CLASS.legendItem);
+	            }
+	            return $$.legendItemTextBox[id];
+	        }
+
+	        function updatePositions(textElement, id, index) {
+	            var reset = index === 0, isLast = index === targetIds.length - 1,
+	                box = getTextBox(textElement, id),
+	                itemWidth = box.width + tileWidth + (isLast && !($$.isLegendRight || $$.isLegendInset) ? 0 : paddingRight),
+	                itemHeight = box.height + paddingTop,
+	                itemLength = $$.isLegendRight || $$.isLegendInset ? itemHeight : itemWidth,
+	                areaLength = $$.isLegendRight || $$.isLegendInset ? $$.getLegendHeight() : $$.getLegendWidth(),
+	                margin, maxLength;
+
+	            // MEMO: care about condifion of step, totalLength
+	            function updateValues(id, withoutStep) {
+	                if (!withoutStep) {
+	                    margin = (areaLength - totalLength - itemLength) / 2;
+	                    if (margin < posMin) {
+	                        margin = (areaLength - itemLength) / 2;
+	                        totalLength = 0;
+	                        step++;
+	                    }
+	                }
+	                steps[id] = step;
+	                margins[step] = $$.isLegendInset ? 10 : margin;
+	                offsets[id] = totalLength;
+	                totalLength += itemLength;
+	            }
+
+	            if (reset) {
+	                totalLength = 0;
+	                step = 0;
+	                maxWidth = 0;
+	                maxHeight = 0;
+	            }
+
+	            if (config.legend_show && !$$.isLegendToShow(id)) {
+	                widths[id] = heights[id] = steps[id] = offsets[id] = 0;
+	                return;
+	            }
+
+	            widths[id] = itemWidth;
+	            heights[id] = itemHeight;
+
+	            if (!maxWidth || itemWidth >= maxWidth) { maxWidth = itemWidth; }
+	            if (!maxHeight || itemHeight >= maxHeight) { maxHeight = itemHeight; }
+	            maxLength = $$.isLegendRight || $$.isLegendInset ? maxHeight : maxWidth;
+
+	            if (config.legend_equally) {
+	                Object.keys(widths).forEach(function (id) { widths[id] = maxWidth; });
+	                Object.keys(heights).forEach(function (id) { heights[id] = maxHeight; });
+	                margin = (areaLength - maxLength * targetIds.length) / 2;
+	                if (margin < posMin) {
+	                    totalLength = 0;
+	                    step = 0;
+	                    targetIds.forEach(function (id) { updateValues(id); });
+	                }
+	                else {
+	                    updateValues(id, true);
+	                }
+	            } else {
+	                updateValues(id);
+	            }
+	        }
+
+	        if ($$.isLegendInset) {
+	            step = config.legend_inset_step ? config.legend_inset_step : targetIds.length;
+	            $$.updateLegendStep(step);
+	        }
+
+	        if ($$.isLegendRight) {
+	            xForLegend = function (id) { return maxWidth * steps[id]; };
+	            yForLegend = function (id) { return margins[steps[id]] + offsets[id]; };
+	        } else if ($$.isLegendInset) {
+	            xForLegend = function (id) { return maxWidth * steps[id] + 10; };
+	            yForLegend = function (id) { return margins[steps[id]] + offsets[id]; };
+	        } else {
+	            xForLegend = function (id) { return margins[steps[id]] + offsets[id]; };
+	            yForLegend = function (id) { return maxHeight * steps[id]; };
+	        }
+	        xForLegendText = function (id, i) { return xForLegend(id, i) + 14; };
+	        yForLegendText = function (id, i) { return yForLegend(id, i) + 9; };
+	        xForLegendRect = function (id, i) { return xForLegend(id, i); };
+	        yForLegendRect = function (id, i) { return yForLegend(id, i) - 5; };
+
+	        // Define g for legend area
+	        l = $$.legend.selectAll('.' + CLASS.legendItem)
+	            .data(targetIds)
+	            .enter().append('g')
+	            .attr('class', function (id) { return $$.generateClass(CLASS.legendItem, id); })
+	            .style('visibility', function (id) { return $$.isLegendToShow(id) ? 'visible' : 'hidden'; })
+	            .style('cursor', 'pointer')
+	            .on('click', function (id) {
+	                if (config.legend_item_onclick) {
+	                    config.legend_item_onclick.call($$, id);
+	                } else {
+	                    if ($$.d3.event.altKey) {
+	                        $$.api.hide();
+	                        $$.api.show(id);
+	                    } else {
+	                        $$.api.toggle(id);
+	                        $$.isTargetToShow(id) ? $$.api.focus(id) : $$.api.revert();
+	                    }
+	                }
+	            })
+	            .on('mouseover', function (id) {
+	                $$.d3.select(this).classed(CLASS.legendItemFocused, true);
+	                if (!$$.transiting && $$.isTargetToShow(id)) {
+	                    $$.api.focus(id);
+	                }
+	                if (config.legend_item_onmouseover) {
+	                    config.legend_item_onmouseover.call($$, id);
+	                }
+	            })
+	            .on('mouseout', function (id) {
+	                $$.d3.select(this).classed(CLASS.legendItemFocused, false);
+	                $$.api.revert();
+	                if (config.legend_item_onmouseout) {
+	                    config.legend_item_onmouseout.call($$, id);
+	                }
+	            });
+	        l.append('text')
+	            .text(function (id) { return isDefined(config.data_names[id]) ? config.data_names[id] : id; })
+	            .each(function (id, i) { updatePositions(this, id, i); })
+	            .style("pointer-events", "none")
+	            .attr('x', $$.isLegendRight || $$.isLegendInset ? xForLegendText : -200)
+	            .attr('y', $$.isLegendRight || $$.isLegendInset ? -200 : yForLegendText);
+	        l.append('rect')
+	            .attr("class", CLASS.legendItemEvent)
+	            .style('fill-opacity', 0)
+	            .attr('x', $$.isLegendRight || $$.isLegendInset ? xForLegendRect : -200)
+	            .attr('y', $$.isLegendRight || $$.isLegendInset ? -200 : yForLegendRect);
+	        l.append('rect')
+	            .attr("class", CLASS.legendItemTile)
+	            .style("pointer-events", "none")
+	            .style('fill', $$.color)
+	            .attr('x', $$.isLegendRight || $$.isLegendInset ? xForLegendText : -200)
+	            .attr('y', $$.isLegendRight || $$.isLegendInset ? -200 : yForLegend)
+	            .attr('width', 10)
+	            .attr('height', 10);
+
+	        // Set background for inset legend
+	        background = $$.legend.select('.' + CLASS.legendBackground + ' rect');
+	        if ($$.isLegendInset && maxWidth > 0 && background.size() === 0) {
+	            background = $$.legend.insert('g', '.' + CLASS.legendItem)
+	                .attr("class", CLASS.legendBackground)
+	                .append('rect');
+	        }
+
+	        texts = $$.legend.selectAll('text')
+	            .data(targetIds)
+	            .text(function (id) { return isDefined(config.data_names[id]) ? config.data_names[id] : id; }) // MEMO: needed for update
+	            .each(function (id, i) { updatePositions(this, id, i); });
+	        (withTransition ? texts.transition() : texts)
+	            .attr('x', xForLegendText)
+	            .attr('y', yForLegendText);
+
+	        rects = $$.legend.selectAll('rect.' + CLASS.legendItemEvent)
+	            .data(targetIds);
+	        (withTransition ? rects.transition() : rects)
+	            .attr('width', function (id) { return widths[id]; })
+	            .attr('height', function (id) { return heights[id]; })
+	            .attr('x', xForLegendRect)
+	            .attr('y', yForLegendRect);
+
+	        tiles = $$.legend.selectAll('rect.' + CLASS.legendItemTile)
+	            .data(targetIds);
+	        (withTransition ? tiles.transition() : tiles)
+	            .style('fill', $$.color)
+	            .attr('x', xForLegend)
+	            .attr('y', yForLegend);
+
+	        if (background) {
+	            (withTransition ? background.transition() : background)
+	                .attr('height', $$.getLegendHeight() - 12)
+	                .attr('width', maxWidth * (step + 1) + 10);
+	        }
+
+	        // toggle legend state
+	        $$.legend.selectAll('.' + CLASS.legendItem)
+	            .classed(CLASS.legendItemHidden, function (id) { return !$$.isTargetToShow(id); });
+
+	        // Update all to reflect change of legend
+	        $$.updateLegendItemWidth(maxWidth);
+	        $$.updateLegendItemHeight(maxHeight);
+	        $$.updateLegendStep(step);
+	        // Update size and scale
+	        $$.updateSizes();
+	        $$.updateScales();
+	        $$.updateSvgSize();
+	        // Update g positions
+	        $$.transformAll(withTransitionForTransform, transitions);
+	        $$.legendHasRendered = true;
+	    };
+
+	    function Axis(owner) {
+	        API.call(this, owner);
+	    }
+
+	    inherit(API, Axis);
+
+	    Axis.prototype.init = function init() {
+
+	        var $$ = this.owner, config = $$.config, main = $$.main;
+	        $$.axes.x = main.append("g")
+	            .attr("class", CLASS.axis + ' ' + CLASS.axisX)
+	            .attr("clip-path", $$.clipPathForXAxis)
+	            .attr("transform", $$.getTranslate('x'))
+	            .style("visibility", config.axis_x_show ? 'visible' : 'hidden');
+	        $$.axes.x.append("text")
+	            .attr("class", CLASS.axisXLabel)
+	            .attr("transform", config.axis_rotated ? "rotate(-90)" : "")
+	            .style("text-anchor", this.textAnchorForXAxisLabel.bind(this));
+	        $$.axes.y = main.append("g")
+	            .attr("class", CLASS.axis + ' ' + CLASS.axisY)
+	            .attr("clip-path", config.axis_y_inner ? "" : $$.clipPathForYAxis)
+	            .attr("transform", $$.getTranslate('y'))
+	            .style("visibility", config.axis_y_show ? 'visible' : 'hidden');
+	        $$.axes.y.append("text")
+	            .attr("class", CLASS.axisYLabel)
+	            .attr("transform", config.axis_rotated ? "" : "rotate(-90)")
+	            .style("text-anchor", this.textAnchorForYAxisLabel.bind(this));
+
+	        $$.axes.y2 = main.append("g")
+	            .attr("class", CLASS.axis + ' ' + CLASS.axisY2)
+	            // clip-path?
+	            .attr("transform", $$.getTranslate('y2'))
+	            .style("visibility", config.axis_y2_show ? 'visible' : 'hidden');
+	        $$.axes.y2.append("text")
+	            .attr("class", CLASS.axisY2Label)
+	            .attr("transform", config.axis_rotated ? "" : "rotate(-90)")
+	            .style("text-anchor", this.textAnchorForY2AxisLabel.bind(this));
+	    };
+	    Axis.prototype.getXAxis = function getXAxis(scale, orient, tickFormat, tickValues, withOuterTick, withoutTransition, withoutRotateTickText) {
+	        var $$ = this.owner, config = $$.config,
+	            axisParams = {
+	                isCategory: $$.isCategorized(),
+	                withOuterTick: withOuterTick,
+	                tickMultiline: config.axis_x_tick_multiline,
+	                tickWidth: config.axis_x_tick_width,
+	                tickTextRotate: withoutRotateTickText ? 0 : config.axis_x_tick_rotate,
+	                withoutTransition: withoutTransition,
+	            },
+	            axis = c3_axis($$.d3, axisParams).scale(scale).orient(orient);
+
+	        if ($$.isTimeSeries() && tickValues) {
+	            tickValues = tickValues.map(function (v) { return $$.parseDate(v); });
+	        }
+
+	        // Set tick
+	        axis.tickFormat(tickFormat).tickValues(tickValues);
+	        if ($$.isCategorized()) {
+	            axis.tickCentered(config.axis_x_tick_centered);
+	            if (isEmpty(config.axis_x_tick_culling)) {
+	                config.axis_x_tick_culling = false;
+	            }
+	        }
+
+	        return axis;
+	    };
+	    Axis.prototype.updateXAxisTickValues = function updateXAxisTickValues(targets, axis) {
+	        var $$ = this.owner, config = $$.config, tickValues;
+	        if (config.axis_x_tick_fit || config.axis_x_tick_count) {
+	            tickValues = this.generateTickValues($$.mapTargetsToUniqueXs(targets), config.axis_x_tick_count, $$.isTimeSeries());
+	        }
+	        if (axis) {
+	            axis.tickValues(tickValues);
+	        } else {
+	            $$.xAxis.tickValues(tickValues);
+	            $$.subXAxis.tickValues(tickValues);
+	        }
+	        return tickValues;
+	    };
+	    Axis.prototype.getYAxis = function getYAxis(scale, orient, tickFormat, tickValues, withOuterTick, withoutTransition) {
+	        var axisParams = {
+	            withOuterTick: withOuterTick,
+	            withoutTransition: withoutTransition,
+	        },
+	            $$ = this.owner,
+	            d3 = $$.d3,
+	            config = $$.config,
+	            axis = c3_axis(d3, axisParams).scale(scale).orient(orient).tickFormat(tickFormat);
+	        if ($$.isTimeSeriesY()) {
+	            axis.ticks(d3.time[config.axis_y_tick_time_value], config.axis_y_tick_time_interval);
+	        } else {
+	            axis.tickValues(tickValues);
+	        }
+	        return axis;
+	    };
+	    Axis.prototype.getId = function getId(id) {
+	        var config = this.owner.config;
+	        return id in config.data_axes ? config.data_axes[id] : 'y';
+	    };
+	    Axis.prototype.getXAxisTickFormat = function getXAxisTickFormat() {
+	        var $$ = this.owner, config = $$.config,
+	            format = $$.isTimeSeries() ? $$.defaultAxisTimeFormat : $$.isCategorized() ? $$.categoryName : function (v) { return v < 0 ? v.toFixed(0) : v; };
+	        if (config.axis_x_tick_format) {
+	            if (isFunction(config.axis_x_tick_format)) {
+	                format = config.axis_x_tick_format;
+	            } else if ($$.isTimeSeries()) {
+	                format = function (date) {
+	                    return date ? $$.axisTimeFormat(config.axis_x_tick_format)(date) : "";
+	                };
+	            }
+	        }
+	        return isFunction(format) ? function (v) { return format.call($$, v); } : format;
+	    };
+	    Axis.prototype.getTickValues = function getTickValues(tickValues, axis) {
+	        return tickValues ? tickValues : axis ? axis.tickValues() : undefined;
+	    };
+	    Axis.prototype.getXAxisTickValues = function getXAxisTickValues() {
+	        return this.getTickValues(this.owner.config.axis_x_tick_values, this.owner.xAxis);
+	    };
+	    Axis.prototype.getYAxisTickValues = function getYAxisTickValues() {
+	        return this.getTickValues(this.owner.config.axis_y_tick_values, this.owner.yAxis);
+	    };
+	    Axis.prototype.getY2AxisTickValues = function getY2AxisTickValues() {
+	        return this.getTickValues(this.owner.config.axis_y2_tick_values, this.owner.y2Axis);
+	    };
+	    Axis.prototype.getLabelOptionByAxisId = function getLabelOptionByAxisId(axisId) {
+	        var $$ = this.owner, config = $$.config, option;
+	        if (axisId === 'y') {
+	            option = config.axis_y_label;
+	        } else if (axisId === 'y2') {
+	            option = config.axis_y2_label;
+	        } else if (axisId === 'x') {
+	            option = config.axis_x_label;
+	        }
+	        return option;
+	    };
+	    Axis.prototype.getLabelText = function getLabelText(axisId) {
+	        var option = this.getLabelOptionByAxisId(axisId);
+	        return isString(option) ? option : option ? option.text : null;
+	    };
+	    Axis.prototype.setLabelText = function setLabelText(axisId, text) {
+	        var $$ = this.owner, config = $$.config,
+	            option = this.getLabelOptionByAxisId(axisId);
+	        if (isString(option)) {
+	            if (axisId === 'y') {
+	                config.axis_y_label = text;
+	            } else if (axisId === 'y2') {
+	                config.axis_y2_label = text;
+	            } else if (axisId === 'x') {
+	                config.axis_x_label = text;
+	            }
+	        } else if (option) {
+	            option.text = text;
+	        }
+	    };
+	    Axis.prototype.getLabelPosition = function getLabelPosition(axisId, defaultPosition) {
+	        var option = this.getLabelOptionByAxisId(axisId),
+	            position = (option && typeof option === 'object' && option.position) ? option.position : defaultPosition;
+	        return {
+	            isInner: position.indexOf('inner') >= 0,
+	            isOuter: position.indexOf('outer') >= 0,
+	            isLeft: position.indexOf('left') >= 0,
+	            isCenter: position.indexOf('center') >= 0,
+	            isRight: position.indexOf('right') >= 0,
+	            isTop: position.indexOf('top') >= 0,
+	            isMiddle: position.indexOf('middle') >= 0,
+	            isBottom: position.indexOf('bottom') >= 0
+	        };
+	    };
+	    Axis.prototype.getXAxisLabelPosition = function getXAxisLabelPosition() {
+	        return this.getLabelPosition('x', this.owner.config.axis_rotated ? 'inner-top' : 'inner-right');
+	    };
+	    Axis.prototype.getYAxisLabelPosition = function getYAxisLabelPosition() {
+	        return this.getLabelPosition('y', this.owner.config.axis_rotated ? 'inner-right' : 'inner-top');
+	    };
+	    Axis.prototype.getY2AxisLabelPosition = function getY2AxisLabelPosition() {
+	        return this.getLabelPosition('y2', this.owner.config.axis_rotated ? 'inner-right' : 'inner-top');
+	    };
+	    Axis.prototype.getLabelPositionById = function getLabelPositionById(id) {
+	        return id === 'y2' ? this.getY2AxisLabelPosition() : id === 'y' ? this.getYAxisLabelPosition() : this.getXAxisLabelPosition();
+	    };
+	    Axis.prototype.textForXAxisLabel = function textForXAxisLabel() {
+	        return this.getLabelText('x');
+	    };
+	    Axis.prototype.textForYAxisLabel = function textForYAxisLabel() {
+	        return this.getLabelText('y');
+	    };
+	    Axis.prototype.textForY2AxisLabel = function textForY2AxisLabel() {
+	        return this.getLabelText('y2');
+	    };
+	    Axis.prototype.xForAxisLabel = function xForAxisLabel(forHorizontal, position) {
+	        var $$ = this.owner;
+	        if (forHorizontal) {
+	            return position.isLeft ? 0 : position.isCenter ? $$.width / 2 : $$.width;
+	        } else {
+	            return position.isBottom ? -$$.height : position.isMiddle ? -$$.height / 2 : 0;
+	        }
+	    };
+	    Axis.prototype.dxForAxisLabel = function dxForAxisLabel(forHorizontal, position) {
+	        if (forHorizontal) {
+	            return position.isLeft ? "0.5em" : position.isRight ? "-0.5em" : "0";
+	        } else {
+	            return position.isTop ? "-0.5em" : position.isBottom ? "0.5em" : "0";
+	        }
+	    };
+	    Axis.prototype.textAnchorForAxisLabel = function textAnchorForAxisLabel(forHorizontal, position) {
+	        if (forHorizontal) {
+	            return position.isLeft ? 'start' : position.isCenter ? 'middle' : 'end';
+	        } else {
+	            return position.isBottom ? 'start' : position.isMiddle ? 'middle' : 'end';
+	        }
+	    };
+	    Axis.prototype.xForXAxisLabel = function xForXAxisLabel() {
+	        return this.xForAxisLabel(!this.owner.config.axis_rotated, this.getXAxisLabelPosition());
+	    };
+	    Axis.prototype.xForYAxisLabel = function xForYAxisLabel() {
+	        return this.xForAxisLabel(this.owner.config.axis_rotated, this.getYAxisLabelPosition());
+	    };
+	    Axis.prototype.xForY2AxisLabel = function xForY2AxisLabel() {
+	        return this.xForAxisLabel(this.owner.config.axis_rotated, this.getY2AxisLabelPosition());
+	    };
+	    Axis.prototype.dxForXAxisLabel = function dxForXAxisLabel() {
+	        return this.dxForAxisLabel(!this.owner.config.axis_rotated, this.getXAxisLabelPosition());
+	    };
+	    Axis.prototype.dxForYAxisLabel = function dxForYAxisLabel() {
+	        return this.dxForAxisLabel(this.owner.config.axis_rotated, this.getYAxisLabelPosition());
+	    };
+	    Axis.prototype.dxForY2AxisLabel = function dxForY2AxisLabel() {
+	        return this.dxForAxisLabel(this.owner.config.axis_rotated, this.getY2AxisLabelPosition());
+	    };
+	    Axis.prototype.dyForXAxisLabel = function dyForXAxisLabel() {
+	        var $$ = this.owner, config = $$.config,
+	            position = this.getXAxisLabelPosition();
+	        if (config.axis_rotated) {
+	            return position.isInner ? "1.2em" : -25 - this.getMaxTickWidth('x');
+	        } else {
+	            return position.isInner ? "-0.5em" : config.axis_x_height ? config.axis_x_height - 10 : "3em";
+	        }
+	    };
+	    Axis.prototype.dyForYAxisLabel = function dyForYAxisLabel() {
+	        var $$ = this.owner,
+	            position = this.getYAxisLabelPosition();
+	        if ($$.config.axis_rotated) {
+	            return position.isInner ? "-0.5em" : "3em";
+	        } else {
+	            return position.isInner ? "1.2em" : -10 - ($$.config.axis_y_inner ? 0 : (this.getMaxTickWidth('y') + 10));
+	        }
+	    };
+	    Axis.prototype.dyForY2AxisLabel = function dyForY2AxisLabel() {
+	        var $$ = this.owner,
+	            position = this.getY2AxisLabelPosition();
+	        if ($$.config.axis_rotated) {
+	            return position.isInner ? "1.2em" : "-2.2em";
+	        } else {
+	            return position.isInner ? "-0.5em" : 15 + ($$.config.axis_y2_inner ? 0 : (this.getMaxTickWidth('y2') + 15));
+	        }
+	    };
+	    Axis.prototype.textAnchorForXAxisLabel = function textAnchorForXAxisLabel() {
+	        var $$ = this.owner;
+	        return this.textAnchorForAxisLabel(!$$.config.axis_rotated, this.getXAxisLabelPosition());
+	    };
+	    Axis.prototype.textAnchorForYAxisLabel = function textAnchorForYAxisLabel() {
+	        var $$ = this.owner;
+	        return this.textAnchorForAxisLabel($$.config.axis_rotated, this.getYAxisLabelPosition());
+	    };
+	    Axis.prototype.textAnchorForY2AxisLabel = function textAnchorForY2AxisLabel() {
+	        var $$ = this.owner;
+	        return this.textAnchorForAxisLabel($$.config.axis_rotated, this.getY2AxisLabelPosition());
+	    };
+	    Axis.prototype.getMaxTickWidth = function getMaxTickWidth(id, withoutRecompute) {
+	        var $$ = this.owner, config = $$.config,
+	            maxWidth = 0, targetsToShow, scale, axis, dummy, svg;
+	        if (withoutRecompute && $$.currentMaxTickWidths[id]) {
+	            return $$.currentMaxTickWidths[id];
+	        }
+	        if ($$.svg) {
+	            targetsToShow = $$.filterTargetsToShow($$.data.targets);
+	            if (id === 'y') {
+	                scale = $$.y.copy().domain($$.getYDomain(targetsToShow, 'y'));
+	                axis = this.getYAxis(scale, $$.yOrient, config.axis_y_tick_format, $$.yAxisTickValues, false, true);
+	            } else if (id === 'y2') {
+	                scale = $$.y2.copy().domain($$.getYDomain(targetsToShow, 'y2'));
+	                axis = this.getYAxis(scale, $$.y2Orient, config.axis_y2_tick_format, $$.y2AxisTickValues, false, true);
+	            } else {
+	                scale = $$.x.copy().domain($$.getXDomain(targetsToShow));
+	                axis = this.getXAxis(scale, $$.xOrient, $$.xAxisTickFormat, $$.xAxisTickValues, false, true, true);
+	                this.updateXAxisTickValues(targetsToShow, axis);
+	            }
+	            dummy = $$.d3.select('body').append('div').classed('c3', true);
+	            svg = dummy.append("svg").style('visibility', 'hidden').style('position', 'fixed').style('top', 0).style('left', 0),
+	            svg.append('g').call(axis).each(function () {
+	                $$.d3.select(this).selectAll('text').each(function () {
+	                    var box = this.getBoundingClientRect();
+	                    if (maxWidth < box.width) { maxWidth = box.width; }
+	                });
+	                dummy.remove();
+	            });
+	        }
+	        $$.currentMaxTickWidths[id] = maxWidth <= 0 ? $$.currentMaxTickWidths[id] : maxWidth;
+	        return $$.currentMaxTickWidths[id];
+	    };
+
+	    Axis.prototype.updateLabels = function updateLabels(withTransition) {
+	        var $$ = this.owner;
+	        var axisXLabel = $$.main.select('.' + CLASS.axisX + ' .' + CLASS.axisXLabel),
+	            axisYLabel = $$.main.select('.' + CLASS.axisY + ' .' + CLASS.axisYLabel),
+	            axisY2Label = $$.main.select('.' + CLASS.axisY2 + ' .' + CLASS.axisY2Label);
+	        (withTransition ? axisXLabel.transition() : axisXLabel)
+	            .attr("x", this.xForXAxisLabel.bind(this))
+	            .attr("dx", this.dxForXAxisLabel.bind(this))
+	            .attr("dy", this.dyForXAxisLabel.bind(this))
+	            .text(this.textForXAxisLabel.bind(this));
+	        (withTransition ? axisYLabel.transition() : axisYLabel)
+	            .attr("x", this.xForYAxisLabel.bind(this))
+	            .attr("dx", this.dxForYAxisLabel.bind(this))
+	            .attr("dy", this.dyForYAxisLabel.bind(this))
+	            .text(this.textForYAxisLabel.bind(this));
+	        (withTransition ? axisY2Label.transition() : axisY2Label)
+	            .attr("x", this.xForY2AxisLabel.bind(this))
+	            .attr("dx", this.dxForY2AxisLabel.bind(this))
+	            .attr("dy", this.dyForY2AxisLabel.bind(this))
+	            .text(this.textForY2AxisLabel.bind(this));
+	    };
+	    Axis.prototype.getPadding = function getPadding(padding, key, defaultValue, domainLength) {
+	        if (!isValue(padding[key])) {
+	            return defaultValue;
+	        }
+	        if (padding.unit === 'ratio') {
+	            return padding[key] * domainLength;
+	        }
+	        // assume padding is pixels if unit is not specified
+	        return this.convertPixelsToAxisPadding(padding[key], domainLength);
+	    };
+	    Axis.prototype.convertPixelsToAxisPadding = function convertPixelsToAxisPadding(pixels, domainLength) {
+	        var $$ = this.owner,
+	            length = $$.config.axis_rotated ? $$.width : $$.height;
+	        return domainLength * (pixels / length);
+	    };
+	    Axis.prototype.generateTickValues = function generateTickValues(values, tickCount, forTimeSeries) {
+	        var tickValues = values, targetCount, start, end, count, interval, i, tickValue;
+	        if (tickCount) {
+	            targetCount = isFunction(tickCount) ? tickCount() : tickCount;
+	            // compute ticks according to tickCount
+	            if (targetCount === 1) {
+	                tickValues = [values[0]];
+	            } else if (targetCount === 2) {
+	                tickValues = [values[0], values[values.length - 1]];
+	            } else if (targetCount > 2) {
+	                count = targetCount - 2;
+	                start = values[0];
+	                end = values[values.length - 1];
+	                interval = (end - start) / (count + 1);
+	                // re-construct unique values
+	                tickValues = [start];
+	                for (i = 0; i < count; i++) {
+	                    tickValue = +start + interval * (i + 1);
+	                    tickValues.push(forTimeSeries ? new Date(tickValue) : tickValue);
+	                }
+	                tickValues.push(end);
+	            }
+	        }
+	        if (!forTimeSeries) { tickValues = tickValues.sort(function (a, b) { return a - b; }); }
+	        return tickValues;
+	    };
+	    Axis.prototype.generateTransitions = function generateTransitions(duration) {
+	        var $$ = this.owner, axes = $$.axes;
+	        return {
+	            axisX: duration ? axes.x.transition().duration(duration) : axes.x,
+	            axisY: duration ? axes.y.transition().duration(duration) : axes.y,
+	            axisY2: duration ? axes.y2.transition().duration(duration) : axes.y2,
+	            axisSubX: duration ? axes.subx.transition().duration(duration) : axes.subx
+	        };
+	    };
+	    Axis.prototype.redraw = function redraw(transitions, isHidden) {
+	        var $$ = this.owner;
+	        $$.axes.x.style("opacity", isHidden ? 0 : 1);
+	        $$.axes.y.style("opacity", isHidden ? 0 : 1);
+	        $$.axes.y2.style("opacity", isHidden ? 0 : 1);
+	        $$.axes.subx.style("opacity", isHidden ? 0 : 1);
+	        transitions.axisX.call($$.xAxis);
+	        transitions.axisY.call($$.yAxis);
+	        transitions.axisY2.call($$.y2Axis);
+	        transitions.axisSubX.call($$.subXAxis);
+	    };
+
+	    c3_chart_internal_fn.getClipPath = function (id) {
+	        var isIE9 = window.navigator.appVersion.toLowerCase().indexOf("msie 9.") >= 0;
+	        return "url(" + (isIE9 ? "" : document.URL.split('#')[0]) + "#" + id + ")";
+	    };
+	    c3_chart_internal_fn.appendClip = function (parent, id) {
+	        return parent.append("clipPath").attr("id", id).append("rect");
+	    };
+	    c3_chart_internal_fn.getAxisClipX = function (forHorizontal) {
+	        // axis line width + padding for left
+	        var left = Math.max(30, this.margin.left);
+	        return forHorizontal ? -(1 + left) : -(left - 1);
+	    };
+	    c3_chart_internal_fn.getAxisClipY = function (forHorizontal) {
+	        return forHorizontal ? -20 : -this.margin.top;
+	    };
+	    c3_chart_internal_fn.getXAxisClipX = function () {
+	        var $$ = this;
+	        return $$.getAxisClipX(!$$.config.axis_rotated);
+	    };
+	    c3_chart_internal_fn.getXAxisClipY = function () {
+	        var $$ = this;
+	        return $$.getAxisClipY(!$$.config.axis_rotated);
+	    };
+	    c3_chart_internal_fn.getYAxisClipX = function () {
+	        var $$ = this;
+	        return $$.config.axis_y_inner ? -1 : $$.getAxisClipX($$.config.axis_rotated);
+	    };
+	    c3_chart_internal_fn.getYAxisClipY = function () {
+	        var $$ = this;
+	        return $$.getAxisClipY($$.config.axis_rotated);
+	    };
+	    c3_chart_internal_fn.getAxisClipWidth = function (forHorizontal) {
+	        var $$ = this,
+	            left = Math.max(30, $$.margin.left),
+	            right = Math.max(30, $$.margin.right);
+	        // width + axis line width + padding for left/right
+	        return forHorizontal ? $$.width + 2 + left + right : $$.margin.left + 20;
+	    };
+	    c3_chart_internal_fn.getAxisClipHeight = function (forHorizontal) {
+	        // less than 20 is not enough to show the axis label 'outer' without legend
+	        return (forHorizontal ? this.margin.bottom : (this.margin.top + this.height)) + 20;
+	    };
+	    c3_chart_internal_fn.getXAxisClipWidth = function () {
+	        var $$ = this;
+	        return $$.getAxisClipWidth(!$$.config.axis_rotated);
+	    };
+	    c3_chart_internal_fn.getXAxisClipHeight = function () {
+	        var $$ = this;
+	        return $$.getAxisClipHeight(!$$.config.axis_rotated);
+	    };
+	    c3_chart_internal_fn.getYAxisClipWidth = function () {
+	        var $$ = this;
+	        return $$.getAxisClipWidth($$.config.axis_rotated) + ($$.config.axis_y_inner ? 20 : 0);
+	    };
+	    c3_chart_internal_fn.getYAxisClipHeight = function () {
+	        var $$ = this;
+	        return $$.getAxisClipHeight($$.config.axis_rotated);
+	    };
+
+	    c3_chart_internal_fn.initPie = function () {
+	        var $$ = this, d3 = $$.d3, config = $$.config;
+	        $$.pie = d3.layout.pie().value(function (d) {
+	            return d.values.reduce(function (a, b) { return a + b.value; }, 0);
+	        });
+	        if (!config.data_order) {
+	            $$.pie.sort(null);
+	        }
+	    };
+
+	    c3_chart_internal_fn.updateRadius = function () {
+	        var $$ = this, config = $$.config,
+	            w = config.gauge_width || config.donut_width;
+	        $$.radiusExpanded = Math.min($$.arcWidth, $$.arcHeight) / 2;
+	        $$.radius = $$.radiusExpanded * 0.95;
+	        $$.innerRadiusRatio = w ? ($$.radius - w) / $$.radius : 0.6;
+	        $$.innerRadius = $$.hasType('donut') || $$.hasType('gauge') ? $$.radius * $$.innerRadiusRatio : 0;
+	    };
+
+	    c3_chart_internal_fn.updateArc = function () {
+	        var $$ = this;
+	        $$.svgArc = $$.getSvgArc();
+	        $$.svgArcExpanded = $$.getSvgArcExpanded();
+	        $$.svgArcExpandedSub = $$.getSvgArcExpanded(0.98);
+	    };
+
+	    c3_chart_internal_fn.updateAngle = function (d) {
+	        var $$ = this, config = $$.config,
+	            found = false, index = 0,
+	            gMin = config.gauge_min, gMax = config.gauge_max, gTic, gValue;
+	        $$.pie($$.filterTargetsToShow($$.data.targets)).forEach(function (t) {
+	            if (! found && t.data.id === d.data.id) {
+	                found = true;
+	                d = t;
+	                d.index = index;
+	            }
+	            index++;
+	        });
+	        if (isNaN(d.startAngle)) {
+	            d.startAngle = 0;
+	        }
+	        if (isNaN(d.endAngle)) {
+	            d.endAngle = d.startAngle;
+	        }
+	        if ($$.isGaugeType(d.data)) {
+	            gTic = (Math.PI) / (gMax - gMin);
+	            gValue = d.value < gMin ? 0 : d.value < gMax ? d.value - gMin : (gMax - gMin);
+	            d.startAngle = -1 * (Math.PI / 2);
+	            d.endAngle = d.startAngle + gTic * gValue;
+	        }
+	        return found ? d : null;
+	    };
+
+	    c3_chart_internal_fn.getSvgArc = function () {
+	        var $$ = this,
+	            arc = $$.d3.svg.arc().outerRadius($$.radius).innerRadius($$.innerRadius),
+	            newArc = function (d, withoutUpdate) {
+	                var updated;
+	                if (withoutUpdate) { return arc(d); } // for interpolate
+	                updated = $$.updateAngle(d);
+	                return updated ? arc(updated) : "M 0 0";
+	            };
+	        // TODO: extends all function
+	        newArc.centroid = arc.centroid;
+	        return newArc;
+	    };
+
+	    c3_chart_internal_fn.getSvgArcExpanded = function (rate) {
+	        var $$ = this,
+	            arc = $$.d3.svg.arc().outerRadius($$.radiusExpanded * (rate ? rate : 1)).innerRadius($$.innerRadius);
+	        return function (d) {
+	            var updated = $$.updateAngle(d);
+	            return updated ? arc(updated) : "M 0 0";
+	        };
+	    };
+
+	    c3_chart_internal_fn.getArc = function (d, withoutUpdate, force) {
+	        return force || this.isArcType(d.data) ? this.svgArc(d, withoutUpdate) : "M 0 0";
+	    };
+
+
+	    c3_chart_internal_fn.transformForArcLabel = function (d) {
+	        var $$ = this,
+	            updated = $$.updateAngle(d), c, x, y, h, ratio, translate = "";
+	        if (updated && !$$.hasType('gauge')) {
+	            c = this.svgArc.centroid(updated);
+	            x = isNaN(c[0]) ? 0 : c[0];
+	            y = isNaN(c[1]) ? 0 : c[1];
+	            h = Math.sqrt(x * x + y * y);
+	            // TODO: ratio should be an option?
+	            ratio = $$.radius && h ? (36 / $$.radius > 0.375 ? 1.175 - 36 / $$.radius : 0.8) * $$.radius / h : 0;
+	            translate = "translate(" + (x * ratio) +  ',' + (y * ratio) +  ")";
+	        }
+	        return translate;
+	    };
+
+	    c3_chart_internal_fn.getArcRatio = function (d) {
+	        var $$ = this,
+	            whole = $$.hasType('gauge') ? Math.PI : (Math.PI * 2);
+	        return d ? (d.endAngle - d.startAngle) / whole : null;
+	    };
+
+	    c3_chart_internal_fn.convertToArcData = function (d) {
+	        return this.addName({
+	            id: d.data.id,
+	            value: d.value,
+	            ratio: this.getArcRatio(d),
+	            index: d.index
+	        });
+	    };
+
+	    c3_chart_internal_fn.textForArcLabel = function (d) {
+	        var $$ = this,
+	            updated, value, ratio, id, format;
+	        if (! $$.shouldShowArcLabel()) { return ""; }
+	        updated = $$.updateAngle(d);
+	        value = updated ? updated.value : null;
+	        ratio = $$.getArcRatio(updated);
+	        id = d.data.id;
+	        if (! $$.hasType('gauge') && ! $$.meetsArcLabelThreshold(ratio)) { return ""; }
+	        format = $$.getArcLabelFormat();
+	        return format ? format(value, ratio, id) : $$.defaultArcValueFormat(value, ratio);
+	    };
+
+	    c3_chart_internal_fn.expandArc = function (targetIds) {
+	        var $$ = this, interval;
+
+	        // MEMO: avoid to cancel transition
+	        if ($$.transiting) {
+	            interval = window.setInterval(function () {
+	                if (!$$.transiting) {
+	                    window.clearInterval(interval);
+	                    if ($$.legend.selectAll('.c3-legend-item-focused').size() > 0) {
+	                        $$.expandArc(targetIds);
+	                    }
+	                }
+	            }, 10);
+	            return;
+	        }
+
+	        targetIds = $$.mapToTargetIds(targetIds);
+
+	        $$.svg.selectAll($$.selectorTargets(targetIds, '.' + CLASS.chartArc)).each(function (d) {
+	            if (! $$.shouldExpand(d.data.id)) { return; }
+	            $$.d3.select(this).selectAll('path')
+	                .transition().duration(50)
+	                .attr("d", $$.svgArcExpanded)
+	                .transition().duration(100)
+	                .attr("d", $$.svgArcExpandedSub)
+	                .each(function (d) {
+	                    if ($$.isDonutType(d.data)) {
+	                        // callback here
+	                    }
+	                });
+	        });
+	    };
+
+	    c3_chart_internal_fn.unexpandArc = function (targetIds) {
+	        var $$ = this;
+
+	        if ($$.transiting) { return; }
+
+	        targetIds = $$.mapToTargetIds(targetIds);
+
+	        $$.svg.selectAll($$.selectorTargets(targetIds, '.' + CLASS.chartArc)).selectAll('path')
+	            .transition().duration(50)
+	            .attr("d", $$.svgArc);
+	        $$.svg.selectAll('.' + CLASS.arc)
+	            .style("opacity", 1);
+	    };
+
+	    c3_chart_internal_fn.shouldExpand = function (id) {
+	        var $$ = this, config = $$.config;
+	        return ($$.isDonutType(id) && config.donut_expand) || ($$.isGaugeType(id) && config.gauge_expand) || ($$.isPieType(id) && config.pie_expand);
+	    };
+
+	    c3_chart_internal_fn.shouldShowArcLabel = function () {
+	        var $$ = this, config = $$.config, shouldShow = true;
+	        if ($$.hasType('donut')) {
+	            shouldShow = config.donut_label_show;
+	        } else if ($$.hasType('pie')) {
+	            shouldShow = config.pie_label_show;
+	        }
+	        // when gauge, always true
+	        return shouldShow;
+	    };
+
+	    c3_chart_internal_fn.meetsArcLabelThreshold = function (ratio) {
+	        var $$ = this, config = $$.config,
+	            threshold = $$.hasType('donut') ? config.donut_label_threshold : config.pie_label_threshold;
+	        return ratio >= threshold;
+	    };
+
+	    c3_chart_internal_fn.getArcLabelFormat = function () {
+	        var $$ = this, config = $$.config,
+	            format = config.pie_label_format;
+	        if ($$.hasType('gauge')) {
+	            format = config.gauge_label_format;
+	        } else if ($$.hasType('donut')) {
+	            format = config.donut_label_format;
+	        }
+	        return format;
+	    };
+
+	    c3_chart_internal_fn.getArcTitle = function () {
+	        var $$ = this;
+	        return $$.hasType('donut') ? $$.config.donut_title : "";
+	    };
+
+	    c3_chart_internal_fn.updateTargetsForArc = function (targets) {
+	        var $$ = this, main = $$.main,
+	            mainPieUpdate, mainPieEnter,
+	            classChartArc = $$.classChartArc.bind($$),
+	            classArcs = $$.classArcs.bind($$),
+	            classFocus = $$.classFocus.bind($$);
+	        mainPieUpdate = main.select('.' + CLASS.chartArcs).selectAll('.' + CLASS.chartArc)
+	            .data($$.pie(targets))
+	            .attr("class", function (d) { return classChartArc(d) + classFocus(d.data); });
+	        mainPieEnter = mainPieUpdate.enter().append("g")
+	            .attr("class", classChartArc);
+	        mainPieEnter.append('g')
+	            .attr('class', classArcs);
+	        mainPieEnter.append("text")
+	            .attr("dy", $$.hasType('gauge') ? "-.1em" : ".35em")
+	            .style("opacity", 0)
+	            .style("text-anchor", "middle")
+	            .style("pointer-events", "none");
+	        // MEMO: can not keep same color..., but not bad to update color in redraw
+	        //mainPieUpdate.exit().remove();
+	    };
+
+	    c3_chart_internal_fn.initArc = function () {
+	        var $$ = this;
+	        $$.arcs = $$.main.select('.' + CLASS.chart).append("g")
+	            .attr("class", CLASS.chartArcs)
+	            .attr("transform", $$.getTranslate('arc'));
+	        $$.arcs.append('text')
+	            .attr('class', CLASS.chartArcsTitle)
+	            .style("text-anchor", "middle")
+	            .text($$.getArcTitle());
+	    };
+
+	    c3_chart_internal_fn.redrawArc = function (duration, durationForExit, withTransform) {
+	        var $$ = this, d3 = $$.d3, config = $$.config, main = $$.main,
+	            mainArc;
+	        mainArc = main.selectAll('.' + CLASS.arcs).selectAll('.' + CLASS.arc)
+	            .data($$.arcData.bind($$));
+	        mainArc.enter().append('path')
+	            .attr("class", $$.classArc.bind($$))
+	            .style("fill", function (d) { return $$.color(d.data); })
+	            .style("cursor", function (d) { return config.interaction_enabled && config.data_selection_isselectable(d) ? "pointer" : null; })
+	            .style("opacity", 0)
+	            .each(function (d) {
+	                if ($$.isGaugeType(d.data)) {
+	                    d.startAngle = d.endAngle = -1 * (Math.PI / 2);
+	                }
+	                this._current = d;
+	            });
+	        mainArc
+	            .attr("transform", function (d) { return !$$.isGaugeType(d.data) && withTransform ? "scale(0)" : ""; })
+	            .style("opacity", function (d) { return d === this._current ? 0 : 1; })
+	            .on('mouseover', config.interaction_enabled ? function (d) {
+	                var updated, arcData;
+	                if ($$.transiting) { // skip while transiting
+	                    return;
+	                }
+	                updated = $$.updateAngle(d);
+	                arcData = $$.convertToArcData(updated);
+	                // transitions
+	                $$.expandArc(updated.data.id);
+	                $$.api.focus(updated.data.id);
+	                $$.toggleFocusLegend(updated.data.id, true);
+	                $$.config.data_onmouseover(arcData, this);
+	            } : null)
+	            .on('mousemove', config.interaction_enabled ? function (d) {
+	                var updated = $$.updateAngle(d),
+	                    arcData = $$.convertToArcData(updated),
+	                    selectedData = [arcData];
+	                $$.showTooltip(selectedData, this);
+	            } : null)
+	            .on('mouseout', config.interaction_enabled ? function (d) {
+	                var updated, arcData;
+	                if ($$.transiting) { // skip while transiting
+	                    return;
+	                }
+	                updated = $$.updateAngle(d);
+	                arcData = $$.convertToArcData(updated);
+	                // transitions
+	                $$.unexpandArc(updated.data.id);
+	                $$.api.revert();
+	                $$.revertLegend();
+	                $$.hideTooltip();
+	                $$.config.data_onmouseout(arcData, this);
+	            } : null)
+	            .on('click', config.interaction_enabled ? function (d, i) {
+	                var updated = $$.updateAngle(d),
+	                    arcData = $$.convertToArcData(updated);
+	                if ($$.toggleShape) { $$.toggleShape(this, arcData, i); }
+	                $$.config.data_onclick.call($$.api, arcData, this);
+	            } : null)
+	            .each(function () { $$.transiting = true; })
+	            .transition().duration(duration)
+	            .attrTween("d", function (d) {
+	                var updated = $$.updateAngle(d), interpolate;
+	                if (! updated) {
+	                    return function () { return "M 0 0"; };
+	                }
+	                //                if (this._current === d) {
+	                //                    this._current = {
+	                //                        startAngle: Math.PI*2,
+	                //                        endAngle: Math.PI*2,
+	                //                    };
+	                //                }
+	                if (isNaN(this._current.startAngle)) {
+	                    this._current.startAngle = 0;
+	                }
+	                if (isNaN(this._current.endAngle)) {
+	                    this._current.endAngle = this._current.startAngle;
+	                }
+	                interpolate = d3.interpolate(this._current, updated);
+	                this._current = interpolate(0);
+	                return function (t) {
+	                    var interpolated = interpolate(t);
+	                    interpolated.data = d.data; // data.id will be updated by interporator
+	                    return $$.getArc(interpolated, true);
+	                };
+	            })
+	            .attr("transform", withTransform ? "scale(1)" : "")
+	            .style("fill", function (d) {
+	                return $$.levelColor ? $$.levelColor(d.data.values[0].value) : $$.color(d.data.id);
+	            }) // Where gauge reading color would receive customization.
+	            .style("opacity", 1)
+	            .call($$.endall, function () {
+	                $$.transiting = false;
+	            });
+	        mainArc.exit().transition().duration(durationForExit)
+	            .style('opacity', 0)
+	            .remove();
+	        main.selectAll('.' + CLASS.chartArc).select('text')
+	            .style("opacity", 0)
+	            .attr('class', function (d) { return $$.isGaugeType(d.data) ? CLASS.gaugeValue : ''; })
+	            .text($$.textForArcLabel.bind($$))
+	            .attr("transform", $$.transformForArcLabel.bind($$))
+	            .style('font-size', function (d) { return $$.isGaugeType(d.data) ? Math.round($$.radius / 5) + 'px' : ''; })
+	          .transition().duration(duration)
+	            .style("opacity", function (d) { return $$.isTargetToShow(d.data.id) && $$.isArcType(d.data) ? 1 : 0; });
+	        main.select('.' + CLASS.chartArcsTitle)
+	            .style("opacity", $$.hasType('donut') || $$.hasType('gauge') ? 1 : 0);
+
+	        if ($$.hasType('gauge')) {
+	            $$.arcs.select('.' + CLASS.chartArcsBackground)
+	                .attr("d", function () {
+	                    var d = {
+	                        data: [{value: config.gauge_max}],
+	                        startAngle: -1 * (Math.PI / 2),
+	                        endAngle: Math.PI / 2
+	                    };
+	                    return $$.getArc(d, true, true);
+	                });
+	            $$.arcs.select('.' + CLASS.chartArcsGaugeUnit)
+	                .attr("dy", ".75em")
+	                .text(config.gauge_label_show ? config.gauge_units : '');
+	            $$.arcs.select('.' + CLASS.chartArcsGaugeMin)
+	                .attr("dx", -1 * ($$.innerRadius + (($$.radius - $$.innerRadius) / 2)) + "px")
+	                .attr("dy", "1.2em")
+	                .text(config.gauge_label_show ? config.gauge_min : '');
+	            $$.arcs.select('.' + CLASS.chartArcsGaugeMax)
+	                .attr("dx", $$.innerRadius + (($$.radius - $$.innerRadius) / 2) + "px")
+	                .attr("dy", "1.2em")
+	                .text(config.gauge_label_show ? config.gauge_max : '');
+	        }
+	    };
+	    c3_chart_internal_fn.initGauge = function () {
+	        var arcs = this.arcs;
+	        if (this.hasType('gauge')) {
+	            arcs.append('path')
+	                .attr("class", CLASS.chartArcsBackground);
+	            arcs.append("text")
+	                .attr("class", CLASS.chartArcsGaugeUnit)
+	                .style("text-anchor", "middle")
+	                .style("pointer-events", "none");
+	            arcs.append("text")
+	                .attr("class", CLASS.chartArcsGaugeMin)
+	                .style("text-anchor", "middle")
+	                .style("pointer-events", "none");
+	            arcs.append("text")
+	                .attr("class", CLASS.chartArcsGaugeMax)
+	                .style("text-anchor", "middle")
+	                .style("pointer-events", "none");
+	        }
+	    };
+	    c3_chart_internal_fn.getGaugeLabelHeight = function () {
+	        return this.config.gauge_label_show ? 20 : 0;
+	    };
+
+	    c3_chart_internal_fn.initRegion = function () {
+	        var $$ = this;
+	        $$.region = $$.main.append('g')
+	            .attr("clip-path", $$.clipPath)
+	            .attr("class", CLASS.regions);
+	    };
+	    c3_chart_internal_fn.updateRegion = function (duration) {
+	        var $$ = this, config = $$.config;
+
+	        // hide if arc type
+	        $$.region.style('visibility', $$.hasArcType() ? 'hidden' : 'visible');
+
+	        $$.mainRegion = $$.main.select('.' + CLASS.regions).selectAll('.' + CLASS.region)
+	            .data(config.regions);
+	        $$.mainRegion.enter().append('g')
+	            .attr('class', $$.classRegion.bind($$))
+	          .append('rect')
+	            .style("fill-opacity", 0);
+	        $$.mainRegion.exit().transition().duration(duration)
+	            .style("opacity", 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawRegion = function (withTransition) {
+	        var $$ = this,
+	            regions = $$.mainRegion.selectAll('rect'),
+	            x = $$.regionX.bind($$),
+	            y = $$.regionY.bind($$),
+	            w = $$.regionWidth.bind($$),
+	            h = $$.regionHeight.bind($$);
+	        return [
+	            (withTransition ? regions.transition() : regions)
+	                .attr("x", x)
+	                .attr("y", y)
+	                .attr("width", w)
+	                .attr("height", h)
+	                .style("fill-opacity", function (d) { return isValue(d.opacity) ? d.opacity : 0.1; })
+	        ];
+	    };
+	    c3_chart_internal_fn.regionX = function (d) {
+	        var $$ = this, config = $$.config,
+	            xPos, yScale = d.axis === 'y' ? $$.y : $$.y2;
+	        if (d.axis === 'y' || d.axis === 'y2') {
+	            xPos = config.axis_rotated ? ('start' in d ? yScale(d.start) : 0) : 0;
+	        } else {
+	            xPos = config.axis_rotated ? 0 : ('start' in d ? $$.x($$.isTimeSeries() ? $$.parseDate(d.start) : d.start) : 0);
+	        }
+	        return xPos;
+	    };
+	    c3_chart_internal_fn.regionY = function (d) {
+	        var $$ = this, config = $$.config,
+	            yPos, yScale = d.axis === 'y' ? $$.y : $$.y2;
+	        if (d.axis === 'y' || d.axis === 'y2') {
+	            yPos = config.axis_rotated ? 0 : ('end' in d ? yScale(d.end) : 0);
+	        } else {
+	            yPos = config.axis_rotated ? ('start' in d ? $$.x($$.isTimeSeries() ? $$.parseDate(d.start) : d.start) : 0) : 0;
+	        }
+	        return yPos;
+	    };
+	    c3_chart_internal_fn.regionWidth = function (d) {
+	        var $$ = this, config = $$.config,
+	            start = $$.regionX(d), end, yScale = d.axis === 'y' ? $$.y : $$.y2;
+	        if (d.axis === 'y' || d.axis === 'y2') {
+	            end = config.axis_rotated ? ('end' in d ? yScale(d.end) : $$.width) : $$.width;
+	        } else {
+	            end = config.axis_rotated ? $$.width : ('end' in d ? $$.x($$.isTimeSeries() ? $$.parseDate(d.end) : d.end) : $$.width);
+	        }
+	        return end < start ? 0 : end - start;
+	    };
+	    c3_chart_internal_fn.regionHeight = function (d) {
+	        var $$ = this, config = $$.config,
+	            start = this.regionY(d), end, yScale = d.axis === 'y' ? $$.y : $$.y2;
+	        if (d.axis === 'y' || d.axis === 'y2') {
+	            end = config.axis_rotated ? $$.height : ('start' in d ? yScale(d.start) : $$.height);
+	        } else {
+	            end = config.axis_rotated ? ('end' in d ? $$.x($$.isTimeSeries() ? $$.parseDate(d.end) : d.end) : $$.height) : $$.height;
+	        }
+	        return end < start ? 0 : end - start;
+	    };
+	    c3_chart_internal_fn.isRegionOnX = function (d) {
+	        return !d.axis || d.axis === 'x';
+	    };
+
+	    c3_chart_internal_fn.drag = function (mouse) {
+	        var $$ = this, config = $$.config, main = $$.main, d3 = $$.d3;
+	        var sx, sy, mx, my, minX, maxX, minY, maxY;
+
+	        if ($$.hasArcType()) { return; }
+	        if (! config.data_selection_enabled) { return; } // do nothing if not selectable
+	        if (config.zoom_enabled && ! $$.zoom.altDomain) { return; } // skip if zoomable because of conflict drag dehavior
+	        if (!config.data_selection_multiple) { return; } // skip when single selection because drag is used for multiple selection
+
+	        sx = $$.dragStart[0];
+	        sy = $$.dragStart[1];
+	        mx = mouse[0];
+	        my = mouse[1];
+	        minX = Math.min(sx, mx);
+	        maxX = Math.max(sx, mx);
+	        minY = (config.data_selection_grouped) ? $$.margin.top : Math.min(sy, my);
+	        maxY = (config.data_selection_grouped) ? $$.height : Math.max(sy, my);
+
+	        main.select('.' + CLASS.dragarea)
+	            .attr('x', minX)
+	            .attr('y', minY)
+	            .attr('width', maxX - minX)
+	            .attr('height', maxY - minY);
+	        // TODO: binary search when multiple xs
+	        main.selectAll('.' + CLASS.shapes).selectAll('.' + CLASS.shape)
+	            .filter(function (d) { return config.data_selection_isselectable(d); })
+	            .each(function (d, i) {
+	                var shape = d3.select(this),
+	                    isSelected = shape.classed(CLASS.SELECTED),
+	                    isIncluded = shape.classed(CLASS.INCLUDED),
+	                    _x, _y, _w, _h, toggle, isWithin = false, box;
+	                if (shape.classed(CLASS.circle)) {
+	                    _x = shape.attr("cx") * 1;
+	                    _y = shape.attr("cy") * 1;
+	                    toggle = $$.togglePoint;
+	                    isWithin = minX < _x && _x < maxX && minY < _y && _y < maxY;
+	                }
+	                else if (shape.classed(CLASS.bar)) {
+	                    box = getPathBox(this);
+	                    _x = box.x;
+	                    _y = box.y;
+	                    _w = box.width;
+	                    _h = box.height;
+	                    toggle = $$.togglePath;
+	                    isWithin = !(maxX < _x || _x + _w < minX) && !(maxY < _y || _y + _h < minY);
+	                } else {
+	                    // line/area selection not supported yet
+	                    return;
+	                }
+	                if (isWithin ^ isIncluded) {
+	                    shape.classed(CLASS.INCLUDED, !isIncluded);
+	                    // TODO: included/unincluded callback here
+	                    shape.classed(CLASS.SELECTED, !isSelected);
+	                    toggle.call($$, !isSelected, shape, d, i);
+	                }
+	            });
+	    };
+
+	    c3_chart_internal_fn.dragstart = function (mouse) {
+	        var $$ = this, config = $$.config;
+	        if ($$.hasArcType()) { return; }
+	        if (! config.data_selection_enabled) { return; } // do nothing if not selectable
+	        $$.dragStart = mouse;
+	        $$.main.select('.' + CLASS.chart).append('rect')
+	            .attr('class', CLASS.dragarea)
+	            .style('opacity', 0.1);
+	        $$.dragging = true;
+	    };
+
+	    c3_chart_internal_fn.dragend = function () {
+	        var $$ = this, config = $$.config;
+	        if ($$.hasArcType()) { return; }
+	        if (! config.data_selection_enabled) { return; } // do nothing if not selectable
+	        $$.main.select('.' + CLASS.dragarea)
+	            .transition().duration(100)
+	            .style('opacity', 0)
+	            .remove();
+	        $$.main.selectAll('.' + CLASS.shape)
+	            .classed(CLASS.INCLUDED, false);
+	        $$.dragging = false;
+	    };
+
+	    c3_chart_internal_fn.selectPoint = function (target, d, i) {
+	        var $$ = this, config = $$.config,
+	            cx = (config.axis_rotated ? $$.circleY : $$.circleX).bind($$),
+	            cy = (config.axis_rotated ? $$.circleX : $$.circleY).bind($$),
+	            r = $$.pointSelectR.bind($$);
+	        config.data_onselected.call($$.api, d, target.node());
+	        // add selected-circle on low layer g
+	        $$.main.select('.' + CLASS.selectedCircles + $$.getTargetSelectorSuffix(d.id)).selectAll('.' + CLASS.selectedCircle + '-' + i)
+	            .data([d])
+	            .enter().append('circle')
+	            .attr("class", function () { return $$.generateClass(CLASS.selectedCircle, i); })
+	            .attr("cx", cx)
+	            .attr("cy", cy)
+	            .attr("stroke", function () { return $$.color(d); })
+	            .attr("r", function (d) { return $$.pointSelectR(d) * 1.4; })
+	            .transition().duration(100)
+	            .attr("r", r);
+	    };
+	    c3_chart_internal_fn.unselectPoint = function (target, d, i) {
+	        var $$ = this;
+	        $$.config.data_onunselected(d, target.node());
+	        // remove selected-circle from low layer g
+	        $$.main.select('.' + CLASS.selectedCircles + $$.getTargetSelectorSuffix(d.id)).selectAll('.' + CLASS.selectedCircle + '-' + i)
+	            .transition().duration(100).attr('r', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.togglePoint = function (selected, target, d, i) {
+	        selected ? this.selectPoint(target, d, i) : this.unselectPoint(target, d, i);
+	    };
+	    c3_chart_internal_fn.selectPath = function (target, d) {
+	        var $$ = this;
+	        $$.config.data_onselected.call($$, d, target.node());
+	        target.transition().duration(100)
+	            .style("fill", function () { return $$.d3.rgb($$.color(d)).brighter(0.75); });
+	    };
+	    c3_chart_internal_fn.unselectPath = function (target, d) {
+	        var $$ = this;
+	        $$.config.data_onunselected.call($$, d, target.node());
+	        target.transition().duration(100)
+	            .style("fill", function () { return $$.color(d); });
+	    };
+	    c3_chart_internal_fn.togglePath = function (selected, target, d, i) {
+	        selected ? this.selectPath(target, d, i) : this.unselectPath(target, d, i);
+	    };
+	    c3_chart_internal_fn.getToggle = function (that, d) {
+	        var $$ = this, toggle;
+	        if (that.nodeName === 'circle') {
+	            if ($$.isStepType(d)) {
+	                // circle is hidden in step chart, so treat as within the click area
+	                toggle = function () {}; // TODO: how to select step chart?
+	            } else {
+	                toggle = $$.togglePoint;
+	            }
+	        }
+	        else if (that.nodeName === 'path') {
+	            toggle = $$.togglePath;
+	        }
+	        return toggle;
+	    };
+	    c3_chart_internal_fn.toggleShape = function (that, d, i) {
+	        var $$ = this, d3 = $$.d3, config = $$.config,
+	            shape = d3.select(that), isSelected = shape.classed(CLASS.SELECTED),
+	            toggle = $$.getToggle(that, d).bind($$);
+
+	        if (config.data_selection_enabled && config.data_selection_isselectable(d)) {
+	            if (!config.data_selection_multiple) {
+	                $$.main.selectAll('.' + CLASS.shapes + (config.data_selection_grouped ? $$.getTargetSelectorSuffix(d.id) : "")).selectAll('.' + CLASS.shape).each(function (d, i) {
+	                    var shape = d3.select(this);
+	                    if (shape.classed(CLASS.SELECTED)) { toggle(false, shape.classed(CLASS.SELECTED, false), d, i); }
+	                });
+	            }
+	            shape.classed(CLASS.SELECTED, !isSelected);
+	            toggle(!isSelected, shape, d, i);
+	        }
+	    };
+
+	    c3_chart_internal_fn.initBrush = function () {
+	        var $$ = this, d3 = $$.d3;
+	        $$.brush = d3.svg.brush().on("brush", function () { $$.redrawForBrush(); });
+	        $$.brush.update = function () {
+	            if ($$.context) { $$.context.select('.' + CLASS.brush).call(this); }
+	            return this;
+	        };
+	        $$.brush.scale = function (scale) {
+	            return $$.config.axis_rotated ? this.y(scale) : this.x(scale);
+	        };
+	    };
+	    c3_chart_internal_fn.initSubchart = function () {
+	        var $$ = this, config = $$.config,
+	            context = $$.context = $$.svg.append("g").attr("transform", $$.getTranslate('context'));
+
+	        context.style('visibility', config.subchart_show ? 'visible' : 'hidden');
+
+	        // Define g for chart area
+	        context.append('g')
+	            .attr("clip-path", $$.clipPathForSubchart)
+	            .attr('class', CLASS.chart);
+
+	        // Define g for bar chart area
+	        context.select('.' + CLASS.chart).append("g")
+	            .attr("class", CLASS.chartBars);
+
+	        // Define g for line chart area
+	        context.select('.' + CLASS.chart).append("g")
+	            .attr("class", CLASS.chartLines);
+
+	        // Add extent rect for Brush
+	        context.append("g")
+	            .attr("clip-path", $$.clipPath)
+	            .attr("class", CLASS.brush)
+	            .call($$.brush);
+
+	        // ATTENTION: This must be called AFTER chart added
+	        // Add Axis
+	        $$.axes.subx = context.append("g")
+	            .attr("class", CLASS.axisX)
+	            .attr("transform", $$.getTranslate('subx'))
+	            .attr("clip-path", config.axis_rotated ? "" : $$.clipPathForXAxis);
+	    };
+	    c3_chart_internal_fn.updateTargetsForSubchart = function (targets) {
+	        var $$ = this, context = $$.context, config = $$.config,
+	            contextLineEnter, contextLineUpdate, contextBarEnter, contextBarUpdate,
+	            classChartBar = $$.classChartBar.bind($$),
+	            classBars = $$.classBars.bind($$),
+	            classChartLine = $$.classChartLine.bind($$),
+	            classLines = $$.classLines.bind($$),
+	            classAreas = $$.classAreas.bind($$);
+
+	        if (config.subchart_show) {
+	            //-- Bar --//
+	            contextBarUpdate = context.select('.' + CLASS.chartBars).selectAll('.' + CLASS.chartBar)
+	                .data(targets)
+	                .attr('class', classChartBar);
+	            contextBarEnter = contextBarUpdate.enter().append('g')
+	                .style('opacity', 0)
+	                .attr('class', classChartBar);
+	            // Bars for each data
+	            contextBarEnter.append('g')
+	                .attr("class", classBars);
+
+	            //-- Line --//
+	            contextLineUpdate = context.select('.' + CLASS.chartLines).selectAll('.' + CLASS.chartLine)
+	                .data(targets)
+	                .attr('class', classChartLine);
+	            contextLineEnter = contextLineUpdate.enter().append('g')
+	                .style('opacity', 0)
+	                .attr('class', classChartLine);
+	            // Lines for each data
+	            contextLineEnter.append("g")
+	                .attr("class", classLines);
+	            // Area
+	            contextLineEnter.append("g")
+	                .attr("class", classAreas);
+
+	            //-- Brush --//
+	            context.selectAll('.' + CLASS.brush + ' rect')
+	                .attr(config.axis_rotated ? "width" : "height", config.axis_rotated ? $$.width2 : $$.height2);
+	        }
+	    };
+	    c3_chart_internal_fn.updateBarForSubchart = function (durationForExit) {
+	        var $$ = this;
+	        $$.contextBar = $$.context.selectAll('.' + CLASS.bars).selectAll('.' + CLASS.bar)
+	            .data($$.barData.bind($$));
+	        $$.contextBar.enter().append('path')
+	            .attr("class", $$.classBar.bind($$))
+	            .style("stroke", 'none')
+	            .style("fill", $$.color);
+	        $$.contextBar
+	            .style("opacity", $$.initialOpacity.bind($$));
+	        $$.contextBar.exit().transition().duration(durationForExit)
+	            .style('opacity', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawBarForSubchart = function (drawBarOnSub, withTransition, duration) {
+	        (withTransition ? this.contextBar.transition().duration(duration) : this.contextBar)
+	            .attr('d', drawBarOnSub)
+	            .style('opacity', 1);
+	    };
+	    c3_chart_internal_fn.updateLineForSubchart = function (durationForExit) {
+	        var $$ = this;
+	        $$.contextLine = $$.context.selectAll('.' + CLASS.lines).selectAll('.' + CLASS.line)
+	            .data($$.lineData.bind($$));
+	        $$.contextLine.enter().append('path')
+	            .attr('class', $$.classLine.bind($$))
+	            .style('stroke', $$.color);
+	        $$.contextLine
+	            .style("opacity", $$.initialOpacity.bind($$));
+	        $$.contextLine.exit().transition().duration(durationForExit)
+	            .style('opacity', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawLineForSubchart = function (drawLineOnSub, withTransition, duration) {
+	        (withTransition ? this.contextLine.transition().duration(duration) : this.contextLine)
+	            .attr("d", drawLineOnSub)
+	            .style('opacity', 1);
+	    };
+	    c3_chart_internal_fn.updateAreaForSubchart = function (durationForExit) {
+	        var $$ = this, d3 = $$.d3;
+	        $$.contextArea = $$.context.selectAll('.' + CLASS.areas).selectAll('.' + CLASS.area)
+	            .data($$.lineData.bind($$));
+	        $$.contextArea.enter().append('path')
+	            .attr("class", $$.classArea.bind($$))
+	            .style("fill", $$.color)
+	            .style("opacity", function () { $$.orgAreaOpacity = +d3.select(this).style('opacity'); return 0; });
+	        $$.contextArea
+	            .style("opacity", 0);
+	        $$.contextArea.exit().transition().duration(durationForExit)
+	            .style('opacity', 0)
+	            .remove();
+	    };
+	    c3_chart_internal_fn.redrawAreaForSubchart = function (drawAreaOnSub, withTransition, duration) {
+	        (withTransition ? this.contextArea.transition().duration(duration) : this.contextArea)
+	            .attr("d", drawAreaOnSub)
+	            .style("fill", this.color)
+	            .style("opacity", this.orgAreaOpacity);
+	    };
+	    c3_chart_internal_fn.redrawSubchart = function (withSubchart, transitions, duration, durationForExit, areaIndices, barIndices, lineIndices) {
+	        var $$ = this, d3 = $$.d3, config = $$.config,
+	            drawAreaOnSub, drawBarOnSub, drawLineOnSub;
+
+	        $$.context.style('visibility', config.subchart_show ? 'visible' : 'hidden');
+
+	        // subchart
+	        if (config.subchart_show) {
+	            // reflect main chart to extent on subchart if zoomed
+	            if (d3.event && d3.event.type === 'zoom') {
+	                $$.brush.extent($$.x.orgDomain()).update();
+	            }
+	            // update subchart elements if needed
+	            if (withSubchart) {
+
+	                // extent rect
+	                if (!$$.brush.empty()) {
+	                    $$.brush.extent($$.x.orgDomain()).update();
+	                }
+	                // setup drawer - MEMO: this must be called after axis updated
+	                drawAreaOnSub = $$.generateDrawArea(areaIndices, true);
+	                drawBarOnSub = $$.generateDrawBar(barIndices, true);
+	                drawLineOnSub = $$.generateDrawLine(lineIndices, true);
+
+	                $$.updateBarForSubchart(duration);
+	                $$.updateLineForSubchart(duration);
+	                $$.updateAreaForSubchart(duration);
+
+	                $$.redrawBarForSubchart(drawBarOnSub, duration, duration);
+	                $$.redrawLineForSubchart(drawLineOnSub, duration, duration);
+	                $$.redrawAreaForSubchart(drawAreaOnSub, duration, duration);
+	            }
+	        }
+	    };
+	    c3_chart_internal_fn.redrawForBrush = function () {
+	        var $$ = this, x = $$.x;
+	        $$.redraw({
+	            withTransition: false,
+	            withY: $$.config.zoom_rescale,
+	            withSubchart: false,
+	            withUpdateXDomain: true,
+	            withDimension: false
+	        });
+	        $$.config.subchart_onbrush.call($$.api, x.orgDomain());
+	    };
+	    c3_chart_internal_fn.transformContext = function (withTransition, transitions) {
+	        var $$ = this, subXAxis;
+	        if (transitions && transitions.axisSubX) {
+	            subXAxis = transitions.axisSubX;
+	        } else {
+	            subXAxis = $$.context.select('.' + CLASS.axisX);
+	            if (withTransition) { subXAxis = subXAxis.transition(); }
+	        }
+	        $$.context.attr("transform", $$.getTranslate('context'));
+	        subXAxis.attr("transform", $$.getTranslate('subx'));
+	    };
+	    c3_chart_internal_fn.getDefaultExtent = function () {
+	        var $$ = this, config = $$.config,
+	            extent = isFunction(config.axis_x_extent) ? config.axis_x_extent($$.getXDomain($$.data.targets)) : config.axis_x_extent;
+	        if ($$.isTimeSeries()) {
+	            extent = [$$.parseDate(extent[0]), $$.parseDate(extent[1])];
+	        }
+	        return extent;
+	    };
+
+	    c3_chart_internal_fn.initZoom = function () {
+	        var $$ = this, d3 = $$.d3, config = $$.config, startEvent;
+
+	        $$.zoom = d3.behavior.zoom()
+	            .on("zoomstart", function () {
+	                startEvent = d3.event.sourceEvent;
+	                $$.zoom.altDomain = d3.event.sourceEvent.altKey ? $$.x.orgDomain() : null;
+	                config.zoom_onzoomstart.call($$.api, d3.event.sourceEvent);
+	            })
+	            .on("zoom", function () {
+	                $$.redrawForZoom.call($$);
+	            })
+	            .on('zoomend', function () {
+	                var event = d3.event.sourceEvent;
+	                // if click, do nothing. otherwise, click interaction will be canceled.
+	                if (event && startEvent.clientX === event.clientX && startEvent.clientY === event.clientY) {
+	                    return;
+	                }
+	                $$.redrawEventRect();
+	                $$.updateZoom();
+	                config.zoom_onzoomend.call($$.api, $$.x.orgDomain());
+	            });
+	        $$.zoom.scale = function (scale) {
+	            return config.axis_rotated ? this.y(scale) : this.x(scale);
+	        };
+	        $$.zoom.orgScaleExtent = function () {
+	            var extent = config.zoom_extent ? config.zoom_extent : [1, 10];
+	            return [extent[0], Math.max($$.getMaxDataCount() / extent[1], extent[1])];
+	        };
+	        $$.zoom.updateScaleExtent = function () {
+	            var ratio = diffDomain($$.x.orgDomain()) / diffDomain($$.orgXDomain),
+	                extent = this.orgScaleExtent();
+	            this.scaleExtent([extent[0] * ratio, extent[1] * ratio]);
+	            return this;
+	        };
+	    };
+	    c3_chart_internal_fn.updateZoom = function () {
+	        var $$ = this, z = $$.config.zoom_enabled ? $$.zoom : function () {};
+	        $$.main.select('.' + CLASS.zoomRect).call(z).on("dblclick.zoom", null);
+	        $$.main.selectAll('.' + CLASS.eventRect).call(z).on("dblclick.zoom", null);
+	    };
+	    c3_chart_internal_fn.redrawForZoom = function () {
+	        var $$ = this, d3 = $$.d3, config = $$.config, zoom = $$.zoom, x = $$.x;
+	        if (!config.zoom_enabled) {
+	            return;
+	        }
+	        if ($$.filterTargetsToShow($$.data.targets).length === 0) {
+	            return;
+	        }
+	        if (d3.event.sourceEvent.type === 'mousemove' && zoom.altDomain) {
+	            x.domain(zoom.altDomain);
+	            zoom.scale(x).updateScaleExtent();
+	            return;
+	        }
+	        if ($$.isCategorized() && x.orgDomain()[0] === $$.orgXDomain[0]) {
+	            x.domain([$$.orgXDomain[0] - 1e-10, x.orgDomain()[1]]);
+	        }
+	        $$.redraw({
+	            withTransition: false,
+	            withY: config.zoom_rescale,
+	            withSubchart: false,
+	            withEventRect: false,
+	            withDimension: false
+	        });
+	        if (d3.event.sourceEvent.type === 'mousemove') {
+	            $$.cancelClick = true;
+	        }
+	        config.zoom_onzoom.call($$.api, x.orgDomain());
+	    };
+
+	    c3_chart_internal_fn.generateColor = function () {
+	        var $$ = this, config = $$.config, d3 = $$.d3,
+	            colors = config.data_colors,
+	            pattern = notEmpty(config.color_pattern) ? config.color_pattern : d3.scale.category10().range(),
+	            callback = config.data_color,
+	            ids = [];
+
+	        return function (d) {
+	            var id = d.id || (d.data && d.data.id) || d, color;
+
+	            // if callback function is provided
+	            if (colors[id] instanceof Function) {
+	                color = colors[id](d);
+	            }
+	            // if specified, choose that color
+	            else if (colors[id]) {
+	                color = colors[id];
+	            }
+	            // if not specified, choose from pattern
+	            else {
+	                if (ids.indexOf(id) < 0) { ids.push(id); }
+	                color = pattern[ids.indexOf(id) % pattern.length];
+	                colors[id] = color;
+	            }
+	            return callback instanceof Function ? callback(color, d) : color;
+	        };
+	    };
+	    c3_chart_internal_fn.generateLevelColor = function () {
+	        var $$ = this, config = $$.config,
+	            colors = config.color_pattern,
+	            threshold = config.color_threshold,
+	            asValue = threshold.unit === 'value',
+	            values = threshold.values && threshold.values.length ? threshold.values : [],
+	            max = threshold.max || 100;
+	        return notEmpty(config.color_threshold) ? function (value) {
+	            var i, v, color = colors[colors.length - 1];
+	            for (i = 0; i < values.length; i++) {
+	                v = asValue ? value : (value * 100 / max);
+	                if (v < values[i]) {
+	                    color = colors[i];
+	                    break;
+	                }
+	            }
+	            return color;
+	        } : null;
+	    };
+
+	    c3_chart_internal_fn.getYFormat = function (forArc) {
+	        var $$ = this,
+	            formatForY = forArc && !$$.hasType('gauge') ? $$.defaultArcValueFormat : $$.yFormat,
+	            formatForY2 = forArc && !$$.hasType('gauge') ? $$.defaultArcValueFormat : $$.y2Format;
+	        return function (v, ratio, id) {
+	            var format = $$.axis.getId(id) === 'y2' ? formatForY2 : formatForY;
+	            return format.call($$, v, ratio);
+	        };
+	    };
+	    c3_chart_internal_fn.yFormat = function (v) {
+	        var $$ = this, config = $$.config,
+	            format = config.axis_y_tick_format ? config.axis_y_tick_format : $$.defaultValueFormat;
+	        return format(v);
+	    };
+	    c3_chart_internal_fn.y2Format = function (v) {
+	        var $$ = this, config = $$.config,
+	            format = config.axis_y2_tick_format ? config.axis_y2_tick_format : $$.defaultValueFormat;
+	        return format(v);
+	    };
+	    c3_chart_internal_fn.defaultValueFormat = function (v) {
+	        return isValue(v) ? +v : "";
+	    };
+	    c3_chart_internal_fn.defaultArcValueFormat = function (v, ratio) {
+	        return (ratio * 100).toFixed(1) + '%';
+	    };
+	    c3_chart_internal_fn.dataLabelFormat = function (targetId) {
+	        var $$ = this, data_labels = $$.config.data_labels,
+	            format, defaultFormat = function (v) { return isValue(v) ? +v : ""; };
+	        // find format according to axis id
+	        if (typeof data_labels.format === 'function') {
+	            format = data_labels.format;
+	        } else if (typeof data_labels.format === 'object') {
+	            if (data_labels.format[targetId]) {
+	                format = data_labels.format[targetId] === true ? defaultFormat : data_labels.format[targetId];
+	            } else {
+	                format = function () { return ''; };
+	            }
+	        } else {
+	            format = defaultFormat;
+	        }
+	        return format;
+	    };
+
+	    c3_chart_internal_fn.hasCaches = function (ids) {
+	        for (var i = 0; i < ids.length; i++) {
+	            if (! (ids[i] in this.cache)) { return false; }
+	        }
+	        return true;
+	    };
+	    c3_chart_internal_fn.addCache = function (id, target) {
+	        this.cache[id] = this.cloneTarget(target);
+	    };
+	    c3_chart_internal_fn.getCaches = function (ids) {
+	        var targets = [], i;
+	        for (i = 0; i < ids.length; i++) {
+	            if (ids[i] in this.cache) { targets.push(this.cloneTarget(this.cache[ids[i]])); }
+	        }
+	        return targets;
+	    };
+
+	    var CLASS = c3_chart_internal_fn.CLASS = {
+	        target: 'c3-target',
+	        chart: 'c3-chart',
+	        chartLine: 'c3-chart-line',
+	        chartLines: 'c3-chart-lines',
+	        chartBar: 'c3-chart-bar',
+	        chartBars: 'c3-chart-bars',
+	        chartText: 'c3-chart-text',
+	        chartTexts: 'c3-chart-texts',
+	        chartArc: 'c3-chart-arc',
+	        chartArcs: 'c3-chart-arcs',
+	        chartArcsTitle: 'c3-chart-arcs-title',
+	        chartArcsBackground: 'c3-chart-arcs-background',
+	        chartArcsGaugeUnit: 'c3-chart-arcs-gauge-unit',
+	        chartArcsGaugeMax: 'c3-chart-arcs-gauge-max',
+	        chartArcsGaugeMin: 'c3-chart-arcs-gauge-min',
+	        selectedCircle: 'c3-selected-circle',
+	        selectedCircles: 'c3-selected-circles',
+	        eventRect: 'c3-event-rect',
+	        eventRects: 'c3-event-rects',
+	        eventRectsSingle: 'c3-event-rects-single',
+	        eventRectsMultiple: 'c3-event-rects-multiple',
+	        zoomRect: 'c3-zoom-rect',
+	        brush: 'c3-brush',
+	        focused: 'c3-focused',
+	        defocused: 'c3-defocused',
+	        region: 'c3-region',
+	        regions: 'c3-regions',
+	        tooltipContainer: 'c3-tooltip-container',
+	        tooltip: 'c3-tooltip',
+	        tooltipName: 'c3-tooltip-name',
+	        shape: 'c3-shape',
+	        shapes: 'c3-shapes',
+	        line: 'c3-line',
+	        lines: 'c3-lines',
+	        bar: 'c3-bar',
+	        bars: 'c3-bars',
+	        circle: 'c3-circle',
+	        circles: 'c3-circles',
+	        arc: 'c3-arc',
+	        arcs: 'c3-arcs',
+	        area: 'c3-area',
+	        areas: 'c3-areas',
+	        empty: 'c3-empty',
+	        text: 'c3-text',
+	        texts: 'c3-texts',
+	        gaugeValue: 'c3-gauge-value',
+	        grid: 'c3-grid',
+	        gridLines: 'c3-grid-lines',
+	        xgrid: 'c3-xgrid',
+	        xgrids: 'c3-xgrids',
+	        xgridLine: 'c3-xgrid-line',
+	        xgridLines: 'c3-xgrid-lines',
+	        xgridFocus: 'c3-xgrid-focus',
+	        ygrid: 'c3-ygrid',
+	        ygrids: 'c3-ygrids',
+	        ygridLine: 'c3-ygrid-line',
+	        ygridLines: 'c3-ygrid-lines',
+	        axis: 'c3-axis',
+	        axisX: 'c3-axis-x',
+	        axisXLabel: 'c3-axis-x-label',
+	        axisY: 'c3-axis-y',
+	        axisYLabel: 'c3-axis-y-label',
+	        axisY2: 'c3-axis-y2',
+	        axisY2Label: 'c3-axis-y2-label',
+	        legendBackground: 'c3-legend-background',
+	        legendItem: 'c3-legend-item',
+	        legendItemEvent: 'c3-legend-item-event',
+	        legendItemTile: 'c3-legend-item-tile',
+	        legendItemHidden: 'c3-legend-item-hidden',
+	        legendItemFocused: 'c3-legend-item-focused',
+	        dragarea: 'c3-dragarea',
+	        EXPANDED: '_expanded_',
+	        SELECTED: '_selected_',
+	        INCLUDED: '_included_'
+	    };
+	    c3_chart_internal_fn.generateClass = function (prefix, targetId) {
+	        return " " + prefix + " " + prefix + this.getTargetSelectorSuffix(targetId);
+	    };
+	    c3_chart_internal_fn.classText = function (d) {
+	        return this.generateClass(CLASS.text, d.index);
+	    };
+	    c3_chart_internal_fn.classTexts = function (d) {
+	        return this.generateClass(CLASS.texts, d.id);
+	    };
+	    c3_chart_internal_fn.classShape = function (d) {
+	        return this.generateClass(CLASS.shape, d.index);
+	    };
+	    c3_chart_internal_fn.classShapes = function (d) {
+	        return this.generateClass(CLASS.shapes, d.id);
+	    };
+	    c3_chart_internal_fn.classLine = function (d) {
+	        return this.classShape(d) + this.generateClass(CLASS.line, d.id);
+	    };
+	    c3_chart_internal_fn.classLines = function (d) {
+	        return this.classShapes(d) + this.generateClass(CLASS.lines, d.id);
+	    };
+	    c3_chart_internal_fn.classCircle = function (d) {
+	        return this.classShape(d) + this.generateClass(CLASS.circle, d.index);
+	    };
+	    c3_chart_internal_fn.classCircles = function (d) {
+	        return this.classShapes(d) + this.generateClass(CLASS.circles, d.id);
+	    };
+	    c3_chart_internal_fn.classBar = function (d) {
+	        return this.classShape(d) + this.generateClass(CLASS.bar, d.index);
+	    };
+	    c3_chart_internal_fn.classBars = function (d) {
+	        return this.classShapes(d) + this.generateClass(CLASS.bars, d.id);
+	    };
+	    c3_chart_internal_fn.classArc = function (d) {
+	        return this.classShape(d.data) + this.generateClass(CLASS.arc, d.data.id);
+	    };
+	    c3_chart_internal_fn.classArcs = function (d) {
+	        return this.classShapes(d.data) + this.generateClass(CLASS.arcs, d.data.id);
+	    };
+	    c3_chart_internal_fn.classArea = function (d) {
+	        return this.classShape(d) + this.generateClass(CLASS.area, d.id);
+	    };
+	    c3_chart_internal_fn.classAreas = function (d) {
+	        return this.classShapes(d) + this.generateClass(CLASS.areas, d.id);
+	    };
+	    c3_chart_internal_fn.classRegion = function (d, i) {
+	        return this.generateClass(CLASS.region, i) + ' ' + ('class' in d ? d['class'] : '');
+	    };
+	    c3_chart_internal_fn.classEvent = function (d) {
+	        return this.generateClass(CLASS.eventRect, d.index);
+	    };
+	    c3_chart_internal_fn.classTarget = function (id) {
+	        var $$ = this;
+	        var additionalClassSuffix = $$.config.data_classes[id], additionalClass = '';
+	        if (additionalClassSuffix) {
+	            additionalClass = ' ' + CLASS.target + '-' + additionalClassSuffix;
+	        }
+	        return $$.generateClass(CLASS.target, id) + additionalClass;
+	    };
+	    c3_chart_internal_fn.classFocus = function (d) {
+	        return this.classFocused(d) + this.classDefocused(d);
+	    };
+	    c3_chart_internal_fn.classFocused = function (d) {
+	        return ' ' + (this.focusedTargetIds.indexOf(d.id) >= 0 ? CLASS.focused : '');
+	    };
+	    c3_chart_internal_fn.classDefocused = function (d) {
+	        return ' ' + (this.defocusedTargetIds.indexOf(d.id) >= 0 ? CLASS.defocused : '');
+	    };
+	    c3_chart_internal_fn.classChartText = function (d) {
+	        return CLASS.chartText + this.classTarget(d.id);
+	    };
+	    c3_chart_internal_fn.classChartLine = function (d) {
+	        return CLASS.chartLine + this.classTarget(d.id);
+	    };
+	    c3_chart_internal_fn.classChartBar = function (d) {
+	        return CLASS.chartBar + this.classTarget(d.id);
+	    };
+	    c3_chart_internal_fn.classChartArc = function (d) {
+	        return CLASS.chartArc + this.classTarget(d.data.id);
+	    };
+	    c3_chart_internal_fn.getTargetSelectorSuffix = function (targetId) {
+	        return targetId || targetId === 0 ? ('-' + targetId).replace(/[\s?!@#$%^&*()_=+,.<>'":;\[\]\/|~`{}\\]/g, '-') : '';
+	    };
+	    c3_chart_internal_fn.selectorTarget = function (id, prefix) {
+	        return (prefix || '') + '.' + CLASS.target + this.getTargetSelectorSuffix(id);
+	    };
+	    c3_chart_internal_fn.selectorTargets = function (ids, prefix) {
+	        var $$ = this;
+	        ids = ids || [];
+	        return ids.length ? ids.map(function (id) { return $$.selectorTarget(id, prefix); }) : null;
+	    };
+	    c3_chart_internal_fn.selectorLegend = function (id) {
+	        return '.' + CLASS.legendItem + this.getTargetSelectorSuffix(id);
+	    };
+	    c3_chart_internal_fn.selectorLegends = function (ids) {
+	        var $$ = this;
+	        return ids && ids.length ? ids.map(function (id) { return $$.selectorLegend(id); }) : null;
+	    };
+
+	    var isValue = c3_chart_internal_fn.isValue = function (v) {
+	        return v || v === 0;
+	    },
+	        isFunction = c3_chart_internal_fn.isFunction = function (o) {
+	            return typeof o === 'function';
+	        },
+	        isString = c3_chart_internal_fn.isString = function (o) {
+	            return typeof o === 'string';
+	        },
+	        isUndefined = c3_chart_internal_fn.isUndefined = function (v) {
+	            return typeof v === 'undefined';
+	        },
+	        isDefined = c3_chart_internal_fn.isDefined = function (v) {
+	            return typeof v !== 'undefined';
+	        },
+	        ceil10 = c3_chart_internal_fn.ceil10 = function (v) {
+	            return Math.ceil(v / 10) * 10;
+	        },
+	        asHalfPixel = c3_chart_internal_fn.asHalfPixel = function (n) {
+	            return Math.ceil(n) + 0.5;
+	        },
+	        diffDomain = c3_chart_internal_fn.diffDomain = function (d) {
+	            return d[1] - d[0];
+	        },
+	        isEmpty = c3_chart_internal_fn.isEmpty = function (o) {
+	            return !o || (isString(o) && o.length === 0) || (typeof o === 'object' && Object.keys(o).length === 0);
+	        },
+	        notEmpty = c3_chart_internal_fn.notEmpty = function (o) {
+	            return Object.keys(o).length > 0;
+	        },
+	        getOption = c3_chart_internal_fn.getOption = function (options, key, defaultValue) {
+	            return isDefined(options[key]) ? options[key] : defaultValue;
+	        },
+	        hasValue = c3_chart_internal_fn.hasValue = function (dict, value) {
+	            var found = false;
+	            Object.keys(dict).forEach(function (key) {
+	                if (dict[key] === value) { found = true; }
+	            });
+	            return found;
+	        },
+	        getPathBox = c3_chart_internal_fn.getPathBox = function (path) {
+	            var box = path.getBoundingClientRect(),
+	                items = [path.pathSegList.getItem(0), path.pathSegList.getItem(1)],
+	                minX = items[0].x, minY = Math.min(items[0].y, items[1].y);
+	            return {x: minX, y: minY, width: box.width, height: box.height};
+	        };
+
+	    c3_chart_fn.focus = function (targetIds) {
+	        var $$ = this.internal, candidates;
+
+	        targetIds = $$.mapToTargetIds(targetIds);
+	        candidates = $$.svg.selectAll($$.selectorTargets(targetIds.filter($$.isTargetToShow, $$))),
+
+	        this.revert();
+	        this.defocus();
+	        candidates.classed(CLASS.focused, true).classed(CLASS.defocused, false);
+	        if ($$.hasArcType()) {
+	            $$.expandArc(targetIds);
+	        }
+	        $$.toggleFocusLegend(targetIds, true);
+
+	        $$.focusedTargetIds = targetIds;
+	        $$.defocusedTargetIds = $$.defocusedTargetIds.filter(function (id) {
+	            return targetIds.indexOf(id) < 0;
+	        });
+	    };
+
+	    c3_chart_fn.defocus = function (targetIds) {
+	        var $$ = this.internal, candidates;
+
+	        targetIds = $$.mapToTargetIds(targetIds);
+	        candidates = $$.svg.selectAll($$.selectorTargets(targetIds.filter($$.isTargetToShow, $$))),
+
+	        candidates.classed(CLASS.focused, false).classed(CLASS.defocused, true);
+	        if ($$.hasArcType()) {
+	            $$.unexpandArc(targetIds);
+	        }
+	        $$.toggleFocusLegend(targetIds, false);
+
+	        $$.focusedTargetIds = $$.focusedTargetIds.filter(function (id) {
+	            return targetIds.indexOf(id) < 0;
+	        });
+	        $$.defocusedTargetIds = targetIds;
+	    };
+
+	    c3_chart_fn.revert = function (targetIds) {
+	        var $$ = this.internal, candidates;
+
+	        targetIds = $$.mapToTargetIds(targetIds);
+	        candidates = $$.svg.selectAll($$.selectorTargets(targetIds)); // should be for all targets
+
+	        candidates.classed(CLASS.focused, false).classed(CLASS.defocused, false);
+	        if ($$.hasArcType()) {
+	            $$.unexpandArc(targetIds);
+	        }
+	        if ($$.config.legend_show) {
+	            $$.showLegend(targetIds.filter($$.isLegendToShow.bind($$)));
+	            $$.legend.selectAll($$.selectorLegends(targetIds))
+	                .filter(function () {
+	                    return $$.d3.select(this).classed(CLASS.legendItemFocused);
+	                })
+	                .classed(CLASS.legendItemFocused, false);
+	        }
+
+	        $$.focusedTargetIds = [];
+	        $$.defocusedTargetIds = [];
+	    };
+
+	    c3_chart_fn.show = function (targetIds, options) {
+	        var $$ = this.internal, targets;
+
+	        targetIds = $$.mapToTargetIds(targetIds);
+	        options = options || {};
+
+	        $$.removeHiddenTargetIds(targetIds);
+	        targets = $$.svg.selectAll($$.selectorTargets(targetIds));
+
+	        targets.transition()
+	            .style('opacity', 1, 'important')
+	            .call($$.endall, function () {
+	                targets.style('opacity', null).style('opacity', 1);
+	            });
+
+	        if (options.withLegend) {
+	            $$.showLegend(targetIds);
+	        }
+
+	        $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true, withLegend: true});
+	    };
+
+	    c3_chart_fn.hide = function (targetIds, options) {
+	        var $$ = this.internal, targets;
+
+	        targetIds = $$.mapToTargetIds(targetIds);
+	        options = options || {};
+
+	        $$.addHiddenTargetIds(targetIds);
+	        targets = $$.svg.selectAll($$.selectorTargets(targetIds));
+
+	        targets.transition()
+	            .style('opacity', 0, 'important')
+	            .call($$.endall, function () {
+	                targets.style('opacity', null).style('opacity', 0);
+	            });
+
+	        if (options.withLegend) {
+	            $$.hideLegend(targetIds);
+	        }
+
+	        $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true, withLegend: true});
+	    };
+
+	    c3_chart_fn.toggle = function (targetIds, options) {
+	        var that = this, $$ = this.internal;
+	        $$.mapToTargetIds(targetIds).forEach(function (targetId) {
+	            $$.isTargetToShow(targetId) ? that.hide(targetId, options) : that.show(targetId, options);
+	        });
+	    };
+
+	    c3_chart_fn.zoom = function (domain) {
+	        var $$ = this.internal;
+	        if (domain) {
+	            if ($$.isTimeSeries()) {
+	                domain = domain.map(function (x) { return $$.parseDate(x); });
+	            }
+	            $$.brush.extent(domain);
+	            $$.redraw({withUpdateXDomain: true, withY: $$.config.zoom_rescale});
+	            $$.config.zoom_onzoom.call(this, $$.x.orgDomain());
+	        }
+	        return $$.brush.extent();
+	    };
+	    c3_chart_fn.zoom.enable = function (enabled) {
+	        var $$ = this.internal;
+	        $$.config.zoom_enabled = enabled;
+	        $$.updateAndRedraw();
+	    };
+	    c3_chart_fn.unzoom = function () {
+	        var $$ = this.internal;
+	        $$.brush.clear().update();
+	        $$.redraw({withUpdateXDomain: true});
+	    };
+
+	    c3_chart_fn.load = function (args) {
+	        var $$ = this.internal, config = $$.config;
+	        // update xs if specified
+	        if (args.xs) {
+	            $$.addXs(args.xs);
+	        }
+	        // update classes if exists
+	        if ('classes' in args) {
+	            Object.keys(args.classes).forEach(function (id) {
+	                config.data_classes[id] = args.classes[id];
+	            });
+	        }
+	        // update categories if exists
+	        if ('categories' in args && $$.isCategorized()) {
+	            config.axis_x_categories = args.categories;
+	        }
+	        // update axes if exists
+	        if ('axes' in args) {
+	            Object.keys(args.axes).forEach(function (id) {
+	                config.data_axes[id] = args.axes[id];
+	            });
+	        }
+	        // update colors if exists
+	        if ('colors' in args) {
+	            Object.keys(args.colors).forEach(function (id) {
+	                config.data_colors[id] = args.colors[id];
+	            });
+	        }
+	        // use cache if exists
+	        if ('cacheIds' in args && $$.hasCaches(args.cacheIds)) {
+	            $$.load($$.getCaches(args.cacheIds), args.done);
+	            return;
+	        }
+	        // unload if needed
+	        if ('unload' in args) {
+	            // TODO: do not unload if target will load (included in url/rows/columns)
+	            $$.unload($$.mapToTargetIds((typeof args.unload === 'boolean' && args.unload) ? null : args.unload), function () {
+	                $$.loadFromArgs(args);
+	            });
+	        } else {
+	            $$.loadFromArgs(args);
+	        }
+	    };
+
+	    c3_chart_fn.unload = function (args) {
+	        var $$ = this.internal;
+	        args = args || {};
+	        if (args instanceof Array) {
+	            args = {ids: args};
+	        } else if (typeof args === 'string') {
+	            args = {ids: [args]};
+	        }
+	        $$.unload($$.mapToTargetIds(args.ids), function () {
+	            $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true, withLegend: true});
+	            if (args.done) { args.done(); }
+	        });
+	    };
+
+	    c3_chart_fn.flow = function (args) {
+	        var $$ = this.internal,
+	            targets, data, notfoundIds = [], orgDataCount = $$.getMaxDataCount(),
+	            dataCount, domain, baseTarget, baseValue, length = 0, tail = 0, diff, to;
+
+	        if (args.json) {
+	            data = $$.convertJsonToData(args.json, args.keys);
+	        }
+	        else if (args.rows) {
+	            data = $$.convertRowsToData(args.rows);
+	        }
+	        else if (args.columns) {
+	            data = $$.convertColumnsToData(args.columns);
+	        }
+	        else {
+	            return;
+	        }
+	        targets = $$.convertDataToTargets(data, true);
+
+	        // Update/Add data
+	        $$.data.targets.forEach(function (t) {
+	            var found = false, i, j;
+	            for (i = 0; i < targets.length; i++) {
+	                if (t.id === targets[i].id) {
+	                    found = true;
+
+	                    if (t.values[t.values.length - 1]) {
+	                        tail = t.values[t.values.length - 1].index + 1;
+	                    }
+	                    length = targets[i].values.length;
+
+	                    for (j = 0; j < length; j++) {
+	                        targets[i].values[j].index = tail + j;
+	                        if (!$$.isTimeSeries()) {
+	                            targets[i].values[j].x = tail + j;
+	                        }
+	                    }
+	                    t.values = t.values.concat(targets[i].values);
+
+	                    targets.splice(i, 1);
+	                    break;
+	                }
+	            }
+	            if (!found) { notfoundIds.push(t.id); }
+	        });
+
+	        // Append null for not found targets
+	        $$.data.targets.forEach(function (t) {
+	            var i, j;
+	            for (i = 0; i < notfoundIds.length; i++) {
+	                if (t.id === notfoundIds[i]) {
+	                    tail = t.values[t.values.length - 1].index + 1;
+	                    for (j = 0; j < length; j++) {
+	                        t.values.push({
+	                            id: t.id,
+	                            index: tail + j,
+	                            x: $$.isTimeSeries() ? $$.getOtherTargetX(tail + j) : tail + j,
+	                            value: null
+	                        });
+	                    }
+	                }
+	            }
+	        });
+
+	        // Generate null values for new target
+	        if ($$.data.targets.length) {
+	            targets.forEach(function (t) {
+	                var i, missing = [];
+	                for (i = $$.data.targets[0].values[0].index; i < tail; i++) {
+	                    missing.push({
+	                        id: t.id,
+	                        index: i,
+	                        x: $$.isTimeSeries() ? $$.getOtherTargetX(i) : i,
+	                        value: null
+	                    });
+	                }
+	                t.values.forEach(function (v) {
+	                    v.index += tail;
+	                    if (!$$.isTimeSeries()) {
+	                        v.x += tail;
+	                    }
+	                });
+	                t.values = missing.concat(t.values);
+	            });
+	        }
+	        $$.data.targets = $$.data.targets.concat(targets); // add remained
+
+	        // check data count because behavior needs to change when it's only one
+	        dataCount = $$.getMaxDataCount();
+	        baseTarget = $$.data.targets[0];
+	        baseValue = baseTarget.values[0];
+
+	        // Update length to flow if needed
+	        if (isDefined(args.to)) {
+	            length = 0;
+	            to = $$.isTimeSeries() ? $$.parseDate(args.to) : args.to;
+	            baseTarget.values.forEach(function (v) {
+	                if (v.x < to) { length++; }
+	            });
+	        } else if (isDefined(args.length)) {
+	            length = args.length;
+	        }
+
+	        // If only one data, update the domain to flow from left edge of the chart
+	        if (!orgDataCount) {
+	            if ($$.isTimeSeries()) {
+	                if (baseTarget.values.length > 1) {
+	                    diff = baseTarget.values[baseTarget.values.length - 1].x - baseValue.x;
+	                } else {
+	                    diff = baseValue.x - $$.getXDomain($$.data.targets)[0];
+	                }
+	            } else {
+	                diff = 1;
+	            }
+	            domain = [baseValue.x - diff, baseValue.x];
+	            $$.updateXDomain(null, true, true, false, domain);
+	        } else if (orgDataCount === 1) {
+	            if ($$.isTimeSeries()) {
+	                diff = (baseTarget.values[baseTarget.values.length - 1].x - baseValue.x) / 2;
+	                domain = [new Date(+baseValue.x - diff), new Date(+baseValue.x + diff)];
+	                $$.updateXDomain(null, true, true, false, domain);
+	            }
+	        }
+
+	        // Set targets
+	        $$.updateTargets($$.data.targets);
+
+	        // Redraw with new targets
+	        $$.redraw({
+	            flow: {
+	                index: baseValue.index,
+	                length: length,
+	                duration: isValue(args.duration) ? args.duration : $$.config.transition_duration,
+	                done: args.done,
+	                orgDataCount: orgDataCount,
+	            },
+	            withLegend: true,
+	            withTransition: orgDataCount > 1,
+	            withTrimXDomain: false,
+	            withUpdateXAxis: true,
+	        });
+	    };
+
+	    c3_chart_internal_fn.generateFlow = function (args) {
+	        var $$ = this, config = $$.config, d3 = $$.d3;
+
+	        return function () {
+	            var targets = args.targets,
+	                flow = args.flow,
+	                drawBar = args.drawBar,
+	                drawLine = args.drawLine,
+	                drawArea = args.drawArea,
+	                cx = args.cx,
+	                cy = args.cy,
+	                xv = args.xv,
+	                xForText = args.xForText,
+	                yForText = args.yForText,
+	                duration = args.duration;
+
+	            var translateX, scaleX = 1, transform,
+	                flowIndex = flow.index,
+	                flowLength = flow.length,
+	                flowStart = $$.getValueOnIndex($$.data.targets[0].values, flowIndex),
+	                flowEnd = $$.getValueOnIndex($$.data.targets[0].values, flowIndex + flowLength),
+	                orgDomain = $$.x.domain(), domain,
+	                durationForFlow = flow.duration || duration,
+	                done = flow.done || function () {},
+	                wait = $$.generateWait();
+
+	            var xgrid = $$.xgrid || d3.selectAll([]),
+	                xgridLines = $$.xgridLines || d3.selectAll([]),
+	                mainRegion = $$.mainRegion || d3.selectAll([]),
+	                mainText = $$.mainText || d3.selectAll([]),
+	                mainBar = $$.mainBar || d3.selectAll([]),
+	                mainLine = $$.mainLine || d3.selectAll([]),
+	                mainArea = $$.mainArea || d3.selectAll([]),
+	                mainCircle = $$.mainCircle || d3.selectAll([]);
+
+	            // set flag
+	            $$.flowing = true;
+
+	            // remove head data after rendered
+	            $$.data.targets.forEach(function (d) {
+	                d.values.splice(0, flowLength);
+	            });
+
+	            // update x domain to generate axis elements for flow
+	            domain = $$.updateXDomain(targets, true, true);
+	            // update elements related to x scale
+	            if ($$.updateXGrid) { $$.updateXGrid(true); }
+
+	            // generate transform to flow
+	            if (!flow.orgDataCount) { // if empty
+	                if ($$.data.targets[0].values.length !== 1) {
+	                    translateX = $$.x(orgDomain[0]) - $$.x(domain[0]);
+	                } else {
+	                    if ($$.isTimeSeries()) {
+	                        flowStart = $$.getValueOnIndex($$.data.targets[0].values, 0);
+	                        flowEnd = $$.getValueOnIndex($$.data.targets[0].values, $$.data.targets[0].values.length - 1);
+	                        translateX = $$.x(flowStart.x) - $$.x(flowEnd.x);
+	                    } else {
+	                        translateX = diffDomain(domain) / 2;
+	                    }
+	                }
+	            } else if (flow.orgDataCount === 1 || flowStart.x === flowEnd.x) {
+	                translateX = $$.x(orgDomain[0]) - $$.x(domain[0]);
+	            } else {
+	                if ($$.isTimeSeries()) {
+	                    translateX = ($$.x(orgDomain[0]) - $$.x(domain[0]));
+	                } else {
+	                    translateX = ($$.x(flowStart.x) - $$.x(flowEnd.x));
+	                }
+	            }
+	            scaleX = (diffDomain(orgDomain) / diffDomain(domain));
+	            transform = 'translate(' + translateX + ',0) scale(' + scaleX + ',1)';
+
+	            // hide tooltip
+	            $$.hideXGridFocus();
+	            $$.hideTooltip();
+
+	            d3.transition().ease('linear').duration(durationForFlow).each(function () {
+	                wait.add($$.axes.x.transition().call($$.xAxis));
+	                wait.add(mainBar.transition().attr('transform', transform));
+	                wait.add(mainLine.transition().attr('transform', transform));
+	                wait.add(mainArea.transition().attr('transform', transform));
+	                wait.add(mainCircle.transition().attr('transform', transform));
+	                wait.add(mainText.transition().attr('transform', transform));
+	                wait.add(mainRegion.filter($$.isRegionOnX).transition().attr('transform', transform));
+	                wait.add(xgrid.transition().attr('transform', transform));
+	                wait.add(xgridLines.transition().attr('transform', transform));
+	            })
+	            .call(wait, function () {
+	                var i, shapes = [], texts = [], eventRects = [];
+
+	                // remove flowed elements
+	                if (flowLength) {
+	                    for (i = 0; i < flowLength; i++) {
+	                        shapes.push('.' + CLASS.shape + '-' + (flowIndex + i));
+	                        texts.push('.' + CLASS.text + '-' + (flowIndex + i));
+	                        eventRects.push('.' + CLASS.eventRect + '-' + (flowIndex + i));
+	                    }
+	                    $$.svg.selectAll('.' + CLASS.shapes).selectAll(shapes).remove();
+	                    $$.svg.selectAll('.' + CLASS.texts).selectAll(texts).remove();
+	                    $$.svg.selectAll('.' + CLASS.eventRects).selectAll(eventRects).remove();
+	                    $$.svg.select('.' + CLASS.xgrid).remove();
+	                }
+
+	                // draw again for removing flowed elements and reverting attr
+	                xgrid
+	                    .attr('transform', null)
+	                    .attr($$.xgridAttr);
+	                xgridLines
+	                    .attr('transform', null);
+	                xgridLines.select('line')
+	                    .attr("x1", config.axis_rotated ? 0 : xv)
+	                    .attr("x2", config.axis_rotated ? $$.width : xv);
+	                xgridLines.select('text')
+	                    .attr("x", config.axis_rotated ? $$.width : 0)
+	                    .attr("y", xv);
+	                mainBar
+	                    .attr('transform', null)
+	                    .attr("d", drawBar);
+	                mainLine
+	                    .attr('transform', null)
+	                    .attr("d", drawLine);
+	                mainArea
+	                    .attr('transform', null)
+	                    .attr("d", drawArea);
+	                mainCircle
+	                    .attr('transform', null)
+	                    .attr("cx", cx)
+	                    .attr("cy", cy);
+	                mainText
+	                    .attr('transform', null)
+	                    .attr('x', xForText)
+	                    .attr('y', yForText)
+	                    .style('fill-opacity', $$.opacityForText.bind($$));
+	                mainRegion
+	                    .attr('transform', null);
+	                mainRegion.select('rect').filter($$.isRegionOnX)
+	                    .attr("x", $$.regionX.bind($$))
+	                    .attr("width", $$.regionWidth.bind($$));
+
+	                if (config.interaction_enabled) {
+	                    $$.redrawEventRect();
+	                }
+
+	                // callback for end of flow
+	                done();
+
+	                $$.flowing = false;
+	            });
+	        };
+	    };
+
+	    c3_chart_fn.selected = function (targetId) {
+	        var $$ = this.internal, d3 = $$.d3;
+	        return d3.merge(
+	            $$.main.selectAll('.' + CLASS.shapes + $$.getTargetSelectorSuffix(targetId)).selectAll('.' + CLASS.shape)
+	                .filter(function () { return d3.select(this).classed(CLASS.SELECTED); })
+	                .map(function (d) { return d.map(function (d) { var data = d.__data__; return data.data ? data.data : data; }); })
+	        );
+	    };
+	    c3_chart_fn.select = function (ids, indices, resetOther) {
+	        var $$ = this.internal, d3 = $$.d3, config = $$.config;
+	        if (! config.data_selection_enabled) { return; }
+	        $$.main.selectAll('.' + CLASS.shapes).selectAll('.' + CLASS.shape).each(function (d, i) {
+	            var shape = d3.select(this), id = d.data ? d.data.id : d.id,
+	                toggle = $$.getToggle(this, d).bind($$),
+	                isTargetId = config.data_selection_grouped || !ids || ids.indexOf(id) >= 0,
+	                isTargetIndex = !indices || indices.indexOf(i) >= 0,
+	                isSelected = shape.classed(CLASS.SELECTED);
+	            // line/area selection not supported yet
+	            if (shape.classed(CLASS.line) || shape.classed(CLASS.area)) {
+	                return;
+	            }
+	            if (isTargetId && isTargetIndex) {
+	                if (config.data_selection_isselectable(d) && !isSelected) {
+	                    toggle(true, shape.classed(CLASS.SELECTED, true), d, i);
+	                }
+	            } else if (isDefined(resetOther) && resetOther) {
+	                if (isSelected) {
+	                    toggle(false, shape.classed(CLASS.SELECTED, false), d, i);
+	                }
+	            }
+	        });
+	    };
+	    c3_chart_fn.unselect = function (ids, indices) {
+	        var $$ = this.internal, d3 = $$.d3, config = $$.config;
+	        if (! config.data_selection_enabled) { return; }
+	        $$.main.selectAll('.' + CLASS.shapes).selectAll('.' + CLASS.shape).each(function (d, i) {
+	            var shape = d3.select(this), id = d.data ? d.data.id : d.id,
+	                toggle = $$.getToggle(this, d).bind($$),
+	                isTargetId = config.data_selection_grouped || !ids || ids.indexOf(id) >= 0,
+	                isTargetIndex = !indices || indices.indexOf(i) >= 0,
+	                isSelected = shape.classed(CLASS.SELECTED);
+	            // line/area selection not supported yet
+	            if (shape.classed(CLASS.line) || shape.classed(CLASS.area)) {
+	                return;
+	            }
+	            if (isTargetId && isTargetIndex) {
+	                if (config.data_selection_isselectable(d)) {
+	                    if (isSelected) {
+	                        toggle(false, shape.classed(CLASS.SELECTED, false), d, i);
+	                    }
+	                }
+	            }
+	        });
+	    };
+
+	    c3_chart_fn.transform = function (type, targetIds) {
+	        var $$ = this.internal,
+	            options = ['pie', 'donut'].indexOf(type) >= 0 ? {withTransform: true} : null;
+	        $$.transformTo(targetIds, type, options);
+	    };
+
+	    c3_chart_internal_fn.transformTo = function (targetIds, type, optionsForRedraw) {
+	        var $$ = this,
+	            withTransitionForAxis = !$$.hasArcType(),
+	            options = optionsForRedraw || {withTransitionForAxis: withTransitionForAxis};
+	        options.withTransitionForTransform = false;
+	        $$.transiting = false;
+	        $$.setTargetType(targetIds, type);
+	        $$.updateTargets($$.data.targets); // this is needed when transforming to arc
+	        $$.updateAndRedraw(options);
+	    };
+
+	    c3_chart_fn.groups = function (groups) {
+	        var $$ = this.internal, config = $$.config;
+	        if (isUndefined(groups)) { return config.data_groups; }
+	        config.data_groups = groups;
+	        $$.redraw();
+	        return config.data_groups;
+	    };
+
+	    c3_chart_fn.xgrids = function (grids) {
+	        var $$ = this.internal, config = $$.config;
+	        if (! grids) { return config.grid_x_lines; }
+	        config.grid_x_lines = grids;
+	        $$.redrawWithoutRescale();
+	        return config.grid_x_lines;
+	    };
+	    c3_chart_fn.xgrids.add = function (grids) {
+	        var $$ = this.internal;
+	        return this.xgrids($$.config.grid_x_lines.concat(grids ? grids : []));
+	    };
+	    c3_chart_fn.xgrids.remove = function (params) { // TODO: multiple
+	        var $$ = this.internal;
+	        $$.removeGridLines(params, true);
+	    };
+
+	    c3_chart_fn.ygrids = function (grids) {
+	        var $$ = this.internal, config = $$.config;
+	        if (! grids) { return config.grid_y_lines; }
+	        config.grid_y_lines = grids;
+	        $$.redrawWithoutRescale();
+	        return config.grid_y_lines;
+	    };
+	    c3_chart_fn.ygrids.add = function (grids) {
+	        var $$ = this.internal;
+	        return this.ygrids($$.config.grid_y_lines.concat(grids ? grids : []));
+	    };
+	    c3_chart_fn.ygrids.remove = function (params) { // TODO: multiple
+	        var $$ = this.internal;
+	        $$.removeGridLines(params, false);
+	    };
+
+	    c3_chart_fn.regions = function (regions) {
+	        var $$ = this.internal, config = $$.config;
+	        if (!regions) { return config.regions; }
+	        config.regions = regions;
+	        $$.redrawWithoutRescale();
+	        return config.regions;
+	    };
+	    c3_chart_fn.regions.add = function (regions) {
+	        var $$ = this.internal, config = $$.config;
+	        if (!regions) { return config.regions; }
+	        config.regions = config.regions.concat(regions);
+	        $$.redrawWithoutRescale();
+	        return config.regions;
+	    };
+	    c3_chart_fn.regions.remove = function (options) {
+	        var $$ = this.internal, config = $$.config,
+	            duration, classes, regions;
+
+	        options = options || {};
+	        duration = $$.getOption(options, "duration", config.transition_duration);
+	        classes = $$.getOption(options, "classes", [CLASS.region]);
+
+	        regions = $$.main.select('.' + CLASS.regions).selectAll(classes.map(function (c) { return '.' + c; }));
+	        (duration ? regions.transition().duration(duration) : regions)
+	            .style('opacity', 0)
+	            .remove();
+
+	        config.regions = config.regions.filter(function (region) {
+	            var found = false;
+	            if (!region['class']) {
+	                return true;
+	            }
+	            region['class'].split(' ').forEach(function (c) {
+	                if (classes.indexOf(c) >= 0) { found = true; }
+	            });
+	            return !found;
+	        });
+
+	        return config.regions;
+	    };
+
+	    c3_chart_fn.data = function (targetIds) {
+	        var targets = this.internal.data.targets;
+	        return typeof targetIds === 'undefined' ? targets : targets.filter(function (t) {
+	            return [].concat(targetIds).indexOf(t.id) >= 0;
+	        });
+	    };
+	    c3_chart_fn.data.shown = function (targetIds) {
+	        return this.internal.filterTargetsToShow(this.data(targetIds));
+	    };
+	    c3_chart_fn.data.values = function (targetId) {
+	        var targets, values = null;
+	        if (targetId) {
+	            targets = this.data(targetId);
+	            values = targets[0] ? targets[0].values.map(function (d) { return d.value; }) : null;
+	        }
+	        return values;
+	    };
+	    c3_chart_fn.data.names = function (names) {
+	        this.internal.clearLegendItemTextBoxCache();
+	        return this.internal.updateDataAttributes('names', names);
+	    };
+	    c3_chart_fn.data.colors = function (colors) {
+	        return this.internal.updateDataAttributes('colors', colors);
+	    };
+	    c3_chart_fn.data.axes = function (axes) {
+	        return this.internal.updateDataAttributes('axes', axes);
+	    };
+
+	    c3_chart_fn.category = function (i, category) {
+	        var $$ = this.internal, config = $$.config;
+	        if (arguments.length > 1) {
+	            config.axis_x_categories[i] = category;
+	            $$.redraw();
+	        }
+	        return config.axis_x_categories[i];
+	    };
+	    c3_chart_fn.categories = function (categories) {
+	        var $$ = this.internal, config = $$.config;
+	        if (!arguments.length) { return config.axis_x_categories; }
+	        config.axis_x_categories = categories;
+	        $$.redraw();
+	        return config.axis_x_categories;
+	    };
+
+	    // TODO: fix
+	    c3_chart_fn.color = function (id) {
+	        var $$ = this.internal;
+	        return $$.color(id); // more patterns
+	    };
+
+	    c3_chart_fn.x = function (x) {
+	        var $$ = this.internal;
+	        if (arguments.length) {
+	            $$.updateTargetX($$.data.targets, x);
+	            $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true});
+	        }
+	        return $$.data.xs;
+	    };
+	    c3_chart_fn.xs = function (xs) {
+	        var $$ = this.internal;
+	        if (arguments.length) {
+	            $$.updateTargetXs($$.data.targets, xs);
+	            $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true});
+	        }
+	        return $$.data.xs;
+	    };
+
+	    c3_chart_fn.axis = function () {};
+	    c3_chart_fn.axis.labels = function (labels) {
+	        var $$ = this.internal;
+	        if (arguments.length) {
+	            Object.keys(labels).forEach(function (axisId) {
+	                $$.axis.setLabelText(axisId, labels[axisId]);
+	            });
+	            $$.axis.updateLabels();
+	        }
+	        // TODO: return some values?
+	    };
+	    c3_chart_fn.axis.max = function (max) {
+	        var $$ = this.internal, config = $$.config;
+	        if (arguments.length) {
+	            if (typeof max === 'object') {
+	                if (isValue(max.x)) { config.axis_x_max = max.x; }
+	                if (isValue(max.y)) { config.axis_y_max = max.y; }
+	                if (isValue(max.y2)) { config.axis_y2_max = max.y2; }
+	            } else {
+	                config.axis_y_max = config.axis_y2_max = max;
+	            }
+	            $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true});
+	        } else {
+	            return {
+	                x: config.axis_x_max,
+	                y: config.axis_y_max,
+	                y2: config.axis_y2_max
+	            };
+	        }
+	    };
+	    c3_chart_fn.axis.min = function (min) {
+	        var $$ = this.internal, config = $$.config;
+	        if (arguments.length) {
+	            if (typeof min === 'object') {
+	                if (isValue(min.x)) { config.axis_x_min = min.x; }
+	                if (isValue(min.y)) { config.axis_y_min = min.y; }
+	                if (isValue(min.y2)) { config.axis_y2_min = min.y2; }
+	            } else {
+	                config.axis_y_min = config.axis_y2_min = min;
+	            }
+	            $$.redraw({withUpdateOrgXDomain: true, withUpdateXDomain: true});
+	        } else {
+	            return {
+	                x: config.axis_x_min,
+	                y: config.axis_y_min,
+	                y2: config.axis_y2_min
+	            };
+	        }
+	    };
+	    c3_chart_fn.axis.range = function (range) {
+	        if (arguments.length) {
+	            if (isDefined(range.max)) { this.axis.max(range.max); }
+	            if (isDefined(range.min)) { this.axis.min(range.min); }
+	        } else {
+	            return {
+	                max: this.axis.max(),
+	                min: this.axis.min()
+	            };
+	        }
+	    };
+
+	    c3_chart_fn.legend = function () {};
+	    c3_chart_fn.legend.show = function (targetIds) {
+	        var $$ = this.internal;
+	        $$.showLegend($$.mapToTargetIds(targetIds));
+	        $$.updateAndRedraw({withLegend: true});
+	    };
+	    c3_chart_fn.legend.hide = function (targetIds) {
+	        var $$ = this.internal;
+	        $$.hideLegend($$.mapToTargetIds(targetIds));
+	        $$.updateAndRedraw({withLegend: true});
+	    };
+
+	    c3_chart_fn.resize = function (size) {
+	        var $$ = this.internal, config = $$.config;
+	        config.size_width = size ? size.width : null;
+	        config.size_height = size ? size.height : null;
+	        this.flush();
+	    };
+
+	    c3_chart_fn.flush = function () {
+	        var $$ = this.internal;
+	        $$.updateAndRedraw({withLegend: true, withTransition: false, withTransitionForTransform: false});
+	    };
+
+	    c3_chart_fn.destroy = function () {
+	        var $$ = this.internal;
+
+	        window.clearInterval($$.intervalForObserveInserted);
+	        window.onresize = null;
+
+	        $$.selectChart.classed('c3', false).html("");
+
+	        // MEMO: this is needed because the reference of some elements will not be released, then memory leak will happen.
+	        Object.keys($$).forEach(function (key) {
+	            $$[key] = null;
+	        });
+
+	        return null;
+	    };
+
+	    c3_chart_fn.tooltip = function () {};
+	    c3_chart_fn.tooltip.show = function (args) {
+	        var $$ = this.internal, index, mouse;
+
+	        // determine mouse position on the chart
+	        if (args.mouse) {
+	            mouse = args.mouse;
+	        }
+
+	        // determine focus data
+	        if (args.data) {
+	            if ($$.isMultipleX()) {
+	                // if multiple xs, target point will be determined by mouse
+	                mouse = [$$.x(args.data.x), $$.getYScale(args.data.id)(args.data.value)];
+	                index = null;
+	            } else {
+	                // TODO: when tooltip_grouped = false
+	                index = isValue(args.data.index) ? args.data.index : $$.getIndexByX(args.data.x);
+	            }
+	        }
+	        else if (typeof args.x !== 'undefined') {
+	            index = $$.getIndexByX(args.x);
+	        }
+	        else if (typeof args.index !== 'undefined') {
+	            index = args.index;
+	        }
+
+	        // emulate mouse events to show
+	        $$.dispatchEvent('mouseover', index, mouse);
+	        $$.dispatchEvent('mousemove', index, mouse);
+	    };
+	    c3_chart_fn.tooltip.hide = function () {
+	        // TODO: get target data by checking the state of focus
+	        this.internal.dispatchEvent('mouseout', 0);
+	    };
+
+	    // Features:
+	    // 1. category axis
+	    // 2. ceil values of translate/x/y to int for half pixel antialiasing
+	    // 3. multiline tick text
+	    var tickTextCharSize;
+	    function c3_axis(d3, params) {
+	        var scale = d3.scale.linear(), orient = "bottom", innerTickSize = 6, outerTickSize, tickPadding = 3, tickValues = null, tickFormat, tickArguments;
+
+	        var tickOffset = 0, tickCulling = true, tickCentered;
+
+	        params = params || {};
+	        outerTickSize = params.withOuterTick ? 6 : 0;
+
+	        function axisX(selection, x) {
+	            selection.attr("transform", function (d) {
+	                return "translate(" + Math.ceil(x(d) + tickOffset) + ", 0)";
+	            });
+	        }
+	        function axisY(selection, y) {
+	            selection.attr("transform", function (d) {
+	                return "translate(0," + Math.ceil(y(d)) + ")";
+	            });
+	        }
+	        function scaleExtent(domain) {
+	            var start = domain[0], stop = domain[domain.length - 1];
+	            return start < stop ? [ start, stop ] : [ stop, start ];
+	        }
+	        function generateTicks(scale) {
+	            var i, domain, ticks = [];
+	            if (scale.ticks) {
+	                return scale.ticks.apply(scale, tickArguments);
+	            }
+	            domain = scale.domain();
+	            for (i = Math.ceil(domain[0]); i < domain[1]; i++) {
+	                ticks.push(i);
+	            }
+	            if (ticks.length > 0 && ticks[0] > 0) {
+	                ticks.unshift(ticks[0] - (ticks[1] - ticks[0]));
+	            }
+	            return ticks;
+	        }
+	        function copyScale() {
+	            var newScale = scale.copy(), domain;
+	            if (params.isCategory) {
+	                domain = scale.domain();
+	                newScale.domain([domain[0], domain[1] - 1]);
+	            }
+	            return newScale;
+	        }
+	        function textFormatted(v) {
+	            var formatted = tickFormat ? tickFormat(v) : v;
+	            return typeof formatted !== 'undefined' ? formatted : '';
+	        }
+	        function getSizeFor1Char(tick) {
+	            if (tickTextCharSize) {
+	                return tickTextCharSize;
+	            }
+	            var size = {
+	                h: 11.5,
+	                w: 5.5
+	            };
+	            tick.select('text').text(textFormatted).each(function (d) {
+	                var box = this.getBoundingClientRect(),
+	                    text = textFormatted(d),
+	                    h = box.height,
+	                    w = text ? (box.width / text.length) : undefined;
+	                if (h && w) {
+	                    size.h = h;
+	                    size.w = w;
+	                }
+	            }).text('');
+	            tickTextCharSize = size;
+	            return size;
+	        }
+	        function transitionise(selection) {
+	            return params.withoutTransition ? selection : d3.transition(selection);
+	        }
+	        function axis(g) {
+	            g.each(function () {
+	                var g = axis.g = d3.select(this);
+
+	                var scale0 = this.__chart__ || scale, scale1 = this.__chart__ = copyScale();
+
+	                var ticks = tickValues ? tickValues : generateTicks(scale1),
+	                    tick = g.selectAll(".tick").data(ticks, scale1),
+	                    tickEnter = tick.enter().insert("g", ".domain").attr("class", "tick").style("opacity", 1e-6),
+	                    // MEMO: No exit transition. The reason is this transition affects max tick width calculation because old tick will be included in the ticks.
+	                    tickExit = tick.exit().remove(),
+	                    tickUpdate = transitionise(tick).style("opacity", 1),
+	                    tickTransform, tickX, tickY;
+
+	                var range = scale.rangeExtent ? scale.rangeExtent() : scaleExtent(scale.range()),
+	                    path = g.selectAll(".domain").data([ 0 ]),
+	                    pathUpdate = (path.enter().append("path").attr("class", "domain"), transitionise(path));
+	                tickEnter.append("line");
+	                tickEnter.append("text");
+
+	                var lineEnter = tickEnter.select("line"),
+	                    lineUpdate = tickUpdate.select("line"),
+	                    textEnter = tickEnter.select("text"),
+	                    textUpdate = tickUpdate.select("text");
+
+	                if (params.isCategory) {
+	                    tickOffset = Math.ceil((scale1(1) - scale1(0)) / 2);
+	                    tickX = tickCentered ? 0 : tickOffset;
+	                    tickY = tickCentered ? tickOffset : 0;
+	                } else {
+	                    tickOffset = tickX = 0;
+	                }
+
+	                var text, tspan, sizeFor1Char = getSizeFor1Char(g.select('.tick')), counts = [];
+	                var tickLength = Math.max(innerTickSize, 0) + tickPadding,
+	                    isVertical = orient === 'left' || orient === 'right';
+
+	                // this should be called only when category axis
+	                function splitTickText(d, maxWidth) {
+	                    var tickText = textFormatted(d),
+	                        subtext, spaceIndex, textWidth, splitted = [];
+
+	                    if (Object.prototype.toString.call(tickText) === "[object Array]") {
+	                        return tickText;
+	                    }
+
+	                    if (!maxWidth || maxWidth <= 0) {
+	                        maxWidth = isVertical ? 95 : params.isCategory ? (Math.ceil(scale1(ticks[1]) - scale1(ticks[0])) - 12) : 110;
+	                    }
+
+	                    function split(splitted, text) {
+	                        spaceIndex = undefined;
+	                        for (var i = 1; i < text.length; i++) {
+	                            if (text.charAt(i) === ' ') {
+	                                spaceIndex = i;
+	                            }
+	                            subtext = text.substr(0, i + 1);
+	                            textWidth = sizeFor1Char.w * subtext.length;
+	                            // if text width gets over tick width, split by space index or crrent index
+	                            if (maxWidth < textWidth) {
+	                                return split(
+	                                    splitted.concat(text.substr(0, spaceIndex ? spaceIndex : i)),
+	                                    text.slice(spaceIndex ? spaceIndex + 1 : i)
+	                                );
+	                            }
+	                        }
+	                        return splitted.concat(text);
+	                    }
+
+	                    return split(splitted, tickText + "");
+	                }
+
+	                function tspanDy(d, i) {
+	                    var dy = sizeFor1Char.h;
+	                    if (i === 0) {
+	                        if (orient === 'left' || orient === 'right') {
+	                            dy = -((counts[d.index] - 1) * (sizeFor1Char.h / 2) - 3);
+	                        } else {
+	                            dy = ".71em";
+	                        }
+	                    }
+	                    return dy;
+	                }
+
+	                function tickSize(d) {
+	                    var tickPosition = scale(d) + (tickCentered ? 0 : tickOffset);
+	                    return range[0] < tickPosition && tickPosition < range[1] ? innerTickSize : 0;
+	                }
+
+	                text = tick.select("text");
+	                tspan = text.selectAll('tspan')
+	                    .data(function (d, i) {
+	                        var splitted = params.tickMultiline ? splitTickText(d, params.tickWidth) : [].concat(textFormatted(d));
+	                        counts[i] = splitted.length;
+	                        return splitted.map(function (s) {
+	                            return { index: i, splitted: s };
+	                        });
+	                    });
+	                tspan.enter().append('tspan');
+	                tspan.exit().remove();
+	                tspan.text(function (d) { return d.splitted; });
+
+	                var rotate = params.tickTextRotate;
+
+	                function textAnchorForText(rotate) {
+	                    if (!rotate) {
+	                        return 'middle';
+	                    }
+	                    return rotate > 0 ? "start" : "end";
+	                }
+	                function textTransform(rotate) {
+	                    if (!rotate) {
+	                        return '';
+	                    }
+	                    return "rotate(" + rotate + ")";
+	                }
+	                function dxForText(rotate) {
+	                    if (!rotate) {
+	                        return 0;
+	                    }
+	                    return 8 * Math.sin(Math.PI * (rotate / 180));
+	                }
+	                function yForText(rotate) {
+	                    if (!rotate) {
+	                        return tickLength;
+	                    }
+	                    return 11.5 - 2.5 * (rotate / 15) * (rotate > 0 ? 1 : -1);
+	                }
+
+	                switch (orient) {
+	                case "bottom":
+	                    {
+	                        tickTransform = axisX;
+	                        lineEnter.attr("y2", innerTickSize);
+	                        textEnter.attr("y", tickLength);
+	                        lineUpdate.attr("x1", tickX).attr("x2", tickX).attr("y2", tickSize);
+	                        textUpdate.attr("x", 0).attr("y", yForText(rotate))
+	                            .style("text-anchor", textAnchorForText(rotate))
+	                            .attr("transform", textTransform(rotate));
+	                        tspan.attr('x', 0).attr("dy", tspanDy).attr('dx', dxForText(rotate));
+	                        pathUpdate.attr("d", "M" + range[0] + "," + outerTickSize + "V0H" + range[1] + "V" + outerTickSize);
+	                        break;
+	                    }
+	                case "top":
+	                    {
+	                        // TODO: rotated tick text
+	                        tickTransform = axisX;
+	                        lineEnter.attr("y2", -innerTickSize);
+	                        textEnter.attr("y", -tickLength);
+	                        lineUpdate.attr("x2", 0).attr("y2", -innerTickSize);
+	                        textUpdate.attr("x", 0).attr("y", -tickLength);
+	                        text.style("text-anchor", "middle");
+	                        tspan.attr('x', 0).attr("dy", "0em");
+	                        pathUpdate.attr("d", "M" + range[0] + "," + -outerTickSize + "V0H" + range[1] + "V" + -outerTickSize);
+	                        break;
+	                    }
+	                case "left":
+	                    {
+	                        tickTransform = axisY;
+	                        lineEnter.attr("x2", -innerTickSize);
+	                        textEnter.attr("x", -tickLength);
+	                        lineUpdate.attr("x2", -innerTickSize).attr("y1", tickY).attr("y2", tickY);
+	                        textUpdate.attr("x", -tickLength).attr("y", tickOffset);
+	                        text.style("text-anchor", "end");
+	                        tspan.attr('x', -tickLength).attr("dy", tspanDy);
+	                        pathUpdate.attr("d", "M" + -outerTickSize + "," + range[0] + "H0V" + range[1] + "H" + -outerTickSize);
+	                        break;
+	                    }
+	                case "right":
+	                    {
+	                        tickTransform = axisY;
+	                        lineEnter.attr("x2", innerTickSize);
+	                        textEnter.attr("x", tickLength);
+	                        lineUpdate.attr("x2", innerTickSize).attr("y2", 0);
+	                        textUpdate.attr("x", tickLength).attr("y", 0);
+	                        text.style("text-anchor", "start");
+	                        tspan.attr('x', tickLength).attr("dy", tspanDy);
+	                        pathUpdate.attr("d", "M" + outerTickSize + "," + range[0] + "H0V" + range[1] + "H" + outerTickSize);
+	                        break;
+	                    }
+	                }
+	                if (scale1.rangeBand) {
+	                    var x = scale1, dx = x.rangeBand() / 2;
+	                    scale0 = scale1 = function (d) {
+	                        return x(d) + dx;
+	                    };
+	                } else if (scale0.rangeBand) {
+	                    scale0 = scale1;
+	                } else {
+	                    tickExit.call(tickTransform, scale1);
+	                }
+	                tickEnter.call(tickTransform, scale0);
+	                tickUpdate.call(tickTransform, scale1);
+	            });
+	        }
+	        axis.scale = function (x) {
+	            if (!arguments.length) { return scale; }
+	            scale = x;
+	            return axis;
+	        };
+	        axis.orient = function (x) {
+	            if (!arguments.length) { return orient; }
+	            orient = x in {top: 1, right: 1, bottom: 1, left: 1} ? x + "" : "bottom";
+	            return axis;
+	        };
+	        axis.tickFormat = function (format) {
+	            if (!arguments.length) { return tickFormat; }
+	            tickFormat = format;
+	            return axis;
+	        };
+	        axis.tickCentered = function (isCentered) {
+	            if (!arguments.length) { return tickCentered; }
+	            tickCentered = isCentered;
+	            return axis;
+	        };
+	        axis.tickOffset = function () {
+	            return tickOffset;
+	        };
+	        axis.tickInterval = function () {
+	            var interval, length;
+	            if (params.isCategory) {
+	                interval = tickOffset * 2;
+	            }
+	            else {
+	                length = axis.g.select('path.domain').node().getTotalLength() - outerTickSize * 2;
+	                interval = length / axis.g.selectAll('line').size();
+	            }
+	            return interval === Infinity ? 0 : interval;
+	        };
+	        axis.ticks = function () {
+	            if (!arguments.length) { return tickArguments; }
+	            tickArguments = arguments;
+	            return axis;
+	        };
+	        axis.tickCulling = function (culling) {
+	            if (!arguments.length) { return tickCulling; }
+	            tickCulling = culling;
+	            return axis;
+	        };
+	        axis.tickValues = function (x) {
+	            if (typeof x === 'function') {
+	                tickValues = function () {
+	                    return x(scale.domain());
+	                };
+	            }
+	            else {
+	                if (!arguments.length) { return tickValues; }
+	                tickValues = x;
+	            }
+	            return axis;
+	        };
+	        return axis;
+	    }
+
+	    c3_chart_internal_fn.isSafari = function () {
+	        var ua = window.navigator.userAgent;
+	        return ua.indexOf('Safari') >= 0 && ua.indexOf('Chrome') < 0;
+	    };
+	    c3_chart_internal_fn.isChrome = function () {
+	        var ua = window.navigator.userAgent;
+	        return ua.indexOf('Chrome') >= 0;
+	    };
+
+	    // PhantomJS doesn't have support for Function.prototype.bind, which has caused confusion. Use
+	    // this polyfill to avoid the confusion.
+	    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind#Polyfill
+
+	    if (!Function.prototype.bind) {
+	      Function.prototype.bind = function(oThis) {
+	        if (typeof this !== 'function') {
+	          // closest thing possible to the ECMAScript 5
+	          // internal IsCallable function
+	          throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+	        }
+
+	        var aArgs   = Array.prototype.slice.call(arguments, 1),
+	            fToBind = this,
+	            fNOP    = function() {},
+	            fBound  = function() {
+	              return fToBind.apply(this instanceof fNOP ? this : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
+	            };
+
+	        fNOP.prototype = this.prototype;
+	        fBound.prototype = new fNOP();
+
+	        return fBound;
+	      };
+	    }
+
+	    if (true) {
+	        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(21)], __WEBPACK_AMD_DEFINE_FACTORY__ = (c3), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	    } else if ('undefined' !== typeof exports && 'undefined' !== typeof module) {
+	        module.exports = c3;
+	    } else {
+	        window.c3 = c3;
+	    }
+
+	})(window);
 
 
 /***/ }

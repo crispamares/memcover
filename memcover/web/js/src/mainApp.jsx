@@ -11,14 +11,13 @@ var DataTable = require('./dataTable');
 var BrainRegions = require('./brainRegions');
 var CategoricalFilter = require('./categoricalFilter');
 var RangeFilter = require('./rangeFilter');
-var SimpleVis = require('./simpleVis');
 var Card = require('./card');
 var CardCreationMenu = require('./cardCreationMenu');
 var AnalysisMenu = require('./analysisMenu');
 
 var PCPChart = reactify(require('./pcpChart'), "PCPChart");
 var BoxChart = reactify(require('./boxChart'), "BoxChart");
-var ScatterChart = require('react-d3/scatterchart').ScatterChart;
+var ScatterChart = reactify(require('./scatterChart'), "ScatterChart");
 
 /**
  *  Bootstrap requires
@@ -513,14 +512,14 @@ module.exports = React.createClass({
 			     </PCPChart>);
 			     break;
 			 case "scatter":
-			     var values = []; // NaN Filtered 
+			     var data = []
+			     // Filter NaNs 
 			     _.reduce(self.state.tables[card.config.table].data, function(acc, row) {
 				 if ( _.isNumber(row[card.config.xColumn]) && _.isNumber(row[card.config.yColumn]) ) {
 				     acc.push({x: row[card.config.xColumn], y: row[card.config.yColumn]});
 				 }
 				 return acc;
-			     }, values);
-			     var data = [{ name: "series1", values: values}];
+			     }, data);
 			     
 			     component = (<ScatterChart {...size} {...card.config} data={data}/>);
 			     break;
