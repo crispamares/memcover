@@ -5,6 +5,7 @@ var _ = require('lodash');
 var ReactGridLayout = require('react-grid-layout');
 
 var Context = require('context');
+//var saveAs = require('FileSaver');
 
 var reactify = require('./reactify');
 var DataTable = require('./dataTable');
@@ -266,7 +267,7 @@ module.exports = React.createClass({
 
 	    Store.getSchema(table.name).then(function(schema){ 
 		self.state.tables[table.name].schema = schema;
-		self.setState({"tables": self.state.tables}); 
+		self.setState({"tables": self.state.tables});
 	    });
 
 	    Store.getData(table.name).then(function(rows){ 
@@ -276,6 +277,40 @@ module.exports = React.createClass({
 
 	});
 	
+    },
+
+    loadAnalysis: function(ev) {
+	var self = this;
+	var when =  require("when");
+	var rpc = Context.instance().rpc;
+
+	var files = ev.target.files;
+	var reader = new FileReader();
+	reader.readAsText(files[0]);
+	event.target.value = ""; // So same file rise onChange
+
+	reader.onload = function() {
+	    var analysis = JSON.parse(this.result);
+	    var grammar = analysis.grammar;
+	    var state = analysis.state;
+	    
+	    when.join(rpc.call("clear_dselects", []))
+		//.then(function(){ return rpc.call("GrammarSrv.build", [grammar, [self.table]]); })
+		//.done(function(){ hub.publish("analysis_load", null);} );
+		.done(function(){ self.setState(state); });
+	};
+    },
+
+    saveAnalysis: function(state) {
+
+	var stateWithoutConditions = _.clone(state);
+	stateWithoutConditions.conditions = {};
+
+	var analysis = {state: stateWithoutConditions, grammar: {}};
+	var blob = new Blob([JSON.stringify(analysis)], {type: "text/plain;charset=utf-8"});
+	var date = new Date();
+	saveAs(blob, "analysis_"+ date.toJSON() +".json");
+
     },
 
     addCard: function(card) {
@@ -465,7 +500,10 @@ module.exports = React.createClass({
                 <AnalysisMenu className="navbar-btn pull-right" 
 			style={ {"margin-right":10} }
 			tables={this.state.tables} 
-			onSelection={function(table){Store.exportTable(table, table.name);}}>
+			onExport={function(table){Store.exportTable(table, table.name);}}
+			onOpen={self.loadAnalysis}
+	                onSave={self.saveAnalysis.bind(self, self.state)}
+			>
 		  
 		</AnalysisMenu>
 

@@ -1,6 +1,7 @@
 from indyva.app import App as MetaApp
 from data_adquisition import init_table
 from indyva.facade.front import ContextFreeFront, Front
+from indyva.facade.showcase import Showcase
 from indyva.dynamics.dselect import DynSelect
 import xlsx_exporter
 import dist_vis
@@ -13,6 +14,7 @@ class App(MetaApp):
         MetaApp.__init__(self)
 
         ContextFreeFront.instance().add_method(self.init)
+        ContextFreeFront.instance().add_method(self.clear_dselects)
 
     def init(self):
         '''
@@ -43,6 +45,15 @@ class App(MetaApp):
             'morpho_table': morpho_table_name, 'morpho_selection': 'morpho_dselect',
             'clinic_table': clinic_table_name, 'clinic_selection': 'clinic_dselect',
             'joined_table': joined_table_name, 'joined_selection': 'joined_dselect'}
+
+
+    def clear_dselects(self):
+            dselect = Showcase.instance().get('morpho_dselect')
+            dselect.clear()
+            dselect = Showcase.instance().get('clinic_dselect')
+            dselect.clear()
+            dselect = Showcase.instance().get('joined_dselect')
+            dselect.clear()
 
 
 def main():
