@@ -235,6 +235,7 @@ module.exports = React.createClass({
 
 
 	var conditions = {};
+	var subscriptions = {};
 //     - Conditions: {table: {conditionSet: {condition: {subscription: <>,  name: condition } } }
 //     - Selections: {table: {conditionSet: {subscription: <>, name: condition } } }
 //     - TableSubscriptions: {table: {subscription: <>, name: condition } }
@@ -247,7 +248,8 @@ module.exports = React.createClass({
 	    "tables": tables,
 	    "conditions": conditions,
 	    "layout": layout,
-	    "cards": cards
+	    "cards": cards,
+	    "subscriptions": subscriptions
 	};
     },
 
@@ -262,6 +264,7 @@ module.exports = React.createClass({
 	_.forEach(this.state.tables, function(table){
 	    Store.linkTableToSelection(table.name, table.selection, function(rows) {
 		self.state.tables[table.name].data = rows;
+		self.state.subscriptions[table.name] = true;
 		self.setState({"tables": self.state.tables}); 
 	    });
 
@@ -294,23 +297,36 @@ module.exports = React.createClass({
 	    var grammar = analysis.grammar;
 	    var state = analysis.state;
 	    
-	    when.join(rpc.call("clear_dselects", []))
-		//.then(function(){ return rpc.call("GrammarSrv.build", [grammar, [self.table]]); })
-		//.done(function(){ hub.publish("analysis_load", null);} );
+	    var tables = _.pluck(state.tables, "name");
+
+	    rpc.call("DynSelectSrv.clear", [])
+		.then(function(){return rpc.call("GrammarSrv.build", [grammar, tables]); }) 
 		.done(function(){ self.setState(state); });
 	};
     },
 
     saveAnalysis: function(state) {
+	var when =  require("when");
+	var rpc = Context.instance().rpc;
 
-	var stateWithoutConditions = _.clone(state);
-	stateWithoutConditions.conditions = {};
+	var stateToSave = _.clone(state);
+	stateToSave.subscriptions = {};
 
-	var analysis = {state: stateWithoutConditions, grammar: {}};
-	var blob = new Blob([JSON.stringify(analysis)], {type: "text/plain;charset=utf-8"});
-	var date = new Date();
-	saveAs(blob, "analysis_"+ date.toJSON() +".json");
-
+	rpc.call("GrammarSrv.new_root", ['root'])
+	    .then(function(){ return when.map(_.pluck(stateToSave.tables, "selection"), function(dselect) {
+		return rpc.call("DynSelectSrv.get_conditions", [dselect])
+		    .then(function(conditions){ rpc.call("GrammarSrv.add_condition", ['root', conditions]);})
+		    .then(function(){ rpc.call("GrammarSrv.add_dynamic", ['root', dselect]);});
+	    });})
+	    .then(function(){ return rpc.call("GrammarSrv.grammar", ['root']);})
+	    .then(function(grammar){ 
+		var analysis = {state: stateToSave, grammar: grammar};
+		var blob = new Blob([JSON.stringify(analysis)], {type: "text/plain;charset=utf-8"});
+		var date = new Date();
+		saveAs(blob, "analysis_"+ date.toJSON() +".json");
+	    })
+	    .done(function() { rpc.call("GrammarSrv.del_root", ['root']);});
+	    
     },
 
     addCard: function(card) {
@@ -335,29 +351,35 @@ module.exports = React.createClass({
 
     initCondition: function(kind, table, selection, column) {
 	var condition = _.get(this.state, ["conditions", table, selection, column, "name"]);
+
+	var self = this;
+	var linkCondition = function(condition) { 
+	    if ( self.state.subscriptions[condition] ) return;
+	    Store.linkCondition( condition, function(grammar) {
+		self.state.subscriptions[condition] = true;
+		self.putState(
+		    ["conditions", table, selection, column],
+		    {name: condition, grammar: grammar});
+		console.log("GRAMMAR: ", grammar);
+	    }); 
+	};
+
 	if (condition) {
 	    console.log("Don't create a new condition. Already created");
-	    Store.enableCondition(condition);
+	    Store.enableCondition(condition).done(function(){ linkCondition(condition) });
 	    return;
 	}
 	console.log("Creating a new condition:", kind, table, selection);
-	var self = this;
+
 	Store.createCondition(selection, column, kind)
 	    .then(function(condition) { 
-		var linkCondition = function() { 
-		    Store.linkCondition( condition, function(grammar) {
-			self.putState(
-			    ["conditions", table, selection, column],
-			    {name: condition, grammar: grammar});
-			console.log("GRAMMAR: ", grammar);
-		    }); 
-		}
-		if (kind === "categorical") Store.includeAll(condition).then(linkCondition);
-		else linkCondition();
+		if (kind === "categorical") Store.includeAll(condition).then(linkCondition.bind(self,condition));
+		else linkCondition(condition);
 	    });
     },
 
     renderRegionsCard: function(card, size) {
+	console.log("RENDER REGIONS..........");
 	var initRegions = this.initCondition.bind(this, "categorical", this.props.joinedTable, this.props.joinedSelection, "Region");
 
 	var conditionPath = ["conditions", this.props.joinedTable, this.props.joinedSelection, "Region"];
@@ -581,6 +603,7 @@ module.exports = React.createClass({
 				 console.log(data);
 				 self.putState( ["cards", card.key, "data"], [data] );
 			     };
+			     // TODO: add subscription to state.subscriptions
 			     var linkData = Store.linkFacetedData.bind(self, table, selection, attr, facetAttr, saveData);
 
 			     var margin = {top: 20, right: 10, bottom: 20, left: 80};
