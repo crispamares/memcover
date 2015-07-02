@@ -23,7 +23,7 @@ module.exports = React.createClass({
 
     render: function() {
 
-	var onChange = _.throttle(this.props.onChange, 100);
+	var onChange = _.throttle(this.props.onChange, 200);
 	var domain = this.props.domain;
 	var extent =  this.props.extent;
 
