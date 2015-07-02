@@ -1,5 +1,5 @@
 
-svg.pcp {
+svg.pcp text {
   font-size: 14px;
 }
 
@@ -16,7 +16,7 @@ svg.pcp .foreground path.fade {
 }
 
 
-svg.pcp .axis line, .axis path {
+svg.pcp .axis line, svg.pcp .axis path {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
