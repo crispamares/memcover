@@ -35,6 +35,13 @@
    "key": false, 
    "shape": [], 
    "continuous": true
+  },
+  "No of plaques/volume (mm3)": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
   }, 
   "Total markers counted": {
    "attribute_type": "QUANTITATIVE", 
