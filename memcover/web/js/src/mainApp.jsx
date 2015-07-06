@@ -597,17 +597,32 @@ module.exports = React.createClass({
 			     var selection = self.state.tables[table].selection;
 			     var attr = card.config.attr;
 			     var facetAttr = card.config.facetAttr;
+			     var subscription = table+attr+facetAttr;
 
 			     var distributions = _.get(self.state.cards[card.key], "data", []);
 			     var saveData = function(data) {
-				 console.log(data);
+				 if (! self.state.subscriptions[table+attr+facetAttr]) return;
 				 self.putState( ["cards", card.key, "data"], [data] );
 			     };
-			     // TODO: add subscription to state.subscriptions
-			     var linkData = Store.linkFacetedData.bind(self, table, selection, attr, facetAttr, saveData);
+			     // FIXME: Now is impossible to unsubscribe
+			     //   when unmounting because there is no
+			     //   subscription-tokens, only callbacks
+			     var linkData = function() {
+				 if (! self.state.subscriptions[table+attr+facetAttr]) {
+				     self.putState(["subscriptions", subscription], true);
+				     return Store.linkFacetedData(table, selection, attr, facetAttr, saveData);
+				 }
+			     }
+			     var unlinkData = function() {
+				 self.putState(["subscriptions", subscription], false);
+				 self.putState("subscriptions", self.state.subscriptions);
+			     };
+			     
 
 			     var margin = {top: 20, right: 10, bottom: 20, left: 80};
-			     component = (<BoxChart {...size} margin={margin} distributions={distributions} onMount={linkData}/>)
+			     component = (<BoxChart {...size} margin={margin} distributions={distributions} 
+						  onMount={linkData}
+						  onUnmount={unlinkData}/>)
 			     break;
 		     }
 
