@@ -6,6 +6,12 @@ svg.box-svg {
   font: 10px sans-serif;
 }
 
+.boxChart .axis line, .boxChart .axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
 .box line, .box rect, .box circle {
   fill: #fff;
   stroke: #000;
@@ -26,5 +32,5 @@ svg.box-svg {
 
 .box .outlier {
   fill: none;
-  stroke: #ccc;
+  stroke: #777;
 }
