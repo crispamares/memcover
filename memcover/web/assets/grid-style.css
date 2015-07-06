@@ -1,6 +1,6 @@
 .react-grid-item:not(.react-grid-placeholder) {
-  background: #EEE;
-  border: 1px solid #BBB;
+  background: #F8F8F8;
+  border: 1px solid #E7E7E7;
   text-align: center;
   padding: 0px 5px 5px 5px;
 }
