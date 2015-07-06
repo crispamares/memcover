@@ -281,7 +281,8 @@
 				'min': {$min: '$'+attr}
 			    }
 			    },
-			    {$project: {facetAttr: '$_id', _id: false, 'list':true, 'max':true, 'min':true}}
+			    {$project: {facetAttr: '$_id', _id: false, 'list':true, 'max':true, 'min':true}},
+			    {$sort: {facetAttr: 1}}
 			];
 			//console.log(JSON.stringify(aggregation));
 			return rpc.call('TableSrv.aggregate', [table, aggregation]);
@@ -1470,7 +1471,7 @@
 			card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
 			break;
 		    case "columnFilter":
-			card.title = _.capitalize(config.column) + " - " + config.table;
+			card.title = _.capitalize(config.column); // + " - " + config.table;
 			card.kind = (config.attribute_type === "QUANTITATIVE") ? "rangeFilter" : "categoricalFilter";
 			break;
 		    case "box":

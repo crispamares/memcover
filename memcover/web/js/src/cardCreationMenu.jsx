@@ -32,7 +32,7 @@ var CardCreationMenu = React.createClass({
 		card.title = _.capitalize(config.xColumn) + " VS " + _.capitalize(config.yColumn);
 		break;
 	    case "columnFilter":
-		card.title = _.capitalize(config.column) + " - " + config.table;
+		card.title = _.capitalize(config.column); // + " - " + config.table;
 		card.kind = (config.attribute_type === "QUANTITATIVE") ? "rangeFilter" : "categoricalFilter";
 		break;
 	    case "box":

@@ -180,7 +180,8 @@ var Store = {
 			'min': {$min: '$'+attr}
 		    }
 		    },
-		    {$project: {facetAttr: '$_id', _id: false, 'list':true, 'max':true, 'min':true}}
+		    {$project: {facetAttr: '$_id', _id: false, 'list':true, 'max':true, 'min':true}},
+		    {$sort: {facetAttr: 1}}
 		];
 		//console.log(JSON.stringify(aggregation));
 		return rpc.call('TableSrv.aggregate', [table, aggregation]);
