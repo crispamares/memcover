@@ -35,6 +35,9 @@ var CardCreationMenu = React.createClass({
 		card.title = _.capitalize(config.column); // + " - " + config.table;
 		card.kind = (config.attribute_type === "QUANTITATIVE") ? "rangeFilter" : "categoricalFilter";
 		break;
+	    case "parset":
+		card.title = _.capitalize(config.value);
+		break;
 	    case "box":
 		card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
 		break;
@@ -66,6 +69,9 @@ var CardCreationMenu = React.createClass({
 				  break;
 			      case "scatter":
 				  tabNode = <ScatterMenu ref={tab.kind} options={tab.options}/>;
+				  break;
+			      case "parset":
+				  tabNode = <ParSetMenu ref={tab.kind} options={tab.options}/>;
 				  break;
 			      case "regions":
 				  tabNode = <RegionsMenu ref={tab.kind} options={tab.options}/>;
@@ -119,6 +125,53 @@ var TableMenuItem = React.createClass({
 	}
     }
 });
+
+
+var CheckboxColumnsMenuItem = React.createClass({
+
+    getInitialState: function() {
+	return { columns: this.props.columns };
+    },
+
+    handleCheck: function(column_i, checked) {
+	var state = _.set(this.state, ["columns", column_i, "included"], checked);
+	this.setState(state);
+	this.props.onChange && this.props.onChange(state.columns);
+    },
+
+    handleMultiCheck: function(checked) {
+	var columns = this.state.columns;
+	columns = _.map(columns, function(column) {column.included = checked; return column;});
+	var state = _.set(this.state, ["columns"], columns);
+	this.setState(state);
+	this.props.onChange && this.props.onChange(state.columns);
+    },
+
+    render: function() {
+	var columns = this.state.columns;
+	var handleCheck = this.handleCheck;
+	var handleMultiCheck = this.handleMultiCheck;
+	return (
+            <div>
+	      <label> {this.props.label} </label>
+	      <BS.ButtonGroup style={ {position: "absolute", right: "0px"} }>
+                <Button onClick={function(){handleMultiCheck(true)}}> Select All </Button>
+                <Button onClick={function(){handleMultiCheck(false)}}> Unselect All </Button>
+	      </BS.ButtonGroup>
+	      {
+		  columns.map(function(column, i){
+		      return (<Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
+			  label={column.name} onChange={function(ev) {handleCheck(i, ev.target.checked)}} checked={column.included}/>);
+		  })
+	       }
+	    </div>
+	);
+
+    }
+});
+
+
+
 
 var RadioColumnsMenuItem = React.createClass({
     render: function() {
@@ -417,6 +470,82 @@ var BoxMenu = React.createClass({
 		  facetAttrs.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
 	       }
 	      </Input>
+
+            </div>
+	);
+
+    }
+});
+
+
+
+
+
+
+
+var ParSetMenu = React.createClass({
+
+    // options: { 
+    //     tables:["morpho", "clinic"],
+    //     attributes:[
+    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
+    //     ]
+    // }
+    mixins: [React.addons.LinkedStateMixin],
+    getInitialState: function() {
+	var table = this.props.table || this.props.options.tables[0];
+	return {
+	    table: table,
+	    value: this.props.value || this.props.options.quantitativeColumns[table][0].name,
+	    dimensions: this.props.dimensions || [],
+	};
+    },
+
+    getConfig: function() {
+	return {
+	    table: this.state.table,
+	    value: this.state.value,
+	    dimensions: this.state.dimensions,
+	};
+    },
+
+    handleTableChange: function(table) {
+	this.setState({
+	    table: table,
+	    value: this.props.options.quantitativeColumns[table][0].name,
+	    dimensions: [],
+	});
+    },
+
+    onDimensionsChange: function(table, columns) {
+	console.log("YEAHHHHH", table, columns);
+	this.setState({"dimensions": columns});
+    },
+
+    render: function() {
+	var options = this.props.options;
+	var values = options.quantitativeColumns[this.state.table];
+	var dimensions = options.categoricalColumns[this.state.table];
+	var tableLink = {
+	    value: this.state.table,
+	    requestChange: this.handleTableChange
+	};
+
+	var onDimensionsChange = this.onDimensionsChange.bind(this, this.state.table);
+	
+	return (
+            <div>
+              <form>
+ 		<TableMenuItem tableLink={tableLink} tables={options.tables} /> 
+	      </form>
+
+	      <Input type='select' label='Value to Show' ref="value" valueLink={this.linkState('value')} >
+	      {
+		  values.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
+	       }
+	      </Input>
+	      
+	      <CheckboxColumnsMenuItem label={"Dimensions"} columns={dimensions} onChange={onDimensionsChange}> </CheckboxColumnsMenuItem>
 
             </div>
 	);

@@ -19,6 +19,7 @@ var AnalysisMenu = require('./analysisMenu');
 var PCPChart = reactify(require('./pcpChart'), "PCPChart");
 var BoxChart = reactify(require('./boxChart'), "BoxChart");
 var ScatterChart = reactify(require('./scatterChart'), "ScatterChart");
+var ParSetChart = reactify(require('./parsetChart'), "ParSetChart");
 
 /**
  *  Bootstrap requires
@@ -495,6 +496,7 @@ module.exports = React.createClass({
 	var creationVisMenuTabs = [
 	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
 	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } },
+	    { kind: "parset", title: "Parallel Set", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns} },
 	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
 	    { kind: "box", title: "Box Plot", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns } },
 	];
@@ -583,6 +585,18 @@ module.exports = React.createClass({
 			     }, data);
 			     
 			     component = (<ScatterChart {...size} {...card.config} data={data}/>);
+			     break;
+			 case "parset":
+			     var attributes = _.pluck(_.filter(card.config.dimensions, 'included'), 'name');
+
+			     component = (<ParSetChart {...size}
+				 data={self.state.tables[card.config.table].data} 
+				 margin={{top: 20, right: 40, bottom: 10, left: 40}}
+				 attributes={attributes}
+				 value={card.config.value}
+				 onAttributesSort={ function(attributes){} } 
+				 >
+			     </ParSetChart>);
 			     break;
 			 case "regions":
 			     component = self.renderRegionsCard(card, size);
