@@ -566,6 +566,7 @@ module.exports = React.createClass({
 				 data={self.state.tables[card.config.table].data} 
 				 margin={{top: 50, right: 40, bottom: 10, left: 40}}
 				 attributes={attributes}
+				 index={self.state.tables[card.config.table].schema.index}
 				 onBrush={function(extent){/*console.log(extent);*/}}
 				 onAttributeSort={ function(attributes){ 
 				     var columns = _.map(attributes, function(attr){return {name: attr.name, included: true}});

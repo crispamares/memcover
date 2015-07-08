@@ -41,6 +41,7 @@ module.exports = {
 	var path = this._path(props.attributes, scales, nanY);
 	var dragState = {};
 
+	console.log("PCP:", props.data);
 
 	var realSvg = d3.select(container).select("svg");
 	realSvg.attr("width", props.width)
@@ -52,11 +53,11 @@ module.exports = {
 	// Add foreground lines.
 	var foreground = svg.select("g.foreground");
 	var foregroundLines = foreground.selectAll("path")
-	  .data(props.data, function(d){return d.measure_id;});
+	  .data(props.data, function(d){return d[props.index];});
 	foregroundLines.enter().append("path");
 	foregroundLines.attr("d", path)
-	    .attr("class", function(d) {return d.patient;})
-	    .attr("title", function(d) {return d.measure_id;});
+//	    .attr("class", function(d) {return d.patient;})
+	    .attr("title", function(d) {return d[props.index];});
 	foregroundLines.exit().remove();
 
 	var brushes = this._brushes(scales, props.attributes, props.onBrush, foreground);
