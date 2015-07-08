@@ -1,14 +1,7 @@
 {
- "index": "measure_id", 
+ "index": "region_id", 
  "attributes": {
   "Patient": {
-   "attribute_type": "CATEGORICAL", 
-   "spatial": false, 
-   "key": false, 
-   "shape": [], 
-   "continuous": false
-  }, 
-  "Labeling": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
@@ -22,21 +15,63 @@
    "shape": [], 
    "continuous": false
   }, 
-  "Region volume estimation": {
+  "Region volume estimation_NISSL": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": true
   },
-  "No of marks/volume (mm3)": {
+  "Region volume estimation_NeuN": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": true
   },
-  "No of cells/volume (mm3)": {
+  "Region volume estimation_PHF1": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "Region volume estimation_AT8": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "Region volume estimation_BetaA": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "No of cells/volume (mm3)_NISSL": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "No of cells/volume (mm3)_NeuN": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "No of cells/volume (mm3)_PHF1": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "No of cells/volume (mm3)_AT8": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
@@ -50,14 +85,70 @@
    "shape": [], 
    "continuous": true
   }, 
-  "Total markers counted": {
+  "Total markers counted_NISSL": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
    "continuous": false
   }, 
-  "Total population estimated": {
+  "Total markers counted_NeuN": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total markers counted_PHF1": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total markers counted_AT8": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total markers counted_BetaA": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": false
+  }, 
+  "Total population estimated_NISSL": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Total population estimated_NeuN": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Total population estimated_PHF1": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Total population estimated_AT8": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  }, 
+  "Total population estimated_BetaA": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
@@ -85,7 +176,35 @@
    "shape": [], 
    "continuous": false
   }, 
-  "CE Gundersen": {
+  "CE Gundersen_NISSL": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "CE Gundersen_NeuN": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "CE Gundersen_PHF1": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "CE Gundersen_AT8": {
+   "attribute_type": "QUANTITATIVE", 
+   "spatial": false, 
+   "key": false, 
+   "shape": [], 
+   "continuous": true
+  },
+  "CE Gundersen_BetaA": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
@@ -225,7 +344,7 @@
    "shape": [], 
    "continuous": false
   },
-  "measure_id": {
+  "region_id": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": true, 
