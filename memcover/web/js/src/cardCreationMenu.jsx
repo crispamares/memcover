@@ -152,18 +152,24 @@ var CheckboxColumnsMenuItem = React.createClass({
 	var handleCheck = this.handleCheck;
 	var handleMultiCheck = this.handleMultiCheck;
 	return (
-            <div>
+            <div style={ {position: "relative"} }>
 	      <label> {this.props.label} </label>
-	      <BS.ButtonGroup style={ {position: "absolute", right: "0px"} }>
+	      <BS.ButtonGroup style={ {position: "absolute", right: "0px", top: "-5px"} }>
                 <Button onClick={function(){handleMultiCheck(true)}}> Select All </Button>
                 <Button onClick={function(){handleMultiCheck(false)}}> Unselect All </Button>
 	      </BS.ButtonGroup>
-	      {
-		  columns.map(function(column, i){
-		      return (<Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
-			  label={column.name} onChange={function(ev) {handleCheck(i, ev.target.checked)}} checked={column.included}/>);
-		  })
-	       }
+              <div className="row">
+		{
+		    columns.map(function(column, i){
+			return (
+                            <div className="col-md-4">
+			    <Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
+			    label={column.name} onChange={function(ev) {handleCheck(i, ev.target.checked)}} checked={column.included}/>
+                            </div>
+			);
+		    })
+		 }
+              </div>
 	    </div>
 	);
 
@@ -243,15 +249,7 @@ var DataTableMenu = React.createClass({
 	};
     },
 
-    handleCheck: function(table, column_i, checked) {
-	var state = _.set(this.state, ["columns", table, column_i, "included"], checked);
-	console.log(state);
-	this.setState(state);
-    },
-
-    handleMultiCheck: function(table, checked) {
-	var columns = this.state.columns[table];
-	columns = _.map(columns, function(column) {column.included = checked; return column;});
+    handleCheck: function(table, columns) {
 	var state = _.set(this.state, ["columns", table], columns);
 	this.setState(state);
     },
@@ -260,27 +258,13 @@ var DataTableMenu = React.createClass({
 	var options = this.props.options;
 	var columns = this.state.columns[this.state.table];
 	var handleCheck = this.handleCheck.bind(this, this.state.table);
-	var handleMultiCheck = this.handleMultiCheck.bind(this, this.state.table);
 	return (
             <div>
-              <div className="row">
-		<div className="col-sm-12">
-		  <form style={ {position: "relative"} }>
-		    <TableMenuItem tableLink={this.linkState('table')} tables={options.tables}> </TableMenuItem>
-		    <label> Columns: </label>
-		    <BS.ButtonGroup style={ {position: "absolute", right: "0px"} }>
-                      <Button onClick={function(){handleMultiCheck(true)}}> Select All </Button>
-                      <Button onClick={function(){handleMultiCheck(false)}}> Unselect All </Button>
-		    </BS.ButtonGroup>
-		    {
-			columns.map(function(column, i){
-			    return (<Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
-				label={column.name} onChange={function(ev) {handleCheck(i, ev.target.checked)}} checked={column.included}/>);
-			})
-		     }
-		  </form>
-		</div>
-	      </div>
+	      <form>
+		<TableMenuItem tableLink={this.linkState('table')} tables={options.tables}> </TableMenuItem>
+
+		<CheckboxColumnsMenuItem label={"Columns"} columns={columns} onChange={handleCheck}> </CheckboxColumnsMenuItem>
+	      </form>
 	    </div>
 	);
 
@@ -536,17 +520,18 @@ var ParSetMenu = React.createClass({
 	return (
             <div>
               <form>
+
  		<TableMenuItem tableLink={tableLink} tables={options.tables} /> 
-	      </form>
 
-	      <Input type='select' label='Value to Show' ref="value" valueLink={this.linkState('value')} >
-	      {
-		  values.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
-	       }
-	      </Input>
+		<Input type='select' label='Value to Show' ref="value" valueLink={this.linkState('value')} >
+		{
+		    values.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
+		}
+		</Input>
 	      
-	      <CheckboxColumnsMenuItem label={"Dimensions"} columns={dimensions} onChange={onDimensionsChange}> </CheckboxColumnsMenuItem>
+		<CheckboxColumnsMenuItem label={"Columns"} columns={dimensions} onChange={onDimensionsChange}> </CheckboxColumnsMenuItem>
 
+	      </form>
             </div>
 	);
 
