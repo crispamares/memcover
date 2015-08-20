@@ -19,7 +19,7 @@ var AnalysisMenu = require('./analysisMenu');
 var PCPChart = reactify(require('./pcpChart'), "PCPChart");
 var BoxChart = reactify(require('./boxChart'), "BoxChart");
 var ScatterChart = reactify(require('./scatterChart'), "ScatterChart");
-var ParSetChart = reactify(require('./parsetChart'), "ParSetChart");
+// var ParSetChart = reactify(require('./parsetChart'), "ParSetChart");
 
 /**
  *  Bootstrap requires
@@ -495,11 +495,11 @@ module.exports = React.createClass({
 	});
 
 	var creationVisMenuTabs = [
-	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
 	    { kind: "pcp", title: "Parallel Coordinates Plot", options: { tables: tables, columns: columns } },
-	    { kind: "parset", title: "Parallel Set", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns} },
+// Unused   { kind: "parset", title: "Parallel Set", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns} },
 	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
 	    { kind: "box", title: "Box Plot", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns } },
+	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
 	];
 
 	var creationFilterMenuTabs = [
