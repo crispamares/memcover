@@ -496,7 +496,7 @@ module.exports = React.createClass({
 
 	var creationVisMenuTabs = [
 	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
-	    { kind: "pcp", title: "Parallel Coordinates", options: { tables: tables, columns: columns } },
+	    { kind: "pcp", title: "Parallel Coordinates Plot", options: { tables: tables, columns: columns } },
 	    { kind: "parset", title: "Parallel Set", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns} },
 	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
 	    { kind: "box", title: "Box Plot", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns } },
