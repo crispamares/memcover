@@ -6,3 +6,10 @@ body {
     padding-top: 10px;
 }
 
+.three-col {
+    min-height: initial;
+    -moz-column-count: 3;
+    -moz-column-gap: 20px;
+    -webkit-column-count: 3;
+    -webkit-column-gap: 20px;
+}

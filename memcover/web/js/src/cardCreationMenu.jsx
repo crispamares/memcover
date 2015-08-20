@@ -154,21 +154,21 @@ var CheckboxColumnsMenuItem = React.createClass({
 	return (
             <div style={ {position: "relative"} }>
 	      <label> {this.props.label} </label>
-	      <BS.ButtonGroup style={ {position: "absolute", right: "0px", top: "-5px"} }>
+	      <BS.ButtonGroup style={ {position: "absolute", right: "0px", top: "-11px"} }>
                 <Button onClick={function(){handleMultiCheck(true)}}> Select All </Button>
                 <Button onClick={function(){handleMultiCheck(false)}}> Unselect All </Button>
 	      </BS.ButtonGroup>
               <div className="row">
-		{
-		    columns.map(function(column, i){
-			return (
-                            <div className="col-md-4">
-			    <Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
-			    label={column.name} onChange={function(ev) {handleCheck(i, ev.target.checked)}} checked={column.included}/>
-                            </div>
-			);
-		    })
-		 }
+		<div className="col-md-12 three-col">
+		  {
+		      columns.map(function(column, i){
+			  return (
+			      <Input type='checkbox' ref={"col" + i}  key={"col" + column.name}
+			      label={column.name} onChange={function(ev) {handleCheck(i, ev.target.checked)}} checked={column.included}/>
+			  );
+		      })
+		   }
+		</div>
               </div>
 	    </div>
 	);

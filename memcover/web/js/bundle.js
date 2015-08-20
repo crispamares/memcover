@@ -1609,21 +1609,21 @@
 		return (
 	            React.createElement("div", {style:  {position: "relative"} }, 
 		      React.createElement("label", null, " ", this.props.label, " "), 
-		      React.createElement(BS.ButtonGroup, {style:  {position: "absolute", right: "0px", top: "-5px"} }, 
+		      React.createElement(BS.ButtonGroup, {style:  {position: "absolute", right: "0px", top: "-11px"} }, 
 	                React.createElement(Button, {onClick: function(){handleMultiCheck(true)}}, " Select All "), 
 	                React.createElement(Button, {onClick: function(){handleMultiCheck(false)}}, " Unselect All ")
 		      ), 
 	              React.createElement("div", {className: "row"}, 
-			
-			    columns.map(function(column, i){
-				return (
-	                            React.createElement("div", {className: "col-md-4"}, 
-				    React.createElement(Input, {type: "checkbox", ref: "col" + i, key: "col" + column.name, 
-				    label: column.name, onChange: function(ev) {handleCheck(i, ev.target.checked)}, checked: column.included})
-	                            )
-				);
-			    })
-			 
+			React.createElement("div", {className: "col-md-12 three-col"}, 
+			  
+			      columns.map(function(column, i){
+				  return (
+				      React.createElement(Input, {type: "checkbox", ref: "col" + i, key: "col" + column.name, 
+				      label: column.name, onChange: function(ev) {handleCheck(i, ev.target.checked)}, checked: column.included})
+				  );
+			      })
+			   
+			)
 	              )
 		    )
 		);
