@@ -12,7 +12,11 @@ module.exports = {
 		height: nextProps.height,
 		width: nextProps.width
 	    },
-	    interaction: {enabled: false},
+//	    tooltip: {
+//		  contents: function (d, defaultTitleFormat, defaultValueFormat, color) {
+//		      return '<div class="c3-tooltip">' + JSON.stringify(d) + '</div>';
+//		  }
+//	    },
 	    data: {
 		type: "scatter",
 		json: nextProps.data,

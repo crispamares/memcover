@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 var React = require('react');
 var d3 = require('d3');
@@ -26,7 +26,7 @@ module.exports = React.createClass({
 	var onChange = _.throttle(this.props.onChange, 200);
 	var domain = this.props.domain;
 	var extent =  this.props.extent;
-
+	
 	return (
             <RangeSlider domain={domain}
 		    extent={extent}
@@ -34,6 +34,6 @@ module.exports = React.createClass({
 		    width={this.props.width} 
 		    height={this.props.height}>
 	    </RangeSlider>
-	)
+	);
     }
 });

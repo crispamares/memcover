@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 var React = require('react');
 var _ = require('lodash');
@@ -214,7 +214,7 @@ var Store = {
 		window.open(uri, fileName);
 	    });
     }
-}
+};
 
 
 
@@ -292,7 +292,7 @@ module.exports = React.createClass({
 	var files = ev.target.files;
 	var reader = new FileReader();
 	reader.readAsText(files[0]);
-	event.target.value = ""; // So same file rise onChange
+	ev.target.value = ""; // So same file rise onChange
 
 	reader.onload = function() {
 	    var analysis = JSON.parse(this.result);
@@ -334,8 +334,9 @@ module.exports = React.createClass({
     addCard: function(card) {
 	var Y = Math.max(0, _.max(this.state.layout, 'y')) + 1;
 
-	if (this.state.layout.length === 0) var key = "c0";
-	else var key = "c" + (parseInt(_.rest(_.last(this.state.layout).i)) + 1)
+	var key = null;
+	if (this.state.layout.length === 0) key = "c0";
+	else key = "c" + (parseInt(_.rest(_.last(this.state.layout).i)) + 1);
 
 	card.key = key;
 	this.state.layout.push({x:0, y: Y, w: 6, h: 6, i:key, handle:".card-anchor"});
@@ -576,7 +577,7 @@ module.exports = React.createClass({
 			     </PCPChart>);
 			     break;
 			 case "scatter":
-			     var data = []
+			     var data = [];
 			     // Filter NaNs 
 			     _.reduce(self.state.tables[card.config.table].data, function(acc, row) {
 				 if ( _.isNumber(row[card.config.xColumn]) && _.isNumber(row[card.config.yColumn]) ) {
@@ -628,7 +629,7 @@ module.exports = React.createClass({
 				     self.putState(["subscriptions", subscription], true);
 				     return Store.linkFacetedData(table, selection, attr, facetAttr, saveData);
 				 }
-			     }
+			     };
 			     var unlinkData = function() {
 				 self.putState(["subscriptions", subscription], false);
 				 self.putState("subscriptions", self.state.subscriptions);
@@ -638,7 +639,7 @@ module.exports = React.createClass({
 			     var margin = {top: 20, right: 10, bottom: 20, left: 80};
 			     component = (<BoxChart {...size} margin={margin} distributions={distributions} 
 						  onMount={linkData}
-						  onUnmount={unlinkData}/>)
+						  onUnmount={unlinkData}/>);
 			     break;
 		     }
 
