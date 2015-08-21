@@ -1,4 +1,4 @@
-'use strict'
+"use strict"
 
 var React = require('react');
 Object.assign = Object.assign || require('object-assign');
@@ -9,6 +9,10 @@ var Table = FixedDataTable.Table;
 var Column = FixedDataTable.Column;
 
 
+function isFloatBiggerThan1(n){
+    return n === Number(n) && n % 1 !== 0 && n > 1;
+}
+
 module.exports = React.createClass({
     getInitialState: function() {
 	 
@@ -16,7 +20,7 @@ module.exports = React.createClass({
 				Math.round(this.props.width / this.props.columnNames.length)
 	                        : 0;
 	var columnWidths = {};
-	_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+	_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;});
 	return {
 	    "columnWidths": columnWidths
 	};
@@ -24,10 +28,15 @@ module.exports = React.createClass({
     getDefaultProps: function(){
 	return {
 	    rows: [],
-	    columnNames: []
-	}
+	    columnNames: [],
+	    decimals: 2,
+	};
     },
-    _rowGetter: function(i) {return this.props.rows[i];},
+    _rowGetter: function(i) {
+	var row = this.props.rows[i];
+	var decimals = this.props.decimals;
+	return _.mapValues(row, function(d) { return isFloatBiggerThan1(d) ? d.toFixed(decimals) : d; }); 
+    },
     _onColumnResizeEndCallback: function(newColumnWidth, dataKey) {
 	this.state.columnWidths[dataKey] = newColumnWidth;
 //	isColumnResizing = false;
@@ -38,9 +47,9 @@ module.exports = React.createClass({
 				Math.round(this.props.width / this.props.columnNames.length)
 	                        : 0;
 	var columnWidths = {};
-	_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;})
+	_.map(this.props.columnNames, function(n){columnWidths[n] = initialColumnWith;});
 
-	if (this.props.rows.length == 0) return (<div></div>);
+	if (this.props.rows.length === 0) return (<div></div>);
 
 	return (
 	    <Table

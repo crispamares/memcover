@@ -7,9 +7,10 @@ body {
 }
 
 .three-col {
-    min-height: initial;
     -moz-column-count: 3;
     -moz-column-gap: 20px;
     -webkit-column-count: 3;
     -webkit-column-gap: 20px;
+    min-height: initial; /* fix chrome */
+    z-index: 0;          /* fix chrome */
 }
