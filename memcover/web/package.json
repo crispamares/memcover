@@ -11,8 +11,8 @@
   "dependencies": {
     "react": "~0.13.1",
     "when": "~3.7.2",
-    "fixed-data-table": "~0.1.2",
-    "react-grid-layout": "~0.8.1",
+    "fixed-data-table": "~0.4.6",
+    "react-grid-layout": "~0.8.5",
     "object-assign": "~2.0.0",
     "react-bootstrap": "~0.23.7",
     "classnames": "~2.1.1",
