@@ -6,6 +6,8 @@ var ReactGridLayout = require('react-grid-layout');
 
 var Context = require('context');
 //var saveAs = require('FileSaver');
+var downloadSVG = require('download-svg');
+window.ds = downloadSVG;
 
 var reactify = require('./reactify');
 var DataTable = require('./dataTable');
