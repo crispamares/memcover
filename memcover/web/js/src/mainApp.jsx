@@ -553,7 +553,18 @@ module.exports = React.createClass({
 		     */
 		 cards.map(function(card){
 		     var component = null;
+		     var menuActions = null;
 		     var size = {width: computeWidth(card.key), height: computeHeight(card.key)};
+
+		     switch (card.kind) {
+			 case "pcp":
+			 case "scatter":
+			 case "box":
+			     menuActions = [{label: "Save", icon: "save", 
+				 action: function(){ downloadSVG(this.getDOMNode().getElementsByTagName("svg")[0]);}}];
+			     //	 {label: "Edit", icon: "pencil", action: function(){}}
+		     }
+
 		     switch (card.kind) {
 			 case "table":
 			     // var columnNames = _.keys(self.state.schema.attributes);
@@ -565,18 +576,20 @@ module.exports = React.createClass({
 			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
 			     var attributes = _.map(columnNames, function(c){
 				 return self.state.tables[card.config.table].schema.attributes[c];});
-			     component = (<PCPChart {...size}
+
+			     component = <PCPChart {...size}
 				 data={self.state.tables[card.config.table].data} 
 				 margin={{top: 50, right: 40, bottom: 10, left: 40}}
 				 attributes={attributes}
 				 index={self.state.tables[card.config.table].schema.index}
-				 onBrush={function(extent){/*console.log(extent);*/}}
+				 onBrush={function(extent) {/*console.log(extent);*/ }}
 				 onAttributeSort={ function(attributes){ 
-				     var columns = _.map(attributes, function(attr){return {name: attr.name, included: true}});
+				     var columns = _.map(attributes, function(attr){return {name: attr.name, included: true};});
 				     self.putState( ["cards", card.key, "config", "columns"], columns );}
 				 } 
 				 >
-			     </PCPChart>);
+			     </PCPChart>;
+
 			     break;
 			 case "scatter":
 			     var data = [];
@@ -588,7 +601,7 @@ module.exports = React.createClass({
 				 return acc;
 			     }, data);
 			     
-			     component = (<ScatterChart {...size} {...card.config} data={data}/>);
+			     component = <ScatterChart {...size} {...card.config} data={data}/>;
 			     break;
 			 case "parset":
 			     var attributes = _.pluck(_.filter(card.config.dimensions, 'included'), 'name');
@@ -647,7 +660,8 @@ module.exports = React.createClass({
 
 		     return (
 			 <div key={card.key}>
-			   <Card key={card.key} onClose={self.removeCard.bind(self, card.key)} title={card.title} size={size}>
+			   <Card key={card.key} onClose={self.removeCard.bind(self, card.key)} 
+			         title={card.title} size={size} menuActions={menuActions}>
 			     {component}
 			   </Card>
 			 </div>			      
