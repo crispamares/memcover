@@ -36,8 +36,7 @@ module.exports = {
 
 	// This fixes a download-svg problem
 	var svg = container.getElementsByTagName("svg")[0];
-	svg.classList.add("scatter plot");
-	svg.classList.add("c3");
+	svg.classList.add("scatter", "plot", "c3");
     }
 };
 
