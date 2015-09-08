@@ -28,8 +28,8 @@ sea capaz de cargar datos propios.
 El diseño de la interfaz está basado en la metáfora de las
 tarjetas. Tenemos un tablero infinito donde poder desplegar todas las
 tarjetas que quiera el usuario, situándolas y redimensionándolas como
-quera el usuario. Hay dos tipos de tarjetas en este momento, pero la
-metáfora no está limitada a ningún número en concreto.
+quera. Hay dos tipos de tarjetas en este momento, pero la metáfora no
+está limitada a ningún número en concreto.
 
 El primer tipo de tarjetas son las visualizaciones. Todas estas
 tarjetas comparten la misma finalidad, permitir "ver" al usuario una
@@ -56,21 +56,86 @@ tenga todas las columnas de las tablas originales que compartan
 identificador.
 
 Además, el sistema está preparado para trabajar con datos incompletos,
-comúnmente llamados NaN (*Not a number*) o NA (*not assigned*).
+comúnmente llamados NA (*not assigned*) o NaN (*Not a number*).
 
 Los datos del sistema, se pueden exportar en cualquier momento en
 formato *.xls* que contendrá la tabla resultante de la unión de todas
 las tablas cargadas. Además, las filas incluidas serán aquellas que
 pasen todos los filtros que el usuario haya incluido en el tablero.
 
-- cómo se exploran los datos
+### Cómo se exploran los datos con Trovi ###
 
-- basado en linked views
+Trovi es una herramienta de análisis exploratorio de datos, y como tal
+ofrece cierta libertad para que el usuario elija su ruta de
+análisis. El objetivo de la herramienta es ser capaz de aumentar las
+capacidades cognitivas del analista para entender los datos cargados.
 
-- dinámicas de la ontología de shneiderman, heer.
+Típicamente el usuario empieza una sesión de análisis creando alguna
+tarjeta de visualización que aporte una visión de contexto. La gráfica
+de *"Coordenadas Paralelas"* es ideal para este objetivo ya que
+permite representar todas las filas de un número muy alto de
+columnas. El número de dimensiones que soporta esta representación es
+*a priori* ilimitado, pero en la práctica existen límites asociados a
+la resolución de la pantalla. Comúnmente se considera que representar
+más de 15 dimensiones simultáneamente daña la eficacia.
 
-- gráficas incorporadas y para qué análisis valen
+Sobre las *"Coordenadas Paralelas"* se han implementando algunas
+posibilidades de interacción. La más utilizadas es el *brushing* en
+las dimensiones cuantitativas. Cuando el usuario selecciona un rango
+de valores, sólo serán mostradas las filas que tengan el valor de
+dicha columna entre los valores mínimo y máximo del rango
+establecido. Esto permite "interrogar" al conjunto de datos en base a
+preguntas más o menos complejas como: "muéstrame los pacientes que
+están dentro de este rango de edad y este rango de degeneración
+cognitiva". La otra interacción soportada por este gráfico es la
+capacidad de arrastrar los ejes con el fin de reordenarlos y revelar
+posibles correlaciones, sólo visibles entre dimensiones contiguas.
 
-- tecnologías utilizadas
+Si se detectan evidencias de posibles correlaciones el siguiente paso
+que daría el analista es contrastar dichas correlaciones creando una
+tarjeta de visualización de *"Scatter Plot"*. Este tipo de gráfica es
+el más indicado para identificar correlaciones entre dos variables
+cuantitativas.
 
-- windows y linux
+El analista utilizaría la tarjeta de *"Box Plot"* si lo que quiere
+es comparar diferencias en la distribución de variables cuantitativas
+según las diferentes categorías de otra variable categórica.
+
+Estas son las visualizaciones incluidas en el momento de escribir este
+texto, pero el diseño está pensado para ir añadiendo otras tarjetas
+según los usuarios las vayan requiriendo.
+
+Por ultimo, si el usuario desea ver al detalle sus datos, puede crear
+una tarjeta de tipo *"Data Table"*.
+
+Todos estas representaciones se ven afectadas por los filtros que el
+usuario vaya incorporando al tablero. Estos filtros actúan como
+*"visual queries"*, actualizando automáticamente los datos que se
+muestran en el resto de tarjetas.
+
+Esa capacidad para excluir a voluntad, repreguntar, ver rápidamente el
+resultado de la pregunta y poder crear visualizaciones flexibles
+ágilmente es lo que proporciona la verdadera potencia al análisis
+exploratorio de datos. El principal objetivo de Trovi es capacitar al
+usuario para realizar todas estas tareas de manera eficiente sin que
+"pierda el hilo" de su razonamiento por culpa de la herramienta.
+
+### Tecnologías utilizadas ###
+
+Trovi es una herramienta de escritorio multiplataforma, se puede
+instalar tanto en Windows como Linux. Está diseñado siguiendo una
+arquitectura multiproceso.
+
+El *backend* está escrito en *Python*, y utiliza *MongoDB* como base
+de datos operacional. Todos estos procesos corren dentro de un
+contenedor de *Docker* y en Windows a su vez en una máquina virtual
+mínima.
+
+El *frontend* está desarrollado con tecnologías web como *D3*, *React*
+o *Bootstrap*, que se conectan por medio de *websockets* al
+*backend*. Para que tenga las capacidades esperadas de una aplicación
+de usuario todos los componentes web se integran dentro de
+[electron](http://electron.atom.io/).
+
+
+
