@@ -11,6 +11,7 @@ window.ds = downloadSVG;
 
 var reactify = require('./reactify');
 var DataTable = require('./dataTable');
+var DescriptionStats = require('./descriptionStats');
 var BrainRegions = require('./brainRegions');
 var CategoricalFilter = require('./categoricalFilter');
 var RangeFilter = require('./rangeFilter');
@@ -215,11 +216,30 @@ var Store = {
 		var uri = "http://" + window.location.host + window.location.pathname + d;
 		window.open(uri, fileName);
 	    });
-    }
+    },
+
+    describeStats: function(table, selection, attribute) {
+	var rpc = Context.instance().rpc;
+
+	return rpc.call("describe_stats", [selection, table, attribute]);
+    },
+
+
+    linkStats: function(table, selection, attr, onChange) {
+	var rpc = Context.instance().rpc;
+	var hub = Context.instance().hub;
+
+	hub.subscribe(selection + ':change', function(){	    
+	    Store.describeStats(table, selection, attr)
+		.then( onChange )
+		.catch(function(e){console.error(e);});
+	});
+
+	Store.describeStats(table, selection, attr)
+	    .then( onChange )
+	    .catch(function(e){console.error(e);});
+    },
 };
-
-
-
 
 
 module.exports = React.createClass({
@@ -459,6 +479,38 @@ module.exports = React.createClass({
 	return component;
     },
 
+    renderStatsCard: function(card, size) {
+	var table = card.config.table;
+	var selection = this.state.tables[table].selection;
+	var attr = card.config.attr;
+	var subscription = table+attr+"stats";
+
+	var description = _.get(this.state.cards[card.key], "description", {});
+	var saveData = function(description) {
+	    if (! this.state.subscriptions[subscription]) return;
+	    this.putState( ["cards", card.key, "description"], description );
+	}; 
+	// FIXME: Now is impossible to unsubscribe
+	//   when unmounting because there is no
+	//   subscription-tokens, only callbacks
+	var linkData = function() {
+	    if (! this.state.subscriptions[subscription]) {
+		this.putState(["subscriptions", subscription], true);
+		return Store.linkStats(table, selection, attr, saveData.bind(this));
+	    }
+	};
+	var unlinkData = function() {
+	    this.putState(["subscriptions", subscription], false);
+	    this.putState("subscriptions", this.state.subscriptions);
+	};
+
+	var component = (<DescriptionStats {...size} description={description} attr={attr} 
+			     onMount={linkData.bind(this)}
+			     onUnmount={unlinkData.bind(this)}/>);
+
+	return component;
+
+    },
     
     render: function(){
 	var self = this;
@@ -502,6 +554,7 @@ module.exports = React.createClass({
 	    { kind: "scatter", title: "Scatter Plot", options: { tables: tables, columns: quantitativeColumns } },
 	    { kind: "box", title: "Box Plot", options: { tables: tables, categoricalColumns: categoricalColumns, quantitativeColumns: quantitativeColumns } },
 	    { kind: "table", title: "Data Table", options: { tables: tables, columns: columns } },
+	    { kind: "stats", title: "Statistics", options: { tables: tables, columns: quantitativeColumns } },
 	];
 
 	var creationFilterMenuTabs = [
@@ -656,6 +709,10 @@ module.exports = React.createClass({
 						  onMount={linkData}
 						  onUnmount={unlinkData}/>);
 			     break;
+			 case "stats":
+			     size = _.set(size, "height", size.height - 17);
+			     size = _.set(size, "width", size.width - 17);
+			     component = self.renderStatsCard(card, size);
 		     }
 
 		     return (

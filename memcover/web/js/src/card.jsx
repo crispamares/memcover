@@ -13,7 +13,7 @@ module.exports = React.createClass({
 	/* var child = React.cloneElement(
 	   React.Children.only(this.props.children), 
 	   {width: this.props.width, height: this.props.height}); */
-	var contentSize = {width: this.props.size.width + 15, height: this.props.size.height + 15};
+	var contentSize = {width: this.props.size.width + 17, height: this.props.size.height + 17};
 	var menuActions = this.props.menuActions || [];
 
 	if (! _.isEmpty(menuActions)) {

@@ -5,6 +5,7 @@ from indyva.facade.showcase import Showcase
 from indyva.dynamics.dselect import DynSelect
 import xlsx_exporter
 import dist_vis
+import describe_stats
 import logbook
 logbook.default_handler.level = logbook.DEBUG
 
@@ -40,6 +41,7 @@ class App(MetaApp):
 
         xlsx_exporter.expose_methods()
         dist_vis.expose_methods()
+        describe_stats.expose_methods()
 
         return {
             #'morpho_table': morpho_table_name, 'morpho_selection': 'morpho_dselect',

@@ -41,6 +41,9 @@ var CardCreationMenu = React.createClass({
 	    case "box":
 		card.title = _.capitalize(config.attr) + " split by: " + config.facetAttr;
 		break;
+	    case "stats":
+		card.title = _.capitalize(config.attr);
+		break;		
 	}
 
 	this.props.onRequestHide();
@@ -82,6 +85,8 @@ var CardCreationMenu = React.createClass({
 			      case "box":
 				  tabNode = <BoxMenu ref={tab.kind} options={tab.options}/>;
 				  break;
+			      case "stats":
+				  tabNode = <StatsMenu ref={tab.kind} options={tab.options}/>;
 			  }
 			  return (
 			      <TabPane eventKey={tab.kind} tab={tab.title}>
@@ -462,7 +467,62 @@ var BoxMenu = React.createClass({
 });
 
 
+var StatsMenu = React.createClass({
 
+    // options: { 
+    //     tables:["morpho", "clinic"],
+    //     attributes:[
+    // 	     {name: "attr1", attribute_type: "QUANTITATIVE", included: true}, 
+    //     ]
+    // }
+    mixins: [React.addons.LinkedStateMixin],
+    getInitialState: function() {
+	var table = this.props.table || this.props.options.tables[0];
+	return {
+	    table: table,
+	    attr: this.props.attr || this.props.options.columns[table][0].name,
+	};
+    },
+
+    getConfig: function() {
+	return {
+	    table: this.state.table,
+	    attr: this.state.attr,
+	};
+    },
+
+    handleTableChange: function(table) {
+	this.setState({
+	    table: table,
+	    attr: this.props.options.columns[table][0].name,
+	});
+    },
+
+    render: function() {
+	var options = this.props.options;
+	var attrs = options.columns[this.state.table];
+	var tableLink = {
+	    value: this.state.table,
+	    requestChange: this.handleTableChange
+	};
+
+	return (
+            <div>
+              <form>
+ 		<TableMenuItem tableLink={tableLink} tables={options.tables} /> 
+	      </form>
+
+	      <Input type='select' label='Column' ref="attr" valueLink={this.linkState('attr')} >
+	      {
+		  attrs.map(function(column, i){ return (<option key={column.name} value={column.name}> {column.name} </option>); })
+	       }
+	      </Input>
+
+            </div>
+	);
+
+    }
+});
 
 
 
