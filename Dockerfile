@@ -21,7 +21,7 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN echo 'install.packages(c("rzmq","fitdistrplus","rjson"), repos="http://cran.us.r-project.org");q("no");' | R --vanilla
 
 COPY memcover/ /app/memcover/
-COPY data/ /app/data/
+#COPY data/ /app/data/
 COPY lib/ /app/lib/
 COPY memcover.ini /app/memcover.ini
 

@@ -1,3 +1,5 @@
+from __init__ import ROOT
+import os
 from indyva.app import App as MetaApp
 from data_adquisition import init_table
 from indyva.facade.front import ContextFreeFront, Front
@@ -10,14 +12,22 @@ import logbook
 logbook.default_handler.level = logbook.DEBUG
 
 
+default_data_path = os.path.join(os.path.dirname(ROOT), 'data')
+
+argv_options = [
+    ("data_dir", dict(default=default_data_path,
+                      help="The directory where the user data is located"))
+]
+
+
 class App(MetaApp):
     def __init__(self):
-        MetaApp.__init__(self)
+        MetaApp.__init__(self, argv_options)
 
         ContextFreeFront.instance().add_method(self.init)
         ContextFreeFront.instance().add_method(self.clear_dselects)
 
-    def init(self):
+    def init(self, dataset_name='joined'):
         '''
         This method loads the data in a table
         '''
@@ -33,8 +43,10 @@ class App(MetaApp):
         #Front.instance().get_method('TableSrv.expose_table')(clinic_table)
         #Front.instance().get_method('DynSelectSrv.expose_dselect')(clinic_dselect)
 
-        joined_table_name = 'joined'
-        joined_table = init_table(joined_table_name, 'joined_schema')
+        joined_table_name = dataset_name
+        joined_table = init_table(joined_table_name,
+                                  self.config.data_dir,
+                                  joined_table_name + '_schema')
         joined_dselect = DynSelect('joined_dselect', joined_table, setop='AND')
         Front.instance().get_method('TableSrv.expose_table')(joined_table)
         Front.instance().get_method('DynSelectSrv.expose_dselect')(joined_dselect)

@@ -7,16 +7,16 @@ Created on 13/12/2013
 
 import os
 
-from __init__ import ROOT
 from indyva.IO.table_io import read_csv
 
 
-def init_table(dataset, schema_desc=None):
-    filepath = os.path.join(os.path.dirname(ROOT), 'data', dataset + '.csv')
+def init_table(dataset, data_path, schema_desc=None):
+
+    filepath = os.path.join(data_path, dataset + '.csv')
 
     schema = None
     if schema_desc:
-        schema = os.path.join(os.path.dirname(ROOT), 'data', schema_desc + '.json')
+        schema = os.path.join(data_path, schema_desc + '.json')
 
     table = read_csv(table_name=dataset, filepath=filepath, schema=schema, skipinitialspace=True)
     return table
