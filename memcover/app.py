@@ -13,6 +13,7 @@ logbook.default_handler.level = logbook.DEBUG
 
 
 default_data_path = os.path.join(os.path.dirname(ROOT), 'data')
+dataset_name = 'joined'
 
 argv_options = [
     ("data_dir", dict(default=default_data_path,
@@ -26,8 +27,9 @@ class App(MetaApp):
 
         ContextFreeFront.instance().add_method(self.init)
         ContextFreeFront.instance().add_method(self.clear_dselects)
+        ContextFreeFront.instance().add_method(self.config_app)
 
-    def init(self, dataset_name='joined'):
+    def init(self):
         '''
         This method loads the data in a table
         '''
@@ -60,6 +62,9 @@ class App(MetaApp):
             #'clinic_table': clinic_table_name, 'clinic_selection': 'clinic_dselect',
             'joined_table': joined_table_name, 'joined_selection': 'joined_dselect'}
 
+    def config_app(self, conf):
+        global dataset_name
+        dataset_name = conf["dataset"]
 
     def clear_dselects(self):
             #dselect = Showcase.instance().get('morpho_dselect')
