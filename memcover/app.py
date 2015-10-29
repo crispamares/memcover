@@ -6,11 +6,11 @@ from indyva.facade.front import ContextFreeFront, Front
 from indyva.facade.showcase import Showcase
 from indyva.dynamics.dselect import DynSelect
 import xlsx_exporter
-import dist_vis
+#import dist_vis
 import describe_stats
-import logbook
-logbook.default_handler.level = logbook.DEBUG
 
+import logbook
+logbook.compat.redirect_logging()
 
 default_data_path = os.path.join(os.path.dirname(ROOT), 'data')
 dataset_name = 'joined'
@@ -54,7 +54,7 @@ class App(MetaApp):
         Front.instance().get_method('DynSelectSrv.expose_dselect')(joined_dselect)
 
         xlsx_exporter.expose_methods()
-        dist_vis.expose_methods()
+ #       dist_vis.expose_methods()
         describe_stats.expose_methods()
 
         return {

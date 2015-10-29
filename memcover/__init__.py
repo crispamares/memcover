@@ -11,4 +11,3 @@ try:
 except ImportError:
     sys.path.append(os.path.join(ROOT, '..' ,'lib', 'indyva'))
     import indyva
-
