@@ -29,6 +29,8 @@ class App(MetaApp):
         ContextFreeFront.instance().add_method(self.clear_dselects)
         ContextFreeFront.instance().add_method(self.config_app)
 
+        self.dataset_name = dataset_name
+
     def init(self):
         '''
         This method loads the data in a table
@@ -45,7 +47,7 @@ class App(MetaApp):
         #Front.instance().get_method('TableSrv.expose_table')(clinic_table)
         #Front.instance().get_method('DynSelectSrv.expose_dselect')(clinic_dselect)
 
-        joined_table_name = dataset_name
+        joined_table_name = self.dataset_name
         joined_table = init_table(joined_table_name,
                                   self.config.data_dir,
                                   joined_table_name + '_schema')
@@ -63,8 +65,7 @@ class App(MetaApp):
             'joined_table': joined_table_name, 'joined_selection': 'joined_dselect'}
 
     def config_app(self, conf):
-        global dataset_name
-        dataset_name = conf["dataset"]
+        self.dataset_name = conf["dataset"]
 
     def clear_dselects(self):
             #dselect = Showcase.instance().get('morpho_dselect')
