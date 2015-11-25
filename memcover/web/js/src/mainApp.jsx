@@ -39,7 +39,7 @@ var ModalTrigger = BS.ModalTrigger;
 var Store = {
     getSchema: function(tableName) {
 	var rpc = Context.instance().rpc;
-	
+
  	function getQuantitativeAttrs(schema) {
 	    var attrs = _.pick(schema.attributes, function(value, key) {
 		return value.attribute_type === "QUANTITATIVE" && ! value.shape.length;
@@ -76,7 +76,7 @@ var Store = {
 		if (conditions.length === 0) return true;
 		if (_.any(conditions, {enabled: true})) return false;
 		return true;
-	    });	    
+	    });
     },
 
     linkTableToSelection: function(table, selection, onChange) {
@@ -101,7 +101,7 @@ var Store = {
 		.catch(function(e){console.error(e);});
 	});
     },
-	
+
     /**
      * @param kind: "categorical", "range"
      * @return: condition
@@ -112,7 +112,7 @@ var Store = {
 	var method = "DynSelectSrv.new_" + kind + "_condition"
 
 	var promise = rpc.call(method, [selection, column])
-		.catch(function(e){console.error(e);});	
+		.catch(function(e){console.error(e);});
 
 	return promise;
     },
@@ -135,7 +135,7 @@ var Store = {
 	var rpc = Context.instance().rpc;
 	var hub = Context.instance().hub;
 
-	hub.subscribe(condition + ':change', function(){	    
+	hub.subscribe(condition + ':change', function(){
 	    rpc.call('ConditionSrv.grammar', [condition])
 		.then( onChange )
 		.catch(function(e){console.error(e);});
@@ -178,7 +178,7 @@ var Store = {
 	    .then(function (query) {
 		query[attr] = {$type : 1}; // Only Number types, not NaN
 		var aggregation = [{$match: query},
-		    {$group: {_id: '$'+facetAttr, 
+		    {$group: {_id: '$'+facetAttr,
 			'list': {$push: '$'+attr},
 			'max': {$max: '$'+attr},
 			'min': {$min: '$'+attr}
@@ -197,7 +197,7 @@ var Store = {
 	var rpc = Context.instance().rpc;
 	var hub = Context.instance().hub;
 
-	hub.subscribe(selection + ':change', function(){	    
+	hub.subscribe(selection + ':change', function(){
 	    Store.getFacetedData(table, selection, attr, facetAttr)
 		.then( onChange )
 		.catch(function(e){console.error(e);});
@@ -212,7 +212,7 @@ var Store = {
 	var rpc = Context.instance().rpc;
 
 	rpc.call("export_dselect", [table.selection, table.name, fileName])
-	    .then(function(d){ 
+	    .then(function(d){
 		var uri = "http://" + window.location.host + window.location.pathname + d;
 		window.open(uri, fileName);
 	    });
@@ -229,7 +229,7 @@ var Store = {
 	var rpc = Context.instance().rpc;
 	var hub = Context.instance().hub;
 
-	hub.subscribe(selection + ':change', function(){	    
+	hub.subscribe(selection + ':change', function(){
 	    Store.describeStats(table, selection, attr)
 		.then( onChange )
 		.catch(function(e){console.error(e);});
@@ -245,7 +245,7 @@ var Store = {
 module.exports = React.createClass({
     getInitialState: function() {
 	var layout = [
-//	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"}, 
+//	    {x:2, y: 0, w: 5, h: 6, i:"c0", handle:".card-title"},
 	];
 
 	var cards = {
@@ -264,7 +264,7 @@ module.exports = React.createClass({
 //     - Selections: {table: {conditionSet: {subscription: <>, name: condition } } }
 //     - TableSubscriptions: {table: {subscription: <>, name: condition } }
 
-// -------  To load saved state: 
+// -------  To load saved state:
 //	var savedState = require('./savedState');
 //	return JSON.parse(savedState);
 
@@ -289,21 +289,21 @@ module.exports = React.createClass({
 	    Store.linkTableToSelection(table.name, table.selection, function(rows) {
 		self.state.tables[table.name].data = rows;
 		self.state.subscriptions[table.name] = true;
-		self.setState({"tables": self.state.tables}); 
+		self.setState({"tables": self.state.tables});
 	    });
 
-	    Store.getSchema(table.name).then(function(schema){ 
+	    Store.getSchema(table.name).then(function(schema){
 		self.state.tables[table.name].schema = schema;
 		self.setState({"tables": self.state.tables});
 	    });
 
-	    Store.getData(table.name).then(function(rows){ 
+	    Store.getData(table.name).then(function(rows){
 		self.state.tables[table.name].data = rows;
-		self.setState({"tables": self.state.tables}); 
+		self.setState({"tables": self.state.tables});
 	    });
 
 	});
-	
+
     },
 
     loadAnalysis: function(ev) {
@@ -320,11 +320,11 @@ module.exports = React.createClass({
 	    var analysis = JSON.parse(this.result);
 	    var grammar = analysis.grammar;
 	    var state = analysis.state;
-	    
+
 	    var tables = _.pluck(state.tables, "name");
 
 	    rpc.call("DynSelectSrv.clear", [])
-		.then(function(){return rpc.call("GrammarSrv.build", [grammar, tables]); }) 
+		.then(function(){return rpc.call("GrammarSrv.build", [grammar, tables]); })
 		.done(function(){ self.setState(state); });
 	};
     },
@@ -343,14 +343,14 @@ module.exports = React.createClass({
 		    .then(function(){ rpc.call("GrammarSrv.add_dynamic", ['root', dselect]);});
 	    });})
 	    .then(function(){ return rpc.call("GrammarSrv.grammar", ['root']);})
-	    .then(function(grammar){ 
+	    .then(function(grammar){
 		var analysis = {state: stateToSave, grammar: grammar};
 		var blob = new Blob([JSON.stringify(analysis)], {type: "text/plain;charset=utf-8"});
 		var date = new Date();
 		saveAs(blob, "analysis_"+ date.toJSON() +".json");
 	    })
 	    .done(function() { rpc.call("GrammarSrv.del_root", ['root']);});
-	    
+
     },
 
     addCard: function(card) {
@@ -371,14 +371,14 @@ module.exports = React.createClass({
 	var cards = _.omit(this.state.cards, key);
 	var layout = _.reject(this.state.layout, {i: key});
 
-	this.setState({layout:layout, cards: cards});	
+	this.setState({layout:layout, cards: cards});
     },
 
     initCondition: function(kind, table, selection, column) {
 	var condition = _.get(this.state, ["conditions", table, selection, column, "name"]);
 
 	var self = this;
-	var linkCondition = function(condition) { 
+	var linkCondition = function(condition) {
 	    if ( self.state.subscriptions[condition] ) return;
 	    Store.linkCondition( condition, function(grammar) {
 		self.state.subscriptions[condition] = true;
@@ -386,7 +386,7 @@ module.exports = React.createClass({
 		    ["conditions", table, selection, column],
 		    {name: condition, grammar: grammar});
 		console.log("GRAMMAR: ", grammar);
-	    }); 
+	    });
 	};
 
 	if (condition) {
@@ -397,7 +397,7 @@ module.exports = React.createClass({
 	console.log("Creating a new condition:", kind, table, selection);
 
 	Store.createCondition(selection, column, kind)
-	    .then(function(condition) { 
+	    .then(function(condition) {
 		if (kind === "categorical") Store.includeAll(condition).then(linkCondition.bind(self,condition));
 		else linkCondition(condition);
 	    });
@@ -411,13 +411,13 @@ module.exports = React.createClass({
 	var condition = _.get(this.state, conditionPath.concat(["name"]));
 	var disableCondition = Store.disableCondition.bind(this, condition);
 
-	var component = (<BrainRegions {...size} 
+	var component = (<BrainRegions {...size}
 			     onMount={initRegions}
 			     onUnmount={disableCondition}
 			     includedRegions={_.get(this.state, conditionPath.concat(["grammar", "included_categories"]), [])}
 			     onClickRegion={Store.toggleCategory.bind(this, condition)}>
 	</BrainRegions>);
-			     
+
 	return component;
     },
 
@@ -445,10 +445,10 @@ module.exports = React.createClass({
 	}, categories);
 	categories = _.sortBy(categories, "name");
 
-	var component = (<CategoricalFilter {...size} 
+	var component = (<CategoricalFilter {...size}
 				 onMount={initCondition}
 				 onUnmount={disableCondition}
-				 categories={categories} 
+				 categories={categories}
 				 onClickedCategory={Store.toggleCategory.bind(this, condition)} />);
 	return component;
     },
@@ -470,7 +470,7 @@ module.exports = React.createClass({
 	var range = _.get(this.state, conditionPath.concat(["grammar", "range"])) || domain;
 	var extent = [ range['min'], range['max'] ];
 
-	var component = (<RangeFilter {...size} 
+	var component = (<RangeFilter {...size}
 				 onMount={initCondition}
 				 onUnmount={disableCondition}
 				 domain={domain}
@@ -489,7 +489,7 @@ module.exports = React.createClass({
 	var saveData = function(description) {
 	    if (! this.state.subscriptions[subscription]) return;
 	    this.putState( ["cards", card.key, "description"], description );
-	}; 
+	};
 	// FIXME: Now is impossible to unsubscribe
 	//   when unmounting because there is no
 	//   subscription-tokens, only callbacks
@@ -504,21 +504,21 @@ module.exports = React.createClass({
 	    this.putState("subscriptions", this.state.subscriptions);
 	};
 
-	var component = (<DescriptionStats {...size} description={description} attr={attr} 
+	var component = (<DescriptionStats {...size} description={description} attr={attr}
 			     onMount={linkData.bind(this)}
 			     onUnmount={unlinkData.bind(this)}/>);
 
 	return component;
 
     },
-    
+
     render: function(){
 	var self = this;
 
 	console.log("**** mainApp.state OnRender: ---> ", this.state);
 	var contentWidth = document.getElementById('content').offsetWidth - 20;
 	var rowHeight = 50;
-	
+
 	var layout = this.state.layout;
 	var cards = _.values(this.state.cards);
 
@@ -533,7 +533,7 @@ module.exports = React.createClass({
 
 	var tables = _.keys(self.state.tables);
 	var columns = _.mapValues(self.state.tables, function(table){
-	    return _.map(table.schema.attributes, 
+	    return _.map(table.schema.attributes,
 		function(value, key){return {name: key, included: true};}
 	    );
 	});
@@ -567,31 +567,31 @@ module.exports = React.createClass({
 
 	      <Navbar brand='Memcover' fixedTop>
 		<ModalTrigger modal={<CardCreationMenu tabs={creationVisMenuTabs} onCreateCard={this.addCard}/>}>
-		  <Button className="navbar-btn pull-right" bsStyle="primary"> 
-		    <Glyphicon glyph='plus' /> Visualization 
-		  </Button> 
+		  <Button className="navbar-btn pull-right" bsStyle="primary">
+		    <Glyphicon glyph='plus' /> Visualization
+		  </Button>
 		</ModalTrigger>
 
 		<ModalTrigger modal={<CardCreationMenu tabs={creationFilterMenuTabs} onCreateCard={this.addCard}/>}>
-		  <Button className="navbar-btn pull-right" bsStyle="primary" style={ {"margin-right":10} }> 
+		  <Button className="navbar-btn pull-right" bsStyle="primary" style={ {"margin-right":10} }>
 		    <Glyphicon glyph='plus' /> Filter
-		  </Button> 
+		  </Button>
 		</ModalTrigger>
 
-                <AnalysisMenu className="navbar-btn pull-right" 
+                <AnalysisMenu className="navbar-btn pull-right"
 			style={ {"margin-right":10} }
-			tables={this.state.tables} 
+			tables={this.state.tables}
 			onExport={function(table){Store.exportTable(table, table.name);}}
 			onOpen={self.loadAnalysis}
 	                onSave={self.saveAnalysis.bind(self, self.state)}
 			>
-		  
+
 		</AnalysisMenu>
 
 	      </Navbar>
 
 
-	      <ReactGridLayout className="layout" 
+	      <ReactGridLayout className="layout"
 		      layout={layout}
 		      cols={12}
 		      rowHeight={rowHeight}
@@ -613,7 +613,7 @@ module.exports = React.createClass({
 			 case "pcp":
 			 case "scatter":
 			 case "box":
-			     menuActions = [{label: "Save", icon: "save", 
+			     menuActions = [{label: "Save", icon: "save",
 				 action: function(){ downloadSVG(this.getDOMNode().getElementsByTagName("svg")[0]);}}];
 			     //	 {label: "Edit", icon: "pencil", action: function(){}}
 		     }
@@ -622,49 +622,49 @@ module.exports = React.createClass({
 			 case "table":
 			     // var columnNames = _.keys(self.state.schema.attributes);
 			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
-			     component = (<DataTable {...size} {...card.config} 
+			     component = (<DataTable {...size} {...card.config}
 				 rows={self.state.tables[card.config.table].data} columnNames={columnNames}/>);
 			     break;
 			 case "pcp":
 			     var columnNames = _.pluck(_.filter(card.config.columns, 'included'), 'name');
 			     var attributes = _.map(columnNames, function(c){
-				 return self.state.tables[card.config.table].schema.attributes[c];});
+                     return self.state.tables[card.config.table].schema.attributes[c];});
 
 			     component = <PCPChart {...size}
-				 data={self.state.tables[card.config.table].data} 
+				 data={self.state.tables[card.config.table].data}
 				 margin={{top: 50, right: 40, bottom: 10, left: 40}}
 				 attributes={attributes}
 				 index={self.state.tables[card.config.table].schema.index}
 				 onBrush={function(extent) {/*console.log(extent);*/ }}
-				 onAttributeSort={ function(attributes){ 
+				 onAttributeSort={ function(attributes){
 				     var columns = _.map(attributes, function(attr){return {name: attr.name, included: true};});
 				     self.putState( ["cards", card.key, "config", "columns"], columns );}
-				 } 
+				 }
 				 >
 			     </PCPChart>;
 
 			     break;
 			 case "scatter":
 			     var data = [];
-			     // Filter NaNs 
+			     // Filter NaNs
 			     _.reduce(self.state.tables[card.config.table].data, function(acc, row) {
 				 if ( _.isNumber(row[card.config.xColumn]) && _.isNumber(row[card.config.yColumn]) ) {
 				     acc.push({x: row[card.config.xColumn], y: row[card.config.yColumn]});
 				 }
 				 return acc;
 			     }, data);
-			     
+
 			     component = <ScatterChart {...size} {...card.config} data={data}/>;
 			     break;
 			 case "parset":
 			     var attributes = _.pluck(_.filter(card.config.dimensions, 'included'), 'name');
 
 			     component = (<ParSetChart {...size}
-				 data={self.state.tables[card.config.table].data} 
+				 data={self.state.tables[card.config.table].data}
 				 margin={{top: 20, right: 40, bottom: 10, left: 40}}
 				 attributes={attributes}
 				 value={card.config.value}
-				 onAttributesSort={ function(attributes){} } 
+				 onAttributesSort={ function(attributes){} }
 				 >
 			     </ParSetChart>);
 			     break;
@@ -702,10 +702,10 @@ module.exports = React.createClass({
 				 self.putState(["subscriptions", subscription], false);
 				 self.putState("subscriptions", self.state.subscriptions);
 			     };
-			     
+
 
 			     var margin = {top: 20, right: 10, bottom: 20, left: 80};
-			     component = (<BoxChart {...size} margin={margin} distributions={distributions} 
+			     component = (<BoxChart {...size} margin={margin} distributions={distributions}
 						  onMount={linkData}
 						  onUnmount={unlinkData}/>);
 			     break;
@@ -717,20 +717,17 @@ module.exports = React.createClass({
 
 		     return (
 			 <div key={card.key}>
-			   <Card key={card.key} onClose={self.removeCard.bind(self, card.key)} 
+			   <Card key={card.key} onClose={self.removeCard.bind(self, card.key)}
 			         title={card.title} size={size} menuActions={menuActions}>
 			     {component}
 			   </Card>
-			 </div>			      
+			 </div>
 		     );
 		 })
 		 }
-			 
-	      </ReactGridLayout> 
+
+	      </ReactGridLayout>
 	    </div>
 	);
     }
 });
-
-
-

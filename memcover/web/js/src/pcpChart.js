@@ -20,7 +20,7 @@ module.exports = {
     },
 
     cleanChart: function(container, props, state){
-	// unsubscribe things 
+	// unsubscribe things
     },
 
     update: function(container, props, state) {
@@ -125,7 +125,7 @@ module.exports = {
 
     _drag: function(scales, dragState, attributes, foregroundLines, path, g){
 	var x = scales.x;
-	
+
 	return function drag(d) {
 	    x.range()[dragState.i] = d3.event.x;
 	    attributes.sort(function(a, b) { return x(a.name) - x(b.name); });
@@ -135,50 +135,51 @@ module.exports = {
     },
 
     _dragend: function(scales, attributes, width, path, svg) {
-	var x = scales.x;
-	var self = this;
-	return function dragend(d) {
-	    x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-	    var t = d3.transition().duration(500);
-	    t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-	    t.selectAll(".foreground path").attr("d", path);
+        var x = scales.x;
+        var self = this;
+        return function dragend(d) {
+            x.domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+            var t = d3.transition().duration(500);
+            t.selectAll(".coordinate").attr("transform", function(d) { return "translate(" + x(d) + ")"; });
+            t.selectAll(".foreground path").attr("d", path);
 
-	    // TODO: Sort Coordinates after the animation
-	    _.delay(function(){self.props.onAttributeSort(attributes)}, 500);
-	};
+            // TODO: Sort Coordinates after the animation
+            _.delay(function(){self.props.onAttributeSort(attributes)}, 500);
+        };
     },
 
     _scales: function(width, height, data, attributes) {
-	var self = this;
+        var self = this;
 
-	var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
-	var y = {};
+        var x = d3.scale.ordinal().domain(_.pluck(attributes, "name")).rangePoints([0, width], 0.5);
+        var y = {};
 
-	function sortRegions (rows) {
-	    return rows.sort(function(a,b){
-		var order = ["DG", "CA3", "CA1", "SUB"];
-		return d3.ascending(order.indexOf(a), order.indexOf(b)); 
-	    })
-	}
+        function sortCategories (rows, order) {
+            return rows.sort(function(a,b){
+                return d3.ascending(order.indexOf(a), order.indexOf(b));
+            })
+        }
 
-	attributes.forEach(function(d) {
-	    var name = d.name;
-	    if (d.attribute_type === 'QUANTITATIVE') {
-		y[name] = d3.scale.linear()
-		    .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
-				      , function(p) { return p[name]; }))
-		    .range([height, 0]);
-	    }
-	    else if (d.attribute_type === 'CATEGORICAL') {
-		var domain = d3.set(_.pluck(data, name)).values();
-		domain = (d.name == "Region") ? sortRegions(domain) : domain;
-		y[name] = d3.scale.ordinal()
-		    .domain(domain)
-		    .rangePoints([height, 0]);
-	    }
-	});
+        attributes.forEach(function(d) {
+            var name = d.name;
+            if (d.attribute_type === 'QUANTITATIVE') {
+                y[name] = d3.scale.linear()
+                .domain(d3.extent(data.filter(function(p){return !isNaN(p[name]);})
+                , function(p) { return p[name]; }))
+                .range([height, 0]);
+            }
+            else if (d.attribute_type === 'CATEGORICAL') {
+                var domain = d3.set(_.pluck(data, name)).values();
+                if (_.isArray(d.meta.order)) {
+                    domain = sortCategories(domain, d.meta.order);
+                }
+                y[name] = d3.scale.ordinal()
+                .domain(domain)
+                .rangePoints([height, 0]);
+            }
+        });
 
-	return {x: x, y: y};
+        return {x: x, y: y};
     },
 
 
@@ -228,7 +229,7 @@ module.exports = {
 //		.defined(function(d){return !isNaN(d[1]);});  // Breaks the line
 	return function (d) {
 	    return line(_.pluck(attributes, "name")
-			.map(function(a) { 
+			.map(function(a) {
 			    var y = scales.y[a](d[a])
 			    return [scales.x(a), !isNaN(y) ? y : nanY ]; }));
 	};

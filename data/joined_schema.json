@@ -6,350 +6,400 @@
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Region": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": { "order": ["DG", "CA3", "CA1", "SUB"]}
   }, 
   "Region volume estimation_NISSL": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "Region volume estimation_NeuN": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "Region volume estimation_PHF1": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "Region volume estimation_AT8": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "Region volume estimation_BetaA": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "No of cells/volume (mm3)_NISSL": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "No of cells/volume (mm3)_NeuN": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "No of cells/volume (mm3)_PHF1": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "No of cells/volume (mm3)_AT8": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "No of plaques/volume (mm3)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   }, 
   "Total markers counted_NISSL": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Total markers counted_NeuN": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Total markers counted_PHF1": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Total markers counted_AT8": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Total markers counted_BetaA": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Total population estimated_NISSL": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   }, 
   "Total population estimated_NeuN": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   }, 
   "Total population estimated_PHF1": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   }, 
   "Total population estimated_AT8": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   }, 
   "Total population estimated_BetaA": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   }, 
   "Plaque AVG volume": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "% Occupied by plaques": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Total nucleators counted": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "CE Gundersen_NISSL": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "CE Gundersen_NeuN": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "CE Gundersen_PHF1": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "CE Gundersen_AT8": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "CE Gundersen_BetaA": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   },
   "Gender": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Decease age": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Age at diagnosis": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Disease progression": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Post-mortem delay (hours)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": true
+   "continuous": true,
+   "meta": {}
   }, 
   "Braak Scale": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {"order": ["IV", "V", "V/VI", "VI"]}
   },
   "CERAD Scale": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   },  
   "MMSE (1)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "MMSE (2)": {
    "attribute_type": "QUANTITATIVE", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Initial behavior alteration": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Depression/Anxiety/Mood disorders": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Apraxia / Instrumental impairment": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Language impairment": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Visuospatial agnosia": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Diabetes": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   },
   "Hypercholesterolemia": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Details of cardiovascular diseases": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Details of the cerebral atrophy": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }, 
   "Details on family history of dementia": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   },
   "region_id": {
    "attribute_type": "CATEGORICAL", 
    "spatial": false, 
    "key": true, 
    "shape": [], 
-   "continuous": false
+   "continuous": false,
+   "meta": {}
   }
  }
 }
