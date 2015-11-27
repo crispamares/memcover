@@ -168,7 +168,7 @@ module.exports = {
                 , function(p) { return p[name]; }))
                 .range([height, 0]);
             }
-            else if (d.attribute_type === 'CATEGORICAL') {
+            else if (d.attribute_type === 'CATEGORICAL' || d.attribute_type === 'ORDINAL') {
                 var domain = d3.set(_.pluck(data, name)).values();
                 if (_.isArray(d.meta.order)) {
                     domain = sortCategories(domain, d.meta.order);

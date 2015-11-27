@@ -545,7 +545,7 @@ module.exports = React.createClass({
 	    return _.filter(tableColumns, {attribute_type: "QUANTITATIVE"});
 	});
 	var categoricalColumns = _.mapValues(columns, function(tableColumns){
-	    return _.filter(tableColumns, {attribute_type: "CATEGORICAL"});
+	    return _.filter(tableColumns, function(v, key) {return v.attribute_type === "CATEGORICAL" || v.attribute_type === "ORDINAL"});
 	});
 
 	var creationVisMenuTabs = [

@@ -10,7 +10,7 @@
    "meta": {}
   }, 
   "Region": {
-   "attribute_type": "CATEGORICAL", 
+   "attribute_type": "ORDINAL", 
    "spatial": false, 
    "key": false, 
    "shape": [], 
