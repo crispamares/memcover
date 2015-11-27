@@ -11,7 +11,7 @@ module.exports = React.createClass({
 	var title = this.props.title;
 
 	/* var child = React.cloneElement(
-	   React.Children.only(this.props.children), 
+	   React.Children.only(this.props.children),
 	   {width: this.props.width, height: this.props.height}); */
 	var contentSize = {width: this.props.size.width + 17, height: this.props.size.height + 17};
 	var menuActions = this.props.menuActions || [];
@@ -35,7 +35,7 @@ module.exports = React.createClass({
 	}
 	return (
 	    <div className="card" key={this.props.key}>
-	      <div className="card-header" > 
+	      <div className="card-header" >
 		<div className="card-move btn btn-xs btn-default card-anchor glyphicon glyphicon-move" aria-hidden="true"></div>
 
 		<span className="h4 card-anchor">{title}</span>

@@ -13,10 +13,10 @@ module.exports = {
     externals: {
 	//don't bundle the 'react' npm package with our bundle.js
 	//but get it from a global 'React' variable
-	'react': 'React',
-	'd3': 'd3',
-        'jquery': "jQuery",
-        'lodash': "_"
+    'react': 'React',
+    'd3': 'd3',
+    'jquery': "jQuery",
+    'lodash': "_"
     },
     resolve: {
 	root: [__dirname + '/js/lib/', __dirname + '/js/lib/indyva-js/'],
